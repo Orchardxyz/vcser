@@ -1,0 +1,35 @@
+{
+  "name": "vcser",
+  "version": "0.1.0",
+  "description": "Sync extensions and settings across VS Code-based editors",
+  "type": "module",
+  "bin": {
+    "vcser": "./dist/index.js"
+  },
+  "scripts": {
+    "dev": "bun run src/index.tsx",
+    "build": "bun build src/index.tsx --outdir dist --target node",
+    "test": "bun test"
+  },
+  "keywords": [
+    "vscode",
+    "cursor",
+    "windsurf",
+    "kiro",
+    "extensions",
+    "sync",
+    "cli"
+  ],
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@inkjs/ui": "^2.0.0",
+    "ink": "^5.2.1",
+    "meow": "^13.2.0",
+    "react": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/react": "^18.3.12",
+    "typescript": "^5.7.0"
+  }
+}

@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "bun run src/index.tsx",
-    "build": "bun build src/index.tsx --outdir dist --target node",
+    "build": "bun build src/index.tsx --outdir dist --target node --external react-devtools-core",
     "test": "bun test"
   },
   "keywords": [

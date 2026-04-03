@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 import React from "react";
 import { render } from "ink";
-import { parseArgs } from "./cli/args.js";
-import { BUILTIN_EDITORS } from "./editors/registry.js";
-import { detectInstalledEditors } from "./editors/detect.js";
-import { runPreflight } from "./preflight/checks.js";
-import { App } from "./app.js";
+import { parseArgs } from "./cli/args";
+import { BUILTIN_EDITORS } from "./editors/registry";
+import { detectInstalledEditors } from "./editors/detect";
+import { runPreflight } from "./preflight/checks";
+import { App } from "./app";
 
 const flags = parseArgs();
 

@@ -1,6 +1,6 @@
 import meow from "meow";
 import { readFileSync } from "node:fs";
-import type { CliFlags, CustomEditorInput, SettingsMode } from "../editors/types.js";
+import type { CliFlags, CustomEditorInput, SettingsMode } from "../editors/types";
 
 function parseCustomJson(raw: string): CustomEditorInput {
   const parsed = JSON.parse(raw);

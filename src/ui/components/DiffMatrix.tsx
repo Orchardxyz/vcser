@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Text } from "ink";
-import type { ExtensionDiffResult } from "../../extensions/diff.js";
+import type { ExtensionDiffResult } from "../../extensions/diff";
 
 interface DiffMatrixProps {
   diff: ExtensionDiffResult;

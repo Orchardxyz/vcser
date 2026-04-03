@@ -1,6 +1,6 @@
 import { execSync } from "node:child_process";
 import { existsSync, readdirSync } from "node:fs";
-import type { ResolvedEditor } from "../editors/types.js";
+import type { ResolvedEditor } from "../editors/types";
 
 export interface ExtensionInfo {
   id: string;

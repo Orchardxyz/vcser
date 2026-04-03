@@ -1,13 +1,13 @@
 import React, { useState, useCallback } from "react";
 import { Box, useApp, useInput } from "ink";
-import type { ResolvedEditor, CliFlags } from "./editors/types.js";
-import type { ExtensionDiffResult } from "./extensions/diff.js";
-import type { SettingsDiffResult } from "./settings/diff.js";
-import { Header } from "./ui/components/Header.js";
-import { StepIndicator } from "./ui/components/StepIndicator.js";
-import { Step1Select } from "./ui/Step1Select.js";
-import { Step2Diff } from "./ui/Step2Diff.js";
-import { Step3Sync } from "./ui/Step3Sync.js";
+import type { ResolvedEditor, CliFlags } from "./editors/types";
+import type { ExtensionDiffResult } from "./extensions/diff";
+import type { SettingsDiffResult } from "./settings/diff";
+import { Header } from "./ui/components/Header";
+import { StepIndicator } from "./ui/components/StepIndicator";
+import { Step1Select } from "./ui/Step1Select";
+import { Step2Diff } from "./ui/Step2Diff";
+import { Step3Sync } from "./ui/Step3Sync";
 
 interface AppProps {
   detectedEditors: ResolvedEditor[];

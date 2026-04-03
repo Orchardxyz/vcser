@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { Box, Text, useInput } from "ink";
 import { TextInput } from "@inkjs/ui";
-import type { ResolvedEditor, CustomEditorInput } from "../editors/types.js";
-import { EditorBadge } from "./components/EditorBadge.js";
-import { resolveCustomEditor } from "../editors/detect.js";
+import type { ResolvedEditor, CustomEditorInput } from "../editors/types";
+import { EditorBadge } from "./components/EditorBadge";
+import { resolveCustomEditor } from "../editors/detect";
 
 interface Step1Props {
   detectedEditors: ResolvedEditor[];

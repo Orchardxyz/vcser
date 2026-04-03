@@ -1,4 +1,4 @@
-import type { EditorExtensions } from "./reader.js";
+import type { EditorExtensions } from "./reader";
 
 export interface ExtensionPresence {
   extensionId: string;

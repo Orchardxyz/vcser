@@ -1,12 +1,12 @@
 import React, { useMemo, useState } from "react";
 import { Box, Text, useInput } from "ink";
-import type { ResolvedEditor } from "../editors/types.js";
-import { readAllExtensions } from "../extensions/reader.js";
-import { computeExtensionDiff, type ExtensionDiffResult } from "../extensions/diff.js";
-import { readAllSettings } from "../settings/reader.js";
-import { computeSettingsDiff, type SettingsDiffResult } from "../settings/diff.js";
-import { DiffMatrix } from "./components/DiffMatrix.js";
-import type { SettingsMode } from "../editors/types.js";
+import type { ResolvedEditor } from "../editors/types";
+import { readAllExtensions } from "../extensions/reader";
+import { computeExtensionDiff, type ExtensionDiffResult } from "../extensions/diff";
+import { readAllSettings } from "../settings/reader";
+import { computeSettingsDiff, type SettingsDiffResult } from "../settings/diff";
+import { DiffMatrix } from "./components/DiffMatrix";
+import type { SettingsMode } from "../editors/types";
 
 interface Step2Props {
   editors: ResolvedEditor[];

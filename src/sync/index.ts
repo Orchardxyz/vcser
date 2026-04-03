@@ -1,10 +1,10 @@
 import { execSync } from "node:child_process";
 import { writeFileSync } from "node:fs";
-import type { ResolvedEditor } from "../editors/types.js";
-import type { SettingsKeyDiff } from "../settings/diff.js";
-import { applySettingsDiffs } from "../settings/merge.js";
-import { readSettings } from "../settings/reader.js";
-import { createBackup } from "./backup.js";
+import type { ResolvedEditor } from "../editors/types";
+import type { SettingsKeyDiff } from "../settings/diff";
+import { applySettingsDiffs } from "../settings/merge";
+import { readSettings } from "../settings/reader";
+import { createBackup } from "./backup";
 
 export interface SyncAction {
   type: "install" | "uninstall";

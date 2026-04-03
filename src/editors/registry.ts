@@ -1,4 +1,4 @@
-import type { EditorDefinition } from "./types.js";
+import type { EditorDefinition } from "./types";
 
 function ed(
   name: string,

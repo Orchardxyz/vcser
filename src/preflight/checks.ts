@@ -1,4 +1,4 @@
-import type { ResolvedEditor } from "../editors/types.js";
+import type { ResolvedEditor } from "../editors/types";
 
 export interface PreflightResult {
   editor: ResolvedEditor;

@@ -1,4 +1,4 @@
-import type { EditorSettings } from "./reader.js";
+import type { EditorSettings } from "./reader";
 
 export type ChangeType = "add" | "update" | "delete";
 

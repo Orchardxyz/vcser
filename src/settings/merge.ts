@@ -1,4 +1,4 @@
-import type { SettingsKeyDiff } from "./diff.js";
+import type { SettingsKeyDiff } from "./diff";
 
 export function applySettingsDiffs(
   target: Record<string, unknown>,

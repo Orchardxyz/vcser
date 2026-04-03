@@ -5,13 +5,13 @@ import type {
   EditorDefinition,
   ResolvedEditor,
   CustomEditorInput,
-} from "./types.js";
+} from "./types";
 import {
   currentPlatform,
   homeDir,
   settingsBase,
   type Platform,
-} from "../platform/paths.js";
+} from "../platform/paths";
 
 function resolveBuiltinPaths(
   editor: EditorDefinition,

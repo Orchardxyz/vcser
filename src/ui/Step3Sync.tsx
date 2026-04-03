@@ -1,16 +1,16 @@
 import React, { useState, useMemo } from "react";
 import { Box, Text, useInput } from "ink";
 import { Spinner } from "@inkjs/ui";
-import type { ResolvedEditor, SettingsMode } from "../editors/types.js";
-import type { ExtensionDiffResult } from "../extensions/diff.js";
-import type { SettingsDiffResult } from "../settings/diff.js";
+import type { ResolvedEditor, SettingsMode } from "../editors/types";
+import type { ExtensionDiffResult } from "../extensions/diff";
+import type { SettingsDiffResult } from "../settings/diff";
 import {
   executeExtensionSync,
   executeSettingsSync,
   type SyncAction,
   type SettingsSyncAction,
   type SyncResult,
-} from "../sync/index.js";
+} from "../sync/index";
 
 interface Step3Props {
   editors: ResolvedEditor[];

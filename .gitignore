@@ -4,5 +4,8 @@ coverage/
 *.log
 .DS_Store
 bun.lockb
+src-tauri/target/
+src-tauri/gen/
+src-tauri/.cargo/
 .env
 .env.*

@@ -1,8 +1,10 @@
-import { defineConfig, presetIcons, presetWind, transformerDirectives } from "unocss";
+import { defineConfig, presetIcons, presetUno, transformerDirectives } from "unocss";
+import { presetDaisy } from "@unscatty/unocss-preset-daisy";
 
 export default defineConfig({
   presets: [
-    presetWind(),
+    presetUno(),
+    presetDaisy(),
     presetIcons({
       extraProperties: {
         display: "inline-block",

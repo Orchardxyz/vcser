@@ -1,5 +1,6 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useId, useRef, useState } from "react";
 import type { CustomEditorInput, ResolvedEditor } from "../types";
+import { BaseModal } from "./BaseModal";
 
 interface Step1SelectProps {
   editors: ResolvedEditor[];
@@ -20,6 +21,10 @@ export function Step1Select({
   onContinue,
   onAddCustomEditor,
 }: Step1SelectProps) {
+  const customEditorFormId = useId();
+  const nameInputRef = useRef<HTMLInputElement | null>(null);
+
+  const [isCustomModalOpen, setIsCustomModalOpen] = useState(false);
   const [name, setName] = useState("");
   const [extensionsPath, setExtensionsPath] = useState("");
   const [settingsPath, setSettingsPath] = useState("");
@@ -28,6 +33,36 @@ export function Step1Select({
   const [submitting, setSubmitting] = useState(false);
 
   const canContinue = selectedEditorNames.length >= 2;
+
+  useEffect(() => {
+    if (!isCustomModalOpen) return;
+
+    const timer = window.setTimeout(() => {
+      nameInputRef.current?.focus();
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [isCustomModalOpen]);
+
+  function resetCustomForm() {
+    setName("");
+    setExtensionsPath("");
+    setSettingsPath("");
+    setCli("");
+    setCustomError(null);
+  }
+
+  function openCustomModal() {
+    resetCustomForm();
+    setIsCustomModalOpen(true);
+  }
+
+  function closeCustomModal() {
+    if (submitting) return;
+    setIsCustomModalOpen(false);
+  }
 
   async function handleCustomSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -46,10 +81,8 @@ export function Step1Select({
         settingsPath: settingsPath.trim(),
         cli: cli.trim(),
       });
-      setName("");
-      setExtensionsPath("");
-      setSettingsPath("");
-      setCli("");
+      resetCustomForm();
+      setIsCustomModalOpen(false);
     } catch (submitError) {
       setCustomError(
         submitError instanceof Error ? submitError.message : String(submitError)
@@ -115,61 +148,76 @@ export function Step1Select({
         })}
       </div>
 
-      <form className="grid gap-3 rounded-xl border border-slate-200 bg-white/70 p-4" onSubmit={handleCustomSubmit}>
-        <h3 className="text-sm font-semibold text-slate-800">Add custom editor</h3>
+      <div className="flex justify-end">
+        <button className="btn-secondary" type="button" onClick={openCustomModal} disabled={loading}>
+          Add custom editor
+        </button>
+      </div>
 
-        <div className="grid gap-3 md:grid-cols-2">
+      <BaseModal
+        open={isCustomModalOpen}
+        title="Add custom editor"
+        onClose={closeCustomModal}
+        footer={
+          <div className="flex justify-end gap-2">
+            <button className="btn-secondary" type="button" onClick={closeCustomModal} disabled={submitting}>
+              Cancel
+            </button>
+            <button className="btn-primary" type="submit" form={customEditorFormId} disabled={submitting}>
+              {submitting ? "Adding..." : "Add editor"}
+            </button>
+          </div>
+        }
+      >
+        <form id={customEditorFormId} className="grid gap-3" onSubmit={handleCustomSubmit}>
+          <p className="text-sm text-slate-600">Provide CLI and file paths for your custom editor.</p>
+
+          <div className="grid gap-3 md:grid-cols-2">
+            <label className="flex flex-col gap-1 text-sm">
+              <span>Name</span>
+              <input
+                ref={nameInputRef}
+                className="rounded-lg border border-slate-300 px-3 py-2"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                placeholder="MyEditor"
+              />
+            </label>
+
+            <label className="flex flex-col gap-1 text-sm">
+              <span>CLI command</span>
+              <input
+                className="rounded-lg border border-slate-300 px-3 py-2"
+                value={cli}
+                onChange={(event) => setCli(event.target.value)}
+                placeholder="myeditor"
+              />
+            </label>
+          </div>
+
           <label className="flex flex-col gap-1 text-sm">
-            <span>Name</span>
+            <span>Extensions path</span>
             <input
               className="rounded-lg border border-slate-300 px-3 py-2"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              placeholder="MyEditor"
+              value={extensionsPath}
+              onChange={(event) => setExtensionsPath(event.target.value)}
+              placeholder="/path/to/extensions"
             />
           </label>
 
           <label className="flex flex-col gap-1 text-sm">
-            <span>CLI command</span>
+            <span>Settings path</span>
             <input
               className="rounded-lg border border-slate-300 px-3 py-2"
-              value={cli}
-              onChange={(event) => setCli(event.target.value)}
-              placeholder="myeditor"
+              value={settingsPath}
+              onChange={(event) => setSettingsPath(event.target.value)}
+              placeholder="/path/to/User/settings.json"
             />
           </label>
-        </div>
 
-        <label className="flex flex-col gap-1 text-sm">
-          <span>Extensions path</span>
-          <input
-            className="rounded-lg border border-slate-300 px-3 py-2"
-            value={extensionsPath}
-            onChange={(event) => setExtensionsPath(event.target.value)}
-            placeholder="/path/to/extensions"
-          />
-        </label>
-
-        <label className="flex flex-col gap-1 text-sm">
-          <span>Settings path</span>
-          <input
-            className="rounded-lg border border-slate-300 px-3 py-2"
-            value={settingsPath}
-            onChange={(event) => setSettingsPath(event.target.value)}
-            placeholder="/path/to/User/settings.json"
-          />
-        </label>
-
-        {customError && (
-          <p className="text-sm text-rose-600">{customError}</p>
-        )}
-
-        <div className="flex justify-end">
-          <button className="btn-secondary" type="submit" disabled={submitting}>
-            {submitting ? "Adding..." : "Add custom editor"}
-          </button>
-        </div>
-      </form>
+          {customError && <p className="text-sm text-rose-600">{customError}</p>}
+        </form>
+      </BaseModal>
 
       <div className="flex items-center justify-between gap-4">
         <p className="text-sm text-slate-600">

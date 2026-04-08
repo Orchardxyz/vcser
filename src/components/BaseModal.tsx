@@ -1,6 +1,8 @@
 import { ReactNode, useId, useRef } from "react";
 import { createPortal } from "react-dom";
+import { X } from "lucide-react";
 import { useClickAway, useKey, useLockBodyScroll } from "react-use";
+import { UiIcon } from "./UiIcon";
 
 interface BaseModalProps {
   open: boolean;
@@ -51,8 +53,13 @@ export function BaseModal({ open, title, onClose, children, footer }: BaseModalP
             <h3 id={titleId} className="text-base font-semibold text-slate-900">
               {title}
             </h3>
-            <button className="btn-secondary" type="button" onClick={onClose}>
-              Close
+            <button
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+              type="button"
+              onClick={onClose}
+              aria-label="Close"
+            >
+              <UiIcon icon={X} size={15} />
             </button>
           </div>
 

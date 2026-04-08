@@ -1,4 +1,16 @@
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Play,
+  RotateCcw,
+  SquareCheckBig,
+  SquareMinus,
+  TriangleAlert,
+  Wrench,
+} from "lucide-react";
 import type { ActionItem, SyncResult } from "../types";
+import { IconCheckbox } from "./IconCheckbox";
+import { UiIcon } from "./UiIcon";
 
 interface Step3SyncProps {
   actions: ActionItem[];
@@ -33,6 +45,12 @@ export function Step3Sync({
 }: Step3SyncProps) {
   const selectedCount = selectedActionIds.size;
 
+  function getActionIcon(actionType: ActionItem["actionType"]) {
+    if (actionType === "install") return SquareCheckBig;
+    if (actionType === "uninstall") return SquareMinus;
+    return Wrench;
+  }
+
   if (results) {
     const successCount = results.filter((item) => item.success).length;
     const failureCount = results.length - successCount;
@@ -42,9 +60,15 @@ export function Step3Sync({
         <h2 className="text-lg font-semibold">Step 3 — Results</h2>
 
         <div className="flex flex-wrap items-center gap-2 text-sm">
-          <span className="pill bg-emerald-100 text-emerald-700">{successCount} succeeded</span>
+          <span className="pill inline-flex items-center gap-1 bg-emerald-100 text-emerald-700">
+            <UiIcon icon={CheckCircle2} size={14} />
+            {successCount} succeeded
+          </span>
           {failureCount > 0 && (
-            <span className="pill bg-rose-100 text-rose-700">{failureCount} failed</span>
+            <span className="pill inline-flex items-center gap-1 bg-rose-100 text-rose-700">
+              <UiIcon icon={TriangleAlert} size={14} />
+              {failureCount} failed
+            </span>
           )}
           <span className="pill bg-slate-100 text-slate-700">{dryRun ? "Dry-run" : "Real run"}</span>
         </div>
@@ -55,10 +79,11 @@ export function Step3Sync({
               <li key={`${result.action}-${index}`} className="space-y-1 px-3 py-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <span
-                    className={`pill ${
+                    className={`pill inline-flex items-center gap-1 ${
                       result.success ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"
                     }`}
                   >
+                    <UiIcon icon={result.success ? CheckCircle2 : TriangleAlert} size={13} />
                     {result.success ? "OK" : "FAILED"}
                   </span>
                   <span className="font-medium">{result.editor}</span>
@@ -74,7 +99,8 @@ export function Step3Sync({
         </div>
 
         <div className="flex justify-end">
-          <button className="btn-primary" onClick={onStartOver}>
+          <button className="btn-primary inline-flex items-center gap-2" onClick={onStartOver}>
+            <UiIcon icon={RotateCcw} size={16} />
             Start over
           </button>
         </div>
@@ -93,10 +119,10 @@ export function Step3Sync({
         </div>
 
         <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm">
-          <input
-            type="checkbox"
+          <IconCheckbox
             checked={dryRun}
-            onChange={(event) => onDryRunChange(event.target.checked)}
+            onChange={onDryRunChange}
+            ariaLabel="Toggle dry-run mode"
           />
           Dry-run mode
         </label>
@@ -117,8 +143,14 @@ export function Step3Sync({
           <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
             <p className="text-slate-600">{selectedCount} / {actions.length} actions selected</p>
             <div className="flex gap-2">
-              <button className="btn-secondary" onClick={onSelectAll}>Select all</button>
-              <button className="btn-secondary" onClick={onClearAll}>Clear</button>
+              <button className="btn-secondary inline-flex items-center gap-2" onClick={onSelectAll}>
+                <UiIcon icon={SquareCheckBig} size={15} />
+                Select all
+              </button>
+              <button className="btn-secondary inline-flex items-center gap-2" onClick={onClearAll}>
+                <UiIcon icon={SquareMinus} size={15} />
+                Clear
+              </button>
             </div>
           </div>
 
@@ -140,14 +172,17 @@ export function Step3Sync({
                   }`}
                 >
                   <label className="flex cursor-pointer items-start gap-3">
-                    <input
-                      className="mt-1"
-                      type="checkbox"
+                    <IconCheckbox
                       checked={selected}
                       onChange={() => onToggleAction(action.id)}
+                      ariaLabel={`Toggle action ${action.label}`}
+                      className="mt-0.5"
                     />
                     <span className="space-y-1">
-                      <span className={`block text-xs font-semibold uppercase tracking-wide ${tone}`}>
+                      <span
+                        className={`inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wide ${tone}`}
+                      >
+                        <UiIcon icon={getActionIcon(action.actionType)} size={13} />
                         {action.actionType}
                       </span>
                       <span className="block text-sm">{action.label}</span>
@@ -161,14 +196,16 @@ export function Step3Sync({
       )}
 
       <div className="flex items-center justify-between gap-3">
-        <button className="btn-secondary" onClick={onBack} disabled={running}>
+        <button className="btn-secondary inline-flex items-center gap-2" onClick={onBack} disabled={running}>
+          <UiIcon icon={ArrowLeft} size={16} />
           Back
         </button>
         <button
-          className="btn-primary"
+          className="btn-primary inline-flex items-center gap-2"
           disabled={running || selectedCount === 0 || actions.length === 0}
           onClick={onExecute}
         >
+          <UiIcon icon={Play} size={16} />
           {running ? "Running..." : dryRun ? "Run dry-run" : "Apply sync"}
         </button>
       </div>

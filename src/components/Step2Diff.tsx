@@ -1,10 +1,22 @@
 import { useMemo, useState } from "react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  Eye,
+  EyeOff,
+  LoaderCircle,
+  Minus,
+  Plus,
+  RefreshCw,
+} from "lucide-react";
 import type {
   ExtensionDiffResult,
   ResolvedEditor,
   SettingsDiffResult,
   SettingsMode,
 } from "../types";
+import { UiIcon } from "./UiIcon";
 
 interface Step2DiffProps {
   editors: ResolvedEditor[];
@@ -69,7 +81,8 @@ export function Step2Diff({
       </div>
 
       {loading && (
-        <div className="rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-sky-700">
+        <div className="inline-flex items-center gap-2 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-sky-700">
+          <UiIcon icon={LoaderCircle} size={15} className="animate-spin" />
           Computing extension/settings diffs…
         </div>
       )}
@@ -84,7 +97,11 @@ export function Step2Diff({
         <div className="space-y-3">
           <div className="flex items-center justify-between gap-2">
             <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-700">Extensions matrix</h3>
-            <button className="btn-secondary" onClick={() => setShowAll((current) => !current)}>
+            <button
+              className="btn-secondary inline-flex items-center gap-2"
+              onClick={() => setShowAll((current) => !current)}
+            >
+              <UiIcon icon={showAll ? EyeOff : Eye} size={15} />
               {showAll ? "Show diffs only" : "Show all extensions"}
             </button>
           </div>
@@ -114,7 +131,15 @@ export function Step2Diff({
                       <td className="px-3 py-2 font-mono text-xs">{row.extensionId}</td>
                       {extensionDiff.editorNames.map((editorName) => (
                         <td key={`${row.extensionId}-${editorName}`} className="px-3 py-2">
-                          {row.presence[editorName] ? "✓" : "—"}
+                          <span
+                            className={`inline-flex items-center ${
+                              row.presence[editorName] ? "text-emerald-600" : "text-slate-300"
+                            }`}
+                            title={row.presence[editorName] ? "Installed" : "Not installed"}
+                            aria-label={row.presence[editorName] ? "Installed" : "Not installed"}
+                          >
+                            <UiIcon icon={row.presence[editorName] ? Check : Minus} size={14} />
+                          </span>
                         </td>
                       ))}
                     </tr>
@@ -141,10 +166,19 @@ export function Step2Diff({
                   <span className="font-medium">
                     {diff.sourceName} → {diff.targetName}
                   </span>
-                  <span className="pill bg-emerald-100 text-emerald-700">+{diff.addCount}</span>
-                  <span className="pill bg-amber-100 text-amber-700">~{diff.updateCount}</span>
+                  <span className="pill inline-flex items-center gap-1 bg-emerald-100 text-emerald-700">
+                    <UiIcon icon={Plus} size={13} />
+                    {diff.addCount}
+                  </span>
+                  <span className="pill inline-flex items-center gap-1 bg-amber-100 text-amber-700">
+                    <UiIcon icon={RefreshCw} size={13} />
+                    {diff.updateCount}
+                  </span>
                   {diff.deleteCount > 0 && (
-                    <span className="pill bg-rose-100 text-rose-700">-{diff.deleteCount}</span>
+                    <span className="pill inline-flex items-center gap-1 bg-rose-100 text-rose-700">
+                      <UiIcon icon={Minus} size={13} />
+                      {diff.deleteCount}
+                    </span>
                   )}
                 </div>
               ))}
@@ -158,11 +192,17 @@ export function Step2Diff({
       )}
 
       <div className="flex items-center justify-between gap-4">
-        <button className="btn-secondary" onClick={onBack}>
+        <button className="btn-secondary inline-flex items-center gap-2" onClick={onBack}>
+          <UiIcon icon={ArrowLeft} size={16} />
           Back
         </button>
-        <button className="btn-primary" disabled={loading || Boolean(error)} onClick={onContinue}>
+        <button
+          className="btn-primary inline-flex items-center gap-2"
+          disabled={loading || Boolean(error)}
+          onClick={onContinue}
+        >
           Continue to sync
+          <UiIcon icon={ArrowRight} size={16} />
         </button>
       </div>
     </section>

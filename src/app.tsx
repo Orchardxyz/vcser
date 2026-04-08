@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { CheckCircle2, CircleDot, CircleEllipsis } from "lucide-react";
 import { Step1Select } from "./components/Step1Select";
 import { Step2Diff } from "./components/Step2Diff";
 import { Step3Sync } from "./components/Step3Sync";
+import { UiIcon } from "./components/UiIcon";
 import type {
   ActionItem,
   CustomEditorInput,
@@ -260,7 +262,7 @@ export default function App() {
             {[1, 2, 3].map((index) => (
               <span
                 key={index}
-                className={`pill ${
+                className={`pill inline-flex items-center gap-1.5 ${
                   step === index
                     ? "bg-slate-900 text-white"
                     : step > index
@@ -268,6 +270,10 @@ export default function App() {
                     : "bg-slate-200 text-slate-500"
                 }`}
               >
+                <UiIcon
+                  icon={step === index ? CircleDot : step > index ? CheckCircle2 : CircleEllipsis}
+                  size={13}
+                />
                 Step {index}
               </span>
             ))}

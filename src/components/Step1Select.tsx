@@ -1,6 +1,16 @@
 import { FormEvent, useEffect, useId, useRef, useState } from "react";
+import {
+  AlertCircle,
+  ArrowRight,
+  CheckCircle2,
+  LoaderCircle,
+  PlusCircle,
+  Terminal,
+} from "lucide-react";
 import type { CustomEditorInput, ResolvedEditor } from "../types";
 import { BaseModal } from "./BaseModal";
+import { IconCheckbox } from "./IconCheckbox";
+import { UiIcon } from "./UiIcon";
 
 interface Step1SelectProps {
   editors: ResolvedEditor[];
@@ -101,7 +111,12 @@ export function Step1Select({
             Choose at least two editors. You can also add custom editor paths.
           </p>
         </div>
-        {loading && <span className="pill bg-sky-100 text-sky-700">Detecting…</span>}
+        {loading && (
+          <span className="pill inline-flex items-center gap-1 bg-sky-100 text-sky-700">
+            <UiIcon icon={LoaderCircle} size={14} className="animate-spin" />
+            Detecting…
+          </span>
+        )}
       </div>
 
       {error && (
@@ -124,24 +139,32 @@ export function Step1Select({
             >
               <div className="flex items-center justify-between">
                 <span className="font-medium">{editor.name}</span>
-                <input
-                  type="checkbox"
+                <IconCheckbox
                   checked={selected}
                   onChange={() => onToggleEditor(editor.name)}
+                  ariaLabel={`Select ${editor.name}`}
                 />
               </div>
 
               <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-600">
                 <span
-                  className={`pill ${
+                  className={`pill inline-flex items-center gap-1 ${
                     editor.cliAvailable
                       ? "bg-emerald-100 text-emerald-700"
                       : "bg-amber-100 text-amber-700"
                   }`}
                 >
+                  <UiIcon
+                    icon={editor.cliAvailable ? CheckCircle2 : AlertCircle}
+                    size={13}
+                    className={editor.cliAvailable ? "text-emerald-600" : "text-amber-600"}
+                  />
                   CLI {editor.cliAvailable ? "ready" : "missing"}
                 </span>
-                <span className="pill bg-slate-100 text-slate-700">{editor.cli}</span>
+                <span className="pill inline-flex items-center gap-1 bg-slate-100 text-slate-700">
+                  <UiIcon icon={Terminal} size={13} className="text-slate-600" />
+                  {editor.cli}
+                </span>
               </div>
             </label>
           );
@@ -149,7 +172,13 @@ export function Step1Select({
       </div>
 
       <div className="flex justify-end">
-        <button className="btn-secondary" type="button" onClick={openCustomModal} disabled={loading}>
+        <button
+          className="btn-secondary inline-flex items-center gap-2"
+          type="button"
+          onClick={openCustomModal}
+          disabled={loading}
+        >
+          <UiIcon icon={PlusCircle} size={16} />
           Add custom editor
         </button>
       </div>
@@ -160,10 +189,20 @@ export function Step1Select({
         onClose={closeCustomModal}
         footer={
           <div className="flex justify-end gap-2">
-            <button className="btn-secondary" type="button" onClick={closeCustomModal} disabled={submitting}>
+            <button
+              className="btn-secondary inline-flex items-center gap-2"
+              type="button"
+              onClick={closeCustomModal}
+              disabled={submitting}
+            >
               Cancel
             </button>
-            <button className="btn-primary" type="submit" form={customEditorFormId} disabled={submitting}>
+            <button
+              className="btn-primary inline-flex items-center gap-2"
+              type="submit"
+              form={customEditorFormId}
+              disabled={submitting}
+            >
               {submitting ? "Adding..." : "Add editor"}
             </button>
           </div>
@@ -225,8 +264,13 @@ export function Step1Select({
             ? `${selectedEditorNames.length} editors selected`
             : "Select at least 2 editors to continue."}
         </p>
-        <button className="btn-primary" disabled={!canContinue || loading} onClick={onContinue}>
+        <button
+          className="btn-primary inline-flex items-center gap-2"
+          disabled={!canContinue || loading}
+          onClick={onContinue}
+        >
           Continue to diff
+          <UiIcon icon={ArrowRight} size={16} />
         </button>
       </div>
     </section>

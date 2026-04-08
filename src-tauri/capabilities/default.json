@@ -1,0 +1,10 @@
+{
+  "identifier": "default",
+  "description": "Least-privilege baseline for vcser desktop commands",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:default"
+  ]
+}

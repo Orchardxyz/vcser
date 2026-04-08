@@ -1,10 +1,21 @@
 # vcser
 
-`vcser` is an interactive terminal CLI to sync **extensions** and **settings** across VS Code-based editors on the same machine.
+`vcser` is a desktop app (Tauri + React) that syncs **extensions** and **settings** across VS Code-based editors on the same machine.
+
+## Stack
+
+- Runtime / package manager: **Bun**
+- Frontend: **React + Vite + UnoCSS**
+- Backend: **Tauri v2 (Rust commands)**
+
+## Scope
+
+- Desktop-only app (no CLI compatibility layer)
+- Local dev/build workflow only in this phase
 
 ## Supported Editors
 
-Built-in detection currently includes:
+Built-in detection includes:
 
 - VSCode
 - VSCode Insiders
@@ -16,124 +27,87 @@ Built-in detection currently includes:
 - Trae CN
 - Antigravity
 
-You can also add custom editors via:
-
-- `--custom-json`
-- `--custom-file`
-- interactive "Add custom editor" flow in Step 1
+You can add custom editors from the Step 1 form.
 
 ## Features
 
-- Multi-step Ink TUI (select editors → review diff → apply)
+- 3-step desktop flow (Select → Diff → Sync)
 - Extension diff matrix across selected editors
-- Settings diff summary (`safe` and `exact` modes)
-- Preflight warnings for missing paths and editor CLIs
-- `--dry-run` mode for non-destructive preview
+- Settings diff with strict typed mode (`safe` / `exact`)
+- Dry-run toggle before real sync
 - Settings backup before write (`settings.vcser-backup-YYYYMMDD-HHMMSS.json`)
+- Custom editor validation and sanitization in Rust backend
+
+## Security Baseline
+
+- Tauri capability file: `src-tauri/capabilities/default.json`
+- Tauri security config: `src-tauri/tauri.conf.json`
+- Backend input validation for custom editors:
+  - path normalization/canonicalization
+  - invalid path rejection
+  - CLI command format validation
 
 ## Requirements
 
 - Bun `>=1.3`
-- A terminal that supports interactive TUI
+- Rust toolchain (`cargo`, `rustc`)
+- Tauri prerequisites for your OS (WebKitGTK on Linux, Xcode tools on macOS, etc.)
 - Editor CLI commands available on `PATH` for extension install/uninstall operations
-  - Example: `code`, `cursor`, `windsurf`, etc.
 
-## Install
-
-### From source
+## Setup
 
 ```bash
 bun install
 ```
 
-### Build
+## Development
 
-```bash
-bun run build
-```
-
-### Run (dev)
+Run frontend only:
 
 ```bash
 bun run dev
 ```
 
-## Usage
+Run full desktop app:
 
 ```bash
-vcser [options]
+bun run tauri:dev
 ```
 
-Or with source entry:
+## Build
+
+Frontend build:
 
 ```bash
-bun run src/index.tsx [options]
+bun run build
 ```
 
-### Options
-
-- `--dry-run`  Preview actions without applying changes
-- `--settings-mode <safe|exact>`
-  - `safe` (default): add/update keys only
-  - `exact`: make destination settings match source (includes deletions)
-- `--custom-json '<json>'`  Add a custom editor definition (repeatable)
-- `--custom-file <path>`  Load custom editor definitions from a JSON file
-
-## Custom Editor Formats
-
-### `--custom-json`
+Tauri local build:
 
 ```bash
-vcser --custom-json '{"name":"MyEditor","extensionsPath":"/path/to/extensions","settingsPath":"/path/to/settings.json","cli":"myeditor"}'
+bun run tauri:build
 ```
 
-### `--custom-file`
-
-`editors.json`:
-
-```json
-[
-  {
-    "name": "MyEditorA",
-    "extensionsPath": "/path/to/editor-a/extensions",
-    "settingsPath": "/path/to/editor-a/settings.json",
-    "cli": "myeditor-a"
-  },
-  {
-    "name": "MyEditorB",
-    "extensionsPath": "/path/to/editor-b/extensions",
-    "settingsPath": "/path/to/editor-b/settings.json",
-    "cli": "myeditor-b"
-  }
-]
-```
-
-Run:
+## Testing (Minimum Test Bar)
 
 ```bash
-vcser --custom-file ./editors.json
+bun run test
 ```
 
-## CLI Flow
+This runs:
+
+- Rust unit tests (`compute_extension_diff`, `compute_settings_diff`, `apply_settings_diffs`)
+- Rust custom-input validation tests
+- Frontend smoke test (`App.test.tsx`) with mocked `invoke()`
+
+## Desktop Flow
 
 1. **Step 1 — Select Editors**
    - Choose at least 2 editors
-   - Optionally add a custom editor interactively
+   - Optionally add custom editor paths/CLI
 2. **Step 2 — Review Diffs**
    - Inspect extension matrix
-   - Review settings add/update/delete counts
-3. **Step 3 — Apply Sync**
-   - Select which actions to run
-   - Execute in real mode or preview in `--dry-run`
-
-## Testing
-
-```bash
-bun test
-bunx tsc --noEmit
-```
-
-## Notes
-
-- If an editor CLI is missing from `PATH`, extension apply actions for that editor will fail gracefully with an error.
-- `vcser` can still compare and sync settings for editors without CLI availability.
+   - Choose settings mode (`safe` or `exact`)
+3. **Step 3 — Execute Sync**
+   - Select actions
+   - Run dry-run or apply real sync

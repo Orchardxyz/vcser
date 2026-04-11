@@ -9,3 +9,4 @@ src-tauri/gen/
 src-tauri/.cargo/
 .env
 .env.*
+.idea

@@ -1,22 +1,62 @@
-:root {
-  color: #0f172a;
-  background: radial-gradient(1200px 800px at 5% 0%, #dbeafe 0%, #f8fafc 45%, #eef2ff 100%);
-  font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
+@import "tailwindcss";
+
+@theme {
+  --color-background: #ffffff;
+  --color-foreground: #020618;
+  --color-card: #ffffff;
+  --color-card-foreground: #020618;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #020618;
+  --color-primary: #155dfc;
+  --color-primary-foreground: #f8fafc;
+  --color-secondary: #f1f5f9;
+  --color-secondary-foreground: #0f172b;
+  --color-accent: #f1f5f9;
+  --color-accent-foreground: #0f172b;
+  --color-destructive: #e7000b;
+  --color-destructive-foreground: #f8fafc;
+  --color-muted: #f1f5f9;
+  --color-muted-foreground: #62748e;
+  --color-border: #e2e8f0;
+  --color-input: #e2e8f0;
+  --color-ring: #020618;
+
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+
+  --font-sans: "Inter", "Segoe UI", "Helvetica Neue", sans-serif;
+  --font-mono: "Menlo", "SF Mono", monospace;
 }
 
 * {
   box-sizing: border-box;
 }
 
+ html,
+ body,
+ #root {
+  min-height: 100%;
+ }
+
 body {
   margin: 0;
   min-height: 100vh;
+  font-family: var(--font-sans);
+  color: var(--color-foreground);
+  background-color: var(--color-background);
 }
 
 #root {
   min-height: 100vh;
 }
 
-code {
-  font-family: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
-}
+ button,
+ input,
+ select,
+ textarea {
+  font: inherit;
+ }

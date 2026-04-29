@@ -1,7 +1,13 @@
 import type { ElementType } from "react";
 import { LayoutDashboard, MonitorCog, Settings } from "lucide-react";
 
-export type Page = "overview" | "localEditors" | "settings";
+export const PAGE = {
+  OVERVIEW: "overview",
+  LOCAL_EDITORS: "localEditors",
+  SETTINGS: "settings",
+} as const;
+
+export type Page = (typeof PAGE)[keyof typeof PAGE];
 
 interface SidebarProps {
   activePage: Page;
@@ -9,9 +15,9 @@ interface SidebarProps {
 }
 
 const navItems: { page: Page; label: string; icon: ElementType }[] = [
-  { page: "overview", label: "Overview", icon: LayoutDashboard },
-  { page: "localEditors", label: "Local Editors", icon: MonitorCog },
-  { page: "settings", label: "Settings", icon: Settings },
+  { page: PAGE.OVERVIEW, label: "Overview", icon: LayoutDashboard },
+  { page: PAGE.LOCAL_EDITORS, label: "Local Editors", icon: MonitorCog },
+  { page: PAGE.SETTINGS, label: "Settings", icon: Settings },
 ];
 
 export function Sidebar({ activePage, onNavigate }: SidebarProps) {

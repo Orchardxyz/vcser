@@ -1,6 +1,12 @@
 import { useState } from "react";
 
-type ThemeMode = "light" | "dark" | "system";
+const THEME_MODE = {
+  LIGHT: "light",
+  DARK: "dark",
+  SYSTEM: "system",
+} as const;
+
+type ThemeMode = (typeof THEME_MODE)[keyof typeof THEME_MODE];
 
 interface SectionCardProps {
   title: string;
@@ -37,12 +43,12 @@ function SettingRow({ label, description, children }: SettingRowProps) {
 }
 
 export function Settings() {
-  const [themeMode, setThemeMode] = useState<ThemeMode>("light");
+  const [themeMode, setThemeMode] = useState<ThemeMode>(THEME_MODE.LIGHT);
 
   const themeModes: { value: ThemeMode; label: string }[] = [
-    { value: "light", label: "Light" },
-    { value: "dark", label: "Dark" },
-    { value: "system", label: "System" },
+    { value: THEME_MODE.LIGHT, label: "Light" },
+    { value: THEME_MODE.DARK, label: "Dark" },
+    { value: THEME_MODE.SYSTEM, label: "System" },
   ];
 
   return (

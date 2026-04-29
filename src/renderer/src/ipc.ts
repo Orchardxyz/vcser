@@ -4,14 +4,18 @@ import type {
   SettingsDiffResult,
   SyncResult,
 } from "./types";
+import { CHANGE_TYPE } from "./types";
 
 type InvokePayload = Record<string, unknown> | undefined;
 
-type SupportedCommand =
-  | "detect_editors"
-  | "compute_extension_diff"
-  | "compute_settings_diff"
-  | "execute_sync";
+const SUPPORTED_COMMAND = {
+  DETECT_EDITORS: "detect_editors",
+  COMPUTE_EXTENSION_DIFF: "compute_extension_diff",
+  COMPUTE_SETTINGS_DIFF: "compute_settings_diff",
+  EXECUTE_SYNC: "execute_sync",
+} as const;
+
+type SupportedCommand = (typeof SUPPORTED_COMMAND)[keyof typeof SUPPORTED_COMMAND];
 
 const demoEditors: ResolvedEditor[] = [
   {
@@ -50,8 +54,8 @@ const demoEditors: ResolvedEditor[] = [
 ];
 
 const defaultResponses: Record<SupportedCommand, unknown> = {
-  detect_editors: demoEditors,
-  compute_extension_diff: {
+  [SUPPORTED_COMMAND.DETECT_EDITORS]: demoEditors,
+  [SUPPORTED_COMMAND.COMPUTE_EXTENSION_DIFF]: {
     editorNames: ["Cursor", "Windsurf", "VS Code"],
     all: [
       {
@@ -98,20 +102,20 @@ const defaultResponses: Record<SupportedCommand, unknown> = {
       },
     ],
   } as ExtensionDiffResult,
-  compute_settings_diff: [
+  [SUPPORTED_COMMAND.COMPUTE_SETTINGS_DIFF]: [
     {
       sourceName: "Cursor",
       targetName: "Windsurf",
       diffs: [
         {
           key: "editor.formatOnSave",
-          changeType: "update",
+          changeType: CHANGE_TYPE.UPDATE,
           sourceValue: true,
           targetValue: false,
         },
         {
           key: "editor.tabSize",
-          changeType: "update",
+          changeType: CHANGE_TYPE.UPDATE,
           sourceValue: 2,
           targetValue: 4,
         },
@@ -121,7 +125,7 @@ const defaultResponses: Record<SupportedCommand, unknown> = {
       deleteCount: 0,
     },
   ] as SettingsDiffResult[],
-  execute_sync: [] as SyncResult[],
+  [SUPPORTED_COMMAND.EXECUTE_SYNC]: [] as SyncResult[],
 };
 
 export async function invoke<T>(command: string, _payload?: InvokePayload): Promise<T> {

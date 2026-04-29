@@ -1,7 +1,12 @@
 import { useState } from "react";
 import { ArrowLeftRight, Download } from "lucide-react";
 
-type Tab = "extensions" | "configFiles";
+const TAB = {
+  EXTENSIONS: "extensions",
+  CONFIG_FILES: "configFiles",
+} as const;
+
+type Tab = (typeof TAB)[keyof typeof TAB];
 
 interface ExtensionRow {
   id: string;
@@ -219,7 +224,7 @@ function ConfigFilesTab() {
 }
 
 export function Overview() {
-  const [tab, setTab] = useState<Tab>("extensions");
+  const [tab, setTab] = useState<Tab>(TAB.EXTENSIONS);
 
   const handleTabChange = (newTab: Tab) => {
     if (newTab === tab) return;
@@ -237,33 +242,33 @@ export function Overview() {
         <div
           className="absolute top-1 bottom-1 rounded-lg bg-slate-950 shadow-xs transition-all duration-300 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]"
           style={{
-            left: tab === "extensions" ? "4px" : "calc(50% + 2px)",
-            right: tab === "extensions" ? "calc(50% + 2px)" : "4px",
+            left: tab === TAB.EXTENSIONS ? "4px" : "calc(50% + 2px)",
+            right: tab === TAB.EXTENSIONS ? "calc(50% + 2px)" : "4px",
           }}
         />
         <button
           type="button"
-          onClick={() => handleTabChange("extensions")}
+          onClick={() => handleTabChange(TAB.EXTENSIONS)}
           className={[
             "relative z-10 rounded-lg px-4 py-2 text-sm font-medium outline-none transition-colors duration-300 focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
-            tab === "extensions" ? "text-white" : "text-slate-600 hover:text-slate-900",
+            tab === TAB.EXTENSIONS ? "text-white" : "text-slate-600 hover:text-slate-900",
           ].join(" ")}
         >
           Extensions
         </button>
         <button
           type="button"
-          onClick={() => handleTabChange("configFiles")}
+          onClick={() => handleTabChange(TAB.CONFIG_FILES)}
           className={[
             "relative z-10 rounded-lg px-4 py-2 text-sm font-medium outline-none transition-colors duration-300 focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
-            tab === "configFiles" ? "text-white" : "text-slate-600 hover:text-slate-900",
+            tab === TAB.CONFIG_FILES ? "text-white" : "text-slate-600 hover:text-slate-900",
           ].join(" ")}
         >
           Config Files
         </button>
       </div>
 
-      {tab === "extensions" ? <ExtensionsTab /> : <ConfigFilesTab />}
+      {tab === TAB.EXTENSIONS ? <ExtensionsTab /> : <ConfigFilesTab />}
     </div>
   );
 }

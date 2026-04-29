@@ -28,8 +28,20 @@ export interface ExtensionDiffResult {
   onlyDiffs: ExtensionPresence[];
 }
 
-export type SettingsMode = "safe" | "exact";
-export type ChangeType = "add" | "update" | "delete";
+export const SETTINGS_MODE = {
+  SAFE: "safe",
+  EXACT: "exact",
+} as const;
+
+export type SettingsMode = (typeof SETTINGS_MODE)[keyof typeof SETTINGS_MODE];
+
+export const CHANGE_TYPE = {
+  ADD: "add",
+  UPDATE: "update",
+  DELETE: "delete",
+} as const;
+
+export type ChangeType = (typeof CHANGE_TYPE)[keyof typeof CHANGE_TYPE];
 
 export interface SettingsKeyDiff {
   key: string;
@@ -47,7 +59,13 @@ export interface SettingsDiffResult {
   deleteCount: number;
 }
 
-export type SyncActionType = "install" | "uninstall" | "settings";
+export const SYNC_ACTION_TYPE = {
+  INSTALL: "install",
+  UNINSTALL: "uninstall",
+  SETTINGS: "settings",
+} as const;
+
+export type SyncActionType = (typeof SYNC_ACTION_TYPE)[keyof typeof SYNC_ACTION_TYPE];
 
 export interface SyncActionInput {
   actionType: SyncActionType;

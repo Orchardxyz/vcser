@@ -75,7 +75,7 @@ function ExtensionsTab() {
         </thead>
         <tbody className="divide-y divide-slate-100">
           {DEMO_EXTENSIONS.map((row) => (
-            <tr key={row.id} className="hover:bg-slate-50/60 transition-colors">
+            <tr key={row.id} className="hover:bg-slate-50/60 transition-all duration-200">
               <td className="px-4 py-3">
                 <div className="flex items-center gap-2">
                   <div className="flex h-6 w-6 items-center justify-center rounded bg-slate-200 text-xs font-bold text-slate-600 shrink-0">
@@ -130,7 +130,7 @@ function ConfigFilesTab() {
         <select
           value={leftEditor}
           onChange={(e) => setLeftEditor(e.target.value)}
-          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition-all duration-200 focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
         >
           {editors.map((e) => (
             <option key={e}>{e}</option>
@@ -145,7 +145,7 @@ function ConfigFilesTab() {
         <select
           value={rightEditor}
           onChange={(e) => setRightEditor(e.target.value)}
-          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition-all duration-200 focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
         >
           {editors.map((e) => (
             <option key={e}>{e}</option>
@@ -172,7 +172,7 @@ function ConfigFilesTab() {
                 type="button"
                 onClick={() => setSelectedFile(f.name)}
                 className={[
-                  "flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
+                  "flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-sm transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
                   selectedFile === f.name
                     ? "bg-slate-100 text-slate-900 shadow-xs"
                     : "text-slate-600 hover:bg-slate-50",
@@ -221,6 +221,11 @@ function ConfigFilesTab() {
 export function Overview() {
   const [tab, setTab] = useState<Tab>("extensions");
 
+  const handleTabChange = (newTab: Tab) => {
+    if (newTab === tab) return;
+    setTab(newTab);
+  };
+
   return (
     <div className="flex flex-col gap-8 p-8">
       <div>
@@ -228,27 +233,30 @@ export function Overview() {
         <p className="mt-1 text-sm text-slate-500">Cross-editor config diff comparison and one-click sync</p>
       </div>
 
-      <div className="flex w-fit items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-sm">
+      <div className="relative flex w-fit items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-sm">
+        <div
+          className="absolute top-1 bottom-1 rounded-lg bg-slate-950 shadow-xs transition-all duration-300 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]"
+          style={{
+            left: tab === "extensions" ? "4px" : "calc(50% + 2px)",
+            right: tab === "extensions" ? "calc(50% + 2px)" : "4px",
+          }}
+        />
         <button
           type="button"
-          onClick={() => setTab("extensions")}
+          onClick={() => handleTabChange("extensions")}
           className={[
-            "rounded-lg px-4 py-2 text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
-            tab === "extensions"
-              ? "bg-slate-950 text-white shadow-xs"
-              : "text-slate-600 hover:bg-slate-50 hover:text-slate-900",
+            "relative z-10 rounded-lg px-4 py-2 text-sm font-medium outline-none transition-colors duration-300 focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
+            tab === "extensions" ? "text-white" : "text-slate-600 hover:text-slate-900",
           ].join(" ")}
         >
           Extensions
         </button>
         <button
           type="button"
-          onClick={() => setTab("configFiles")}
+          onClick={() => handleTabChange("configFiles")}
           className={[
-            "rounded-lg px-4 py-2 text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
-            tab === "configFiles"
-              ? "bg-slate-950 text-white shadow-xs"
-              : "text-slate-600 hover:bg-slate-50 hover:text-slate-900",
+            "relative z-10 rounded-lg px-4 py-2 text-sm font-medium outline-none transition-colors duration-300 focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
+            tab === "configFiles" ? "text-white" : "text-slate-600 hover:text-slate-900",
           ].join(" ")}
         >
           Config Files

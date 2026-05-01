@@ -4,7 +4,7 @@ import { BaseModal } from "../components/BaseModal";
 import { EditorIdentity } from "../components/EditorIdentity";
 import { useAppStore } from "../store";
 
-function LocalEditorsSkeleton() {
+function EditorsSkeleton() {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {[1, 2, 3].map((item) => (
@@ -23,7 +23,7 @@ function LocalEditorsSkeleton() {
   );
 }
 
-export function LocalEditors() {
+export function Editors() {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const editors = useAppStore((s) => s.editors);
   const editorsLoading = useAppStore((s) => s.editorsLoading);
@@ -40,12 +40,12 @@ export function LocalEditors() {
   return (
     <div className="flex flex-col gap-8 p-8">
       <div>
-        <h1 className="text-[30px] font-bold leading-9 text-slate-950">Local Editors</h1>
+        <h1 className="text-[30px] font-bold leading-9 text-slate-950">Editors</h1>
         <p className="mt-1 text-sm text-slate-500">Manage editor instances installed on this device</p>
       </div>
 
       {editorsLoading ? (
-        <LocalEditorsSkeleton />
+        <EditorsSkeleton />
       ) : editors.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-slate-200 py-16 text-slate-400">
           <FolderOpen size={32} strokeWidth={1.5} />

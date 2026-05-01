@@ -3,7 +3,7 @@ import { LayoutDashboard, MonitorCog, Settings } from "lucide-react";
 
 export const PAGE = {
   OVERVIEW: "overview",
-  LOCAL_EDITORS: "localEditors",
+  EDITORS: "editors",
   SETTINGS: "settings",
 } as const;
 
@@ -16,7 +16,7 @@ interface SidebarProps {
 
 const navItems: { page: Page; label: string; icon: ElementType }[] = [
   { page: PAGE.OVERVIEW, label: "Overview", icon: LayoutDashboard },
-  { page: PAGE.LOCAL_EDITORS, label: "Local Editors", icon: MonitorCog },
+  { page: PAGE.EDITORS, label: "Editors", icon: MonitorCog },
   { page: PAGE.SETTINGS, label: "Settings", icon: Settings },
 ];
 

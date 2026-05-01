@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { PAGE, Sidebar, type Page } from "./components/Sidebar";
 import { Overview } from "./pages/Overview";
-import { LocalEditors } from "./pages/LocalEditors";
+import { Editors } from "./pages/Editors";
 import { Settings } from "./pages/Settings";
 import { useAppStore } from "./store";
 
@@ -18,7 +18,7 @@ export default function App() {
       <Sidebar activePage={activePage} onNavigate={setActivePage} />
       <main className="flex-1 overflow-y-auto">
         {activePage === PAGE.OVERVIEW && <Overview />}
-        {activePage === PAGE.LOCAL_EDITORS && <LocalEditors />}
+        {activePage === PAGE.EDITORS && <Editors />}
         {activePage === PAGE.SETTINGS && <Settings />}
       </main>
     </div>

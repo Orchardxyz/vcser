@@ -1,5 +1,13 @@
+export const APP_ICON_STATUS = {
+  READY: "ready",
+  FALLBACK: "fallback",
+} as const;
+
+export type AppIconStatus = (typeof APP_ICON_STATUS)[keyof typeof APP_ICON_STATUS];
+
 export interface ResolvedEditor {
   name: string;
+  displayName: string;
   slug: string;
   cli: string;
   badgeColor: string;
@@ -8,6 +16,9 @@ export interface ResolvedEditor {
   cliAvailable: boolean;
   extensionsExist: boolean;
   settingsExist: boolean;
+  appPath?: string;
+  iconPayload?: string;
+  iconStatus: AppIconStatus;
 }
 
 export interface CustomEditorInput {

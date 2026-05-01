@@ -1,7 +1,8 @@
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, ipcMain } from "electron";
+import { detectEditors } from "./editors/detect";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -39,6 +40,10 @@ function createMainWindow() {
 }
 
 app.whenReady().then(() => {
+  ipcMain.handle("detect_editors", async () => {
+    return detectEditors();
+  });
+
   createMainWindow();
 
   app.on("activate", () => {

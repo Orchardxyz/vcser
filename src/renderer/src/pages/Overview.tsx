@@ -1,5 +1,9 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { ArrowLeftRight, Download } from "lucide-react";
+import { EditorIdentity } from "../components/EditorIdentity";
+import { EditorSelect } from "../components/EditorSelect";
+import { useAppStore } from "../store";
+import type { ResolvedEditor } from "../types";
 
 const TAB = {
   EXTENSIONS: "extensions",
@@ -53,15 +57,17 @@ const primaryButtonClass =
 const secondaryButtonClass =
   "inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700 transition-colors outline-none hover:bg-slate-200 active:bg-slate-300 focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:bg-slate-100 disabled:text-slate-400";
 
-function EditorTag({ name }: { name: string }) {
-  return (
-    <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-600">
-      {name}
-    </span>
-  );
-}
-
 function ExtensionsTab() {
+  const editors = useAppStore((s) => s.editors);
+  const editorByName = useMemo(() => {
+    const map = new Map<string, ResolvedEditor>();
+    for (const e of editors) {
+      map.set(e.name, e);
+      map.set(e.displayName, e);
+    }
+    return map;
+  }, [editors]);
+
   return (
     <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
       <table className="w-full text-sm">
@@ -91,9 +97,19 @@ function ExtensionsTab() {
               </td>
               <td className="px-4 py-3">
                 <div className="flex flex-wrap gap-1.5">
-                  {row.installed.map((e) => (
-                    <EditorTag key={e} name={e} />
-                  ))}
+                  {row.installed.map((name) => {
+                    const editor = editorByName.get(name);
+                    return editor ? (
+                      <EditorIdentity key={name} editor={editor} mode="tag" />
+                    ) : (
+                      <span
+                        key={name}
+                        className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-600"
+                      >
+                        {name}
+                      </span>
+                    );
+                  })}
                 </div>
               </td>
               <td className="px-4 py-3">
@@ -101,13 +117,20 @@ function ExtensionsTab() {
                   <span className="text-xs text-slate-400">All installed</span>
                 ) : (
                   <div className="flex flex-wrap items-center gap-2">
-                    {row.missing.map((e) => (
-                      <EditorTag key={e} name={e} />
-                    ))}
-                    <button
-                      type="button"
-                      className={primaryButtonClass}
-                    >
+                    {row.missing.map((name) => {
+                      const editor = editorByName.get(name);
+                      return editor ? (
+                        <EditorIdentity key={name} editor={editor} mode="tag" />
+                      ) : (
+                        <span
+                          key={name}
+                          className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-600"
+                        >
+                          {name}
+                        </span>
+                      );
+                    })}
+                    <button type="button" className={primaryButtonClass}>
                       <Download size={12} />
                       Install Missing
                     </button>
@@ -123,39 +146,36 @@ function ExtensionsTab() {
 }
 
 function ConfigFilesTab() {
-  const [leftEditor, setLeftEditor] = useState("VSCode");
-  const [rightEditor, setRightEditor] = useState("Cursor");
+  const editors = useAppStore((s) => s.editors);
+  const [leftSlug, setLeftSlug] = useState<string>("");
+  const [rightSlug, setRightSlug] = useState<string>("");
   const [selectedFile, setSelectedFile] = useState("settings.json");
 
-  const editors = ["VSCode", "Cursor", "Windsurf"];
+  const editorSlugs = useMemo(() => editors.map((e) => e.slug), [editors]);
+
+  // Initialize to first two editors when data loads
+  const leftEditorSlug =
+    leftSlug && editorSlugs.includes(leftSlug) ? leftSlug : editorSlugs[0] ?? "";
+  const rightEditorSlug =
+    rightSlug && editorSlugs.includes(rightSlug) ? rightSlug : editorSlugs[1] ?? editorSlugs[0] ?? "";
 
   return (
     <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
       <div className="flex items-center gap-3 border-b border-slate-100 px-4 py-3">
-        <select
-          value={leftEditor}
-          onChange={(e) => setLeftEditor(e.target.value)}
-          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition-all duration-200 focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-        >
-          {editors.map((e) => (
-            <option key={e}>{e}</option>
-          ))}
-        </select>
-        <button
-          type="button"
-          className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition-colors outline-none hover:bg-slate-100 hover:text-slate-700 focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-        >
-          <ArrowLeftRight size={16} />
-        </button>
-        <select
-          value={rightEditor}
-          onChange={(e) => setRightEditor(e.target.value)}
-          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition-all duration-200 focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-        >
-          {editors.map((e) => (
-            <option key={e}>{e}</option>
-          ))}
-        </select>
+        {editors.length > 0 ? (
+          <>
+            <EditorSelect editors={editors} value={leftEditorSlug} onChange={setLeftSlug} />
+            <button
+              type="button"
+              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-500 transition-colors outline-none hover:bg-slate-100 hover:text-slate-700 focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+            >
+              <ArrowLeftRight size={16} />
+            </button>
+            <EditorSelect editors={editors} value={rightEditorSlug} onChange={setRightSlug} />
+          </>
+        ) : (
+          <span className="text-sm text-slate-400">No editors detected</span>
+        )}
 
         <div className="ml-auto flex items-center gap-2">
           <button type="button" className={secondaryButtonClass}>

@@ -1,11 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PAGE, Sidebar, type Page } from "./components/Sidebar";
 import { Overview } from "./pages/Overview";
 import { LocalEditors } from "./pages/LocalEditors";
 import { Settings } from "./pages/Settings";
+import { useAppStore } from "./store";
 
 export default function App() {
   const [activePage, setActivePage] = useState<Page>(PAGE.OVERVIEW);
+  const loadEditors = useAppStore((s) => s.loadEditors);
+
+  useEffect(() => {
+    loadEditors();
+  }, [loadEditors]);
 
   return (
     <div className="flex h-screen overflow-hidden bg-white text-slate-950">

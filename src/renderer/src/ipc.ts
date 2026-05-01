@@ -4,7 +4,7 @@ import type {
   SettingsDiffResult,
   SyncResult,
 } from "./types";
-import { CHANGE_TYPE } from "./types";
+import { CHANGE_TYPE, APP_ICON_STATUS } from "./types";
 
 type InvokePayload = Record<string, unknown> | undefined;
 
@@ -20,6 +20,7 @@ type SupportedCommand = (typeof SUPPORTED_COMMAND)[keyof typeof SUPPORTED_COMMAN
 const demoEditors: ResolvedEditor[] = [
   {
     name: "Cursor",
+    displayName: "Cursor",
     slug: "cursor",
     cli: "cursor",
     badgeColor: "magenta",
@@ -28,9 +29,11 @@ const demoEditors: ResolvedEditor[] = [
     cliAvailable: true,
     extensionsExist: true,
     settingsExist: true,
+    iconStatus: APP_ICON_STATUS.FALLBACK,
   },
   {
     name: "Windsurf",
+    displayName: "Windsurf",
     slug: "windsurf",
     cli: "windsurf",
     badgeColor: "blue",
@@ -39,9 +42,11 @@ const demoEditors: ResolvedEditor[] = [
     cliAvailable: true,
     extensionsExist: true,
     settingsExist: true,
+    iconStatus: APP_ICON_STATUS.FALLBACK,
   },
   {
     name: "VS Code",
+    displayName: "VSCode",
     slug: "vscode",
     cli: "code",
     badgeColor: "sky",
@@ -50,6 +55,7 @@ const demoEditors: ResolvedEditor[] = [
     cliAvailable: true,
     extensionsExist: true,
     settingsExist: true,
+    iconStatus: APP_ICON_STATUS.FALLBACK,
   },
 ];
 
@@ -128,7 +134,15 @@ const defaultResponses: Record<SupportedCommand, unknown> = {
   [SUPPORTED_COMMAND.EXECUTE_SYNC]: [] as SyncResult[],
 };
 
-export async function invoke<T>(command: string, _payload?: InvokePayload): Promise<T> {
+export async function invoke<T>(command: string, payload?: InvokePayload): Promise<T> {
+  if (window.electronAPI?.invoke) {
+    try {
+      return (await window.electronAPI.invoke(command, payload ?? {})) as T;
+    } catch {
+      // fall through to demo responses on error
+    }
+  }
+
   if (command in defaultResponses) {
     return structuredClone(defaultResponses[command as SupportedCommand]) as T;
   }

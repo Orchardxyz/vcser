@@ -1,61 +1,32 @@
 import { useState } from "react";
-import { Plus, Puzzle } from "lucide-react";
+import { BadgeCheck, Plus, FolderOpen, FileText, Terminal } from "lucide-react";
 import { BaseModal } from "../components/BaseModal";
+import { EditorIdentity } from "../components/EditorIdentity";
+import { useAppStore } from "../store";
 
-interface EditorCard {
-  id: string;
-  name: string;
-  initials: string;
-  status: "running" | "stopped";
-  version: string;
-  path: string;
-  extensionCount: number;
-}
-
-const DEMO_EDITORS: EditorCard[] = [
-  {
-    id: "vscode",
-    name: "VSCode",
-    initials: "VS",
-    status: "running",
-    version: "1.89.1",
-    path: "/Applications/Visual Studio Code.app",
-    extensionCount: 45,
-  },
-  {
-    id: "cursor",
-    name: "Cursor",
-    initials: "Cu",
-    status: "stopped",
-    version: "0.32.5",
-    path: "/Applications/Cursor.app",
-    extensionCount: 32,
-  },
-  {
-    id: "windsurf",
-    name: "Windsurf",
-    initials: "Wi",
-    status: "stopped",
-    version: "1.2.0",
-    path: "/Applications/Windsurf.app",
-    extensionCount: 28,
-  },
-];
-
-function StatusBadge({ status }: { status: "running" | "stopped" }) {
-  if (status === "running") {
-    return (
-      <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-medium text-slate-600">
-        <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
-        Running
-      </span>
-    );
-  }
-  return <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-medium text-slate-500">Stopped</span>;
+function LocalEditorsSkeleton() {
+  return (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {[1, 2, 3].map((item) => (
+        <div key={item} className="animate-pulse rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="h-11 w-11 rounded-lg bg-slate-100" />
+            <div className="h-5 w-24 rounded bg-slate-100" />
+          </div>
+          <div className="mt-4 space-y-2">
+            <div className="h-3 w-3/4 rounded bg-slate-100" />
+            <div className="h-3 w-1/2 rounded bg-slate-100" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export function LocalEditors() {
   const [addModalOpen, setAddModalOpen] = useState(false);
+  const editors = useAppStore((s) => s.editors);
+  const editorsLoading = useAppStore((s) => s.editorsLoading);
 
   const secondaryButtonClass =
     "rounded-lg border border-slate-200 bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 transition-colors outline-none hover:bg-slate-200 active:bg-slate-300 focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white";
@@ -73,44 +44,74 @@ export function LocalEditors() {
         <p className="mt-1 text-sm text-slate-500">Manage editor instances installed on this device</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {DEMO_EDITORS.map((editor) => (
-          <div
-            key={editor.id}
-            className="flex flex-col gap-4 rounded-lg border border-slate-200 bg-white p-5 shadow-sm"
-          >
-            <div className="flex items-start justify-between">
-              <div
-                className="flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-sm font-semibold text-slate-700"
-              >
-                {editor.initials}
+      {editorsLoading ? (
+        <LocalEditorsSkeleton />
+      ) : editors.length === 0 ? (
+        <div className="flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-slate-200 py-16 text-slate-400">
+          <FolderOpen size={32} strokeWidth={1.5} />
+          <p className="text-sm font-medium">No supported editors detected</p>
+          <p className="text-xs text-slate-400">Install a supported editor to get started</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {editors.map((editor) => (
+            <div
+              key={editor.slug}
+              className="flex flex-col gap-4 rounded-lg border border-slate-200 bg-white p-5 transition-shadow hover:shadow-sm"
+            >
+              <div className="flex items-start justify-between">
+                <EditorIdentity editor={editor} mode="icon" />
+                <span
+                  aria-label="Detected"
+                  title="Detected"
+                  className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-blue-100 bg-blue-50 text-blue-600"
+                >
+                  <BadgeCheck size={14} strokeWidth={1.75} />
+                </span>
               </div>
-              <StatusBadge status={editor.status} />
-            </div>
 
-            <div>
-              <p className="text-xl font-semibold leading-7 text-slate-950">{editor.name}</p>
-              <p className="mt-0.5 text-xs text-slate-400 truncate">
-                Version {editor.version} · Path {editor.path}
-              </p>
-            </div>
+              <div>
+                <p className="text-xl font-semibold leading-7 text-slate-950">
+                  {editor.displayName ?? editor.name}
+                </p>
+                {editor.appPath && (
+                  <p className="mt-0.5 text-xs text-slate-400 truncate">{editor.appPath}</p>
+                )}
+              </div>
 
-            <div className="flex items-center gap-1.5 text-xs text-slate-500">
-              <Puzzle size={13} className="text-slate-400" />
-              {editor.extensionCount} extensions
+              <div className="flex flex-wrap gap-2 text-xs text-slate-500">
+                {editor.cliAvailable && (
+                  <span className="inline-flex items-center gap-1 rounded bg-slate-50 px-2 py-1">
+                    <Terminal size={11} />
+                    {editor.cli}
+                  </span>
+                )}
+                {editor.extensionsExist && (
+                  <span className="inline-flex items-center gap-1 rounded bg-slate-50 px-2 py-1">
+                    <FileText size={11} />
+                    Extensions
+                  </span>
+                )}
+                {editor.settingsExist && (
+                  <span className="inline-flex items-center gap-1 rounded bg-slate-50 px-2 py-1">
+                    <FileText size={11} />
+                    Settings
+                  </span>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
 
-        <button
-          type="button"
-          onClick={() => setAddModalOpen(true)}
-          className="flex min-h-[152px] flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-200 bg-transparent p-5 text-slate-400 transition-colors outline-none hover:border-slate-300 hover:bg-slate-50 hover:text-slate-500 focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-        >
-          <Plus size={22} strokeWidth={1.5} />
-          <span className="text-sm font-medium">Add Other Editor</span>
-        </button>
-      </div>
+          <button
+            type="button"
+            onClick={() => setAddModalOpen(true)}
+            className="flex min-h-[200px] flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-200 bg-transparent p-5 text-slate-400 transition-colors outline-none hover:border-slate-300 hover:bg-slate-50 hover:text-slate-500 focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+          >
+            <Plus size={22} strokeWidth={1.5} />
+            <span className="text-sm font-medium">Add Other Editor</span>
+          </button>
+        </div>
+      )}
 
       <BaseModal
         open={addModalOpen}

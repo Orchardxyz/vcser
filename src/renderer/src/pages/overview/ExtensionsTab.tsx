@@ -35,6 +35,37 @@ function shortenExtensionId(id: string, maxLength = 28): string {
   return `${id.slice(0, prefixLength)}…${id.slice(-suffixLength)}`;
 }
 
+function ExtensionIcon({
+  extensionId,
+  iconDataUrl,
+}: {
+  extensionId: string;
+  iconDataUrl?: string;
+}) {
+  const [imageFailed, setImageFailed] = useState(false);
+
+  useEffect(() => {
+    setImageFailed(false);
+  }, [iconDataUrl]);
+
+  if (iconDataUrl && !imageFailed) {
+    return (
+      <img
+        src={iconDataUrl}
+        alt={`${displayName(extensionId)} icon`}
+        className="h-7 w-7 shrink-0 rounded object-contain"
+        onError={() => setImageFailed(true)}
+      />
+    );
+  }
+
+  return (
+    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-slate-200 text-xs font-bold text-slate-600">
+      {displayName(extensionId)[0]}
+    </div>
+  );
+}
+
 export function ExtensionsTab() {
   const editors = useAppStore((s) => s.editors);
   const [diffResult, setDiffResult] = useState<ExtensionDiffResult | null>(null);
@@ -176,9 +207,10 @@ export function ExtensionsTab() {
               >
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
-                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-slate-200 text-xs font-bold text-slate-600">
-                      {displayName(entry.extensionId)[0]}
-                    </div>
+                    <ExtensionIcon
+                      extensionId={entry.extensionId}
+                      iconDataUrl={entry.iconDataUrl}
+                    />
                     <div className="min-w-0">
                       <span className="block truncate font-medium text-slate-800">
                         {displayName(entry.extensionId)}

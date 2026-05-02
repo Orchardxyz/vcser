@@ -30,6 +30,7 @@ export interface CustomEditorInput {
 
 export interface ExtensionPresence {
   extensionId: string;
+  iconDataUrl?: string;
   presence: Record<string, boolean>;
 }
 

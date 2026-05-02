@@ -1,4 +1,5 @@
-import { readdirSync } from "node:fs";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import type { ExtensionDiffResult, ExtensionPresence } from "../../renderer/src/types";
 
 interface EditorWithExtensions {
@@ -6,16 +7,19 @@ interface EditorWithExtensions {
   extensionsPath: string;
 }
 
-/**
- * Given a directory entry name like "esbenp.prettier-vscode-10.4.0",
- * return the stable extension ID "esbenp.prettier-vscode".
- *
- * Strategy: strip the trailing "-<semver>" segment.
- * A semver segment starts with "-" followed by a digit.
- */
-function parseExtensionId(dirName: string): string {
-  const match = dirName.match(/^(.+?)-(\d+\.\d+\.\d+.*)$/);
-  return match ? match[1] : dirName;
+interface ExtensionManifestEntry {
+  identifier: {
+    id: string;
+  };
+}
+
+function isExtensionManifestEntry(value: unknown): value is ExtensionManifestEntry {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const identifier = (value as { identifier?: { id?: unknown } }).identifier;
+  return !!identifier && typeof identifier.id === "string";
 }
 
 /**
@@ -24,10 +28,17 @@ function parseExtensionId(dirName: string): string {
  */
 export function listInstalledExtensions(extensionsPath: string): string[] {
   try {
-    return readdirSync(extensionsPath, { withFileTypes: true })
-      .filter((d) => d.isDirectory())
-      .map((d) => parseExtensionId(d.name))
-      .filter((id) => id.includes("."))
+    const manifestPath = join(extensionsPath, "extensions.json");
+    const raw = readFileSync(manifestPath, "utf-8");
+    const parsed: unknown = JSON.parse(raw);
+
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    return parsed
+      .filter(isExtensionManifestEntry)
+      .map((entry) => entry.identifier.id)
       .reduce<string[]>((acc, id) => {
         if (!acc.includes(id)) acc.push(id);
         return acc;

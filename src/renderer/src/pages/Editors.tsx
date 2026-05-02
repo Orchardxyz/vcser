@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { BadgeCheck, Plus, FolderOpen, FileText, Terminal } from "lucide-react";
 import { BaseModal } from "../components/BaseModal";
-import { EditorIdentity } from "../components/EditorIdentity";
+import { EditorIdentity, EDITOR_IDENTITY_MODE } from "../components/EditorIdentity";
 import { useAppStore } from "../store";
 
 function EditorsSkeleton() {
@@ -60,7 +60,7 @@ export function Editors() {
               className="flex flex-col gap-4 rounded-lg border border-slate-200 bg-white p-5 transition-shadow hover:shadow-sm"
             >
               <div className="flex items-start justify-between">
-                <EditorIdentity editor={editor} mode="icon" />
+                <EditorIdentity editor={editor} mode={EDITOR_IDENTITY_MODE.ICON} />
                 <span
                   aria-label="Detected"
                   title="Detected"

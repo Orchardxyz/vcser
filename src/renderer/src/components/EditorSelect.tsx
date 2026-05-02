@@ -2,7 +2,7 @@ import { useState, useRef, useCallback } from "react";
 import { useClickAway } from "react-use";
 import { ChevronDown } from "lucide-react";
 import type { ResolvedEditor } from "../types";
-import { EditorIdentity } from "./EditorIdentity";
+import { EditorIdentity, EDITOR_IDENTITY_MODE } from "./EditorIdentity";
 
 interface EditorSelectProps {
   editors: ResolvedEditor[];
@@ -34,7 +34,9 @@ export function EditorSelect({ editors, value, onChange }: EditorSelectProps) {
         onClick={() => setOpen((v) => !v)}
         className="inline-flex w-full items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition-all duration-200 hover:border-slate-300 focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
       >
-        {selectedEditor && <EditorIdentity editor={selectedEditor} mode="compact" />}
+        {selectedEditor && (
+          <EditorIdentity editor={selectedEditor} mode={EDITOR_IDENTITY_MODE.COMPACT} />
+        )}
         <ChevronDown
           size={14}
           className={[
@@ -58,7 +60,7 @@ export function EditorSelect({ editors, value, onChange }: EditorSelectProps) {
                   : "text-slate-700 hover:bg-slate-50",
               ].join(" ")}
             >
-              <EditorIdentity editor={editor} mode="compact" />
+              <EditorIdentity editor={editor} mode={EDITOR_IDENTITY_MODE.COMPACT} />
             </button>
           ))}
         </div>

@@ -16,6 +16,7 @@ export interface DetectedEditor {
   cli: string;
   badgeColor: string;
   appPath: string;
+  extensionsPath: string;
   iconPayload?: string;
   iconStatus: AppIconStatus;
 }

@@ -2,11 +2,19 @@ import { Box } from "lucide-react";
 import type { ResolvedEditor } from "../types";
 import { APP_ICON_STATUS } from "../types";
 
-type IdentityMode = "card" | "tag" | "compact" | "icon";
+export const EDITOR_IDENTITY_MODE = {
+  CARD: "card",
+  TAG: "tag",
+  COMPACT: "compact",
+  ICON: "icon",
+} as const;
+
+export type EditorIdentityMode =
+  (typeof EDITOR_IDENTITY_MODE)[keyof typeof EDITOR_IDENTITY_MODE];
 
 interface EditorIdentityProps {
   editor: ResolvedEditor;
-  mode?: IdentityMode;
+  mode?: EditorIdentityMode;
   className?: string;
 }
 
@@ -39,7 +47,7 @@ function EditorImg({ editor, className }: { editor: ResolvedEditor; className?: 
 
 export function EditorIdentity({ editor, mode = "compact", className }: EditorIdentityProps) {
   switch (mode) {
-    case "card":
+    case EDITOR_IDENTITY_MODE.CARD:
       return (
         <div className={["flex items-center gap-3", className].join(" ")}>
           <EditorImg editor={editor} className="h-11 w-11 rounded-lg" />
@@ -48,7 +56,7 @@ export function EditorIdentity({ editor, mode = "compact", className }: EditorId
           </span>
         </div>
       );
-    case "tag":
+    case EDITOR_IDENTITY_MODE.TAG:
       return (
         <span
           className={[
@@ -60,9 +68,14 @@ export function EditorIdentity({ editor, mode = "compact", className }: EditorId
           {editor.displayName ?? editor.name}
         </span>
       );
-    case "icon":
-      return <EditorImg editor={editor} className={`h-11 w-11 rounded-lg ${className ?? ""}`} />;
-    case "compact":
+    case EDITOR_IDENTITY_MODE.ICON:
+      return (
+        <EditorImg
+          editor={editor}
+          className={["h-11 w-11 rounded-lg", className].filter(Boolean).join(" ")}
+        />
+      );
+    case EDITOR_IDENTITY_MODE.COMPACT:
     default:
       return (
         <span className={["inline-flex items-center gap-2", className].join(" ")}>

@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
 import { app, BrowserWindow, ipcMain } from "electron";
 import { detectEditors } from "./editors/detect";
+import { computeExtensionDiff } from "./editors/extensions";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -42,6 +43,13 @@ function createMainWindow() {
 app.whenReady().then(() => {
   ipcMain.handle("detect_editors", async () => {
     return detectEditors();
+  });
+
+  ipcMain.handle("compute_extension_diff", async () => {
+    const detected = await detectEditors();
+    return computeExtensionDiff(
+      detected.map((e) => ({ name: e.name, extensionsPath: e.extensionsPath })),
+    );
   });
 
   createMainWindow();

@@ -65,46 +65,34 @@ const defaultResponses: Record<SupportedCommand, unknown> = {
     editorNames: ["Cursor", "Windsurf", "VS Code"],
     all: [
       {
-        extensionId: "esbenp.prettier-vscode",
-        presence: {
-          Cursor: true,
-          Windsurf: true,
-          "VS Code": true,
-        },
+        extensionId: "bradlc.vscode-tailwindcss",
+        presence: { Cursor: true, Windsurf: true, "VS Code": true },
       },
       {
         extensionId: "dbaeumer.vscode-eslint",
-        presence: {
-          Cursor: true,
-          Windsurf: false,
-          "VS Code": true,
-        },
+        presence: { Cursor: true, Windsurf: false, "VS Code": true },
       },
       {
-        extensionId: "usernamehw.errorlens",
-        presence: {
-          Cursor: false,
-          Windsurf: true,
-          "VS Code": false,
-        },
+        extensionId: "github.copilot-chat",
+        presence: { Cursor: true, Windsurf: false, "VS Code": false },
+      },
+      {
+        extensionId: "ms-python.python",
+        presence: { Cursor: false, Windsurf: true, "VS Code": true },
       },
     ],
     onlyDiffs: [
       {
         extensionId: "dbaeumer.vscode-eslint",
-        presence: {
-          Cursor: true,
-          Windsurf: false,
-          "VS Code": true,
-        },
+        presence: { Cursor: true, Windsurf: false, "VS Code": true },
       },
       {
-        extensionId: "usernamehw.errorlens",
-        presence: {
-          Cursor: false,
-          Windsurf: true,
-          "VS Code": false,
-        },
+        extensionId: "github.copilot-chat",
+        presence: { Cursor: true, Windsurf: false, "VS Code": false },
+      },
+      {
+        extensionId: "ms-python.python",
+        presence: { Cursor: false, Windsurf: true, "VS Code": true },
       },
     ],
   } as ExtensionDiffResult,

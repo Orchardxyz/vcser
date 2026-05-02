@@ -176,6 +176,10 @@ export async function detectMacOSEditors(
 
     const icon = await extractIcon(appPath);
 
+    const extensionsPath = entry.extensionsPathTemplate
+      .replace("~", homedir())
+      .replace("{slug}", entry.slug);
+
     results.push({
       name: entry.displayName,
       displayName: entry.displayName,
@@ -183,6 +187,7 @@ export async function detectMacOSEditors(
       cli: entry.cli,
       badgeColor: entry.badgeColor,
       appPath,
+      extensionsPath,
       iconPayload: icon.iconPayload,
       iconStatus: icon.iconStatus,
     });

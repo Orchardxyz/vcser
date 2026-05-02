@@ -57,6 +57,7 @@ DESIGN.md                Authoritative UI design/styling reference
 - Keep changes minimal and local to the task.
 - Do not add or remove comments unless explicitly asked.
 - Prefer existing abstractions over introducing new patterns.
+- Develop features with cross-platform behavior in mind. `vcser` targets both macOS and Windows; even if a Windows-specific capability is not yet exposed, keep implementations extensible and flexible for future Windows support.
 
 ### TypeScript
 

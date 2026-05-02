@@ -176,9 +176,10 @@ export async function detectMacOSEditors(
 
     const icon = await extractIcon(appPath);
 
-    const extensionsPath = entry.extensionsPathTemplate
-      .replace("~", homedir())
-      .replace("{slug}", entry.slug);
+    const template = entry.extensionsPath.mac.replace("{slug}", entry.slug);
+    const extensionsPath = template.startsWith("~/")
+      ? join(homedir(), template.slice(2))
+      : template;
 
     results.push({
       name: entry.displayName,

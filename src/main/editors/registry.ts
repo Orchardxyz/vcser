@@ -11,7 +11,10 @@ export interface EditorRegistryEntry {
    * Template for the extensions directory path.
    * `~` is replaced with the user's home directory, `{slug}` with the editor slug.
    */
-  extensionsPathTemplate: string;
+  extensionsPath: {
+    mac: string;
+    win: string;
+  };
 }
 
 export const SUPPORTED_EDITORS: EditorRegistryEntry[] = [
@@ -21,7 +24,10 @@ export const SUPPORTED_EDITORS: EditorRegistryEntry[] = [
     cli: "code",
     badgeColor: "sky",
     macOSBundleName: "Visual Studio Code.app",
-    extensionsPathTemplate: "~/.vscode/extensions",
+    extensionsPath: {
+      mac: "~/.vscode/extensions",
+      win: "~/.vscode/extensions",
+    },
   },
   {
     slug: "cursor",
@@ -29,7 +35,10 @@ export const SUPPORTED_EDITORS: EditorRegistryEntry[] = [
     cli: "cursor",
     badgeColor: "magenta",
     macOSBundleName: "Cursor.app",
-    extensionsPathTemplate: "~/.cursor/extensions",
+    extensionsPath: {
+      mac: "~/.cursor/extensions",
+      win: "~/.cursor/extensions",
+    },
   },
   {
     slug: "windsurf",
@@ -37,7 +46,10 @@ export const SUPPORTED_EDITORS: EditorRegistryEntry[] = [
     cli: "windsurf",
     badgeColor: "blue",
     macOSBundleName: "Windsurf.app",
-    extensionsPathTemplate: "~/.windsurf/extensions",
+    extensionsPath: {
+      mac: "~/.windsurf/extensions",
+      win: "~/.windsurf/extensions",
+    },
   },
   {
     slug: "antigravity",
@@ -45,7 +57,10 @@ export const SUPPORTED_EDITORS: EditorRegistryEntry[] = [
     cli: "antigravity",
     badgeColor: "emerald",
     macOSBundleName: "Antigravity.app",
-    extensionsPathTemplate: "~/.antigravity/extensions",
+    extensionsPath: {
+      mac: "~/.antigravity/extensions",
+      win: "~/.antigravity/extensions",
+    },
   },
   {
     slug: "kiro",
@@ -53,7 +68,10 @@ export const SUPPORTED_EDITORS: EditorRegistryEntry[] = [
     cli: "kiro",
     badgeColor: "orange",
     macOSBundleName: "Kiro.app",
-    extensionsPathTemplate: "~/.kiro/extensions",
+    extensionsPath: {
+      mac: "~/.kiro/extensions",
+      win: "~/.kiro/extensions",
+    },
   },
   {
     slug: "trae",
@@ -61,7 +79,10 @@ export const SUPPORTED_EDITORS: EditorRegistryEntry[] = [
     cli: "trae",
     badgeColor: "violet",
     macOSBundleName: "Trae.app",
-    extensionsPathTemplate: "~/.trae/extensions",
+    extensionsPath: {
+      mac: "~/.trae/extensions",
+      win: "~/.trae/extensions",
+    },
   },
   {
     slug: "trae-cn",
@@ -69,7 +90,10 @@ export const SUPPORTED_EDITORS: EditorRegistryEntry[] = [
     cli: "trae-cn",
     badgeColor: "red",
     macOSBundleName: "Trae CN.app",
-    extensionsPathTemplate: "~/.trae-cn/extensions",
+    extensionsPath: {
+      mac: "~/.trae-cn/extensions",
+      win: "~/.trae-cn/extensions",
+    },
   },
   {
     slug: "qoder",
@@ -77,6 +101,9 @@ export const SUPPORTED_EDITORS: EditorRegistryEntry[] = [
     cli: "qoder",
     badgeColor: "amber",
     macOSBundleName: "Qoder.app",
-    extensionsPathTemplate: "~/.qoder/extensions",
+    extensionsPath: {
+      mac: "~/.qoder/extensions",
+      win: "~/.qoder/extensions",
+    },
   },
 ];

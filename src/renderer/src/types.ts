@@ -40,6 +40,14 @@ export interface ExtensionDiffResult {
   onlyDiffs: ExtensionPresence[];
 }
 
+export const EXTENSION_VIEW_MODE = {
+  BY_EXTENSION: "by_extension",
+  BY_EDITOR: "by_editor",
+} as const;
+
+export type ExtensionViewMode =
+  (typeof EXTENSION_VIEW_MODE)[keyof typeof EXTENSION_VIEW_MODE];
+
 export const SETTINGS_MODE = {
   SAFE: "safe",
   EXACT: "exact",

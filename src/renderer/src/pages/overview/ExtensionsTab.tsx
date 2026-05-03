@@ -4,18 +4,17 @@ import { EditorIdentity, EDITOR_IDENTITY_MODE } from "../../components/EditorIde
 import { SegmentedTabs } from "../../components/SegmentedTabs";
 import { invoke } from "../../ipc";
 import { useAppStore } from "../../store";
-import type { ExtensionDiffResult, ResolvedEditor } from "../../types";
+import {
+  EXTENSION_VIEW_MODE,
+  type ExtensionDiffResult,
+  type ExtensionPresence,
+  type ExtensionViewMode,
+  type ResolvedEditor,
+} from "../../types";
 
-const EXTENSION_FILTER = {
-  ALL: "all",
-  DIFFS: "diffs",
-} as const;
-
-type ExtensionFilter = (typeof EXTENSION_FILTER)[keyof typeof EXTENSION_FILTER];
-
-const EXTENSION_FILTER_ITEMS = [
-  { value: EXTENSION_FILTER.ALL, label: "All Extensions" },
-  { value: EXTENSION_FILTER.DIFFS, label: "Missing in Some" },
+const EXTENSION_VIEW_MODE_ITEMS = [
+  { value: EXTENSION_VIEW_MODE.BY_EXTENSION, label: "By Extension" },
+  { value: EXTENSION_VIEW_MODE.BY_EDITOR, label: "By Editor" },
 ] as const;
 
 function displayName(id: string): string {
@@ -66,10 +65,328 @@ function ExtensionIcon({
   );
 }
 
+function EditorPresenceBadge({
+  name,
+  editorByName,
+}: {
+  name: string;
+  editorByName: Map<string, ResolvedEditor>;
+}) {
+  const editor = editorByName.get(name);
+
+  if (editor) {
+    return (
+      <EditorIdentity
+        editor={editor}
+        mode={EDITOR_IDENTITY_MODE.ICON}
+        className="h-[22px] w-[22px] rounded-md"
+      />
+    );
+  }
+
+  return (
+    <span
+      className="inline-flex h-[22px] w-[22px] items-center justify-center rounded-full bg-slate-100 text-[10px] font-medium text-slate-600"
+      title={name}
+      aria-label={name}
+    >
+      {name[0]}
+    </span>
+  );
+}
+
+function ExtensionTableSkeleton() {
+  return (
+    <table className="w-full text-sm">
+      <thead>
+        <tr className="border-b border-slate-100 bg-slate-50">
+          <th className="w-1/3 px-4 py-3 text-left text-xs font-medium text-slate-500">
+            Extension
+          </th>
+          <th className="px-4 py-3 text-left text-xs font-medium text-slate-500">
+            Installed In
+          </th>
+          <th className="px-4 py-3 text-left text-xs font-medium text-slate-500">
+            Not Installed In
+          </th>
+        </tr>
+      </thead>
+      <tbody className="divide-y divide-slate-100">
+        {[1, 2, 3].map((index) => (
+          <tr key={index}>
+            <td className="px-4 py-3">
+              <div className="flex items-center gap-2">
+                <div className="h-6 w-6 animate-pulse rounded bg-slate-100" />
+                <div className="space-y-1.5">
+                  <div className="h-3.5 w-28 animate-pulse rounded bg-slate-100" />
+                  <div className="h-3 w-24 animate-pulse rounded bg-slate-100" />
+                </div>
+              </div>
+            </td>
+            <td className="px-4 py-3">
+              <div className="flex gap-2">
+                {[1, 2, 3].map((item) => (
+                  <div
+                    key={item}
+                    className="h-[22px] w-[22px] animate-pulse rounded-full bg-slate-100"
+                  />
+                ))}
+              </div>
+            </td>
+            <td className="px-4 py-3">
+              <div className="flex gap-2">
+                {[1, 2, 3, 4].map((item) => (
+                  <div
+                    key={item}
+                    className="h-[22px] w-[22px] animate-pulse rounded-full bg-slate-100"
+                  />
+                ))}
+              </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+function EditorGridSkeleton() {
+  return (
+    <div className="grid grid-cols-1 gap-4 p-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+      {[1, 2, 3].map((index) => (
+        <div
+          key={index}
+          className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
+        >
+          <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 animate-pulse rounded-lg bg-slate-100" />
+              <div className="space-y-1.5">
+                <div className="h-4 w-24 animate-pulse rounded bg-slate-100" />
+                <div className="h-3 w-16 animate-pulse rounded bg-slate-100" />
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 space-y-3">
+            {[1, 2, 3, 4].map((item) => (
+              <div key={item} className="flex items-center gap-2">
+                <div className="h-7 w-7 animate-pulse rounded bg-slate-100" />
+                <div className="min-w-0 flex-1 space-y-1.5">
+                  <div className="h-3.5 w-28 animate-pulse rounded bg-slate-100" />
+                  <div className="h-3 w-24 animate-pulse rounded bg-slate-100" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ExtensionsByExtensionView({
+  rows,
+  editorNames,
+  editorByName,
+}: {
+  rows: ExtensionPresence[];
+  editorNames: string[];
+  editorByName: Map<string, ResolvedEditor>;
+}) {
+  return (
+    <table className="w-full table-fixed text-sm">
+      <thead>
+        <tr className="border-b border-slate-100 bg-slate-50">
+          <th className="w-[42%] px-4 py-3 text-left text-xs font-medium text-slate-500">
+            Extension
+          </th>
+          <th className="w-[29%] px-4 py-3 text-left text-xs font-medium text-slate-500">
+            Installed In
+          </th>
+          <th className="w-[29%] px-4 py-3 text-left text-xs font-medium text-slate-500">
+            Not Installed In
+          </th>
+        </tr>
+      </thead>
+      <tbody className="divide-y divide-slate-100">
+        {rows.length === 0 ? (
+          <tr>
+            <td colSpan={3} className="px-4 py-12">
+              <div className="flex flex-col items-center justify-center gap-3 text-center text-slate-500">
+                <CheckCheck size={24} className="text-emerald-500" />
+                <p className="text-sm">No extensions available for this view.</p>
+              </div>
+            </td>
+          </tr>
+        ) : (
+          rows.map((entry) => {
+            const installed: string[] = [];
+            const missing: string[] = [];
+
+            for (const name of editorNames) {
+              if (entry.presence[name]) {
+                installed.push(name);
+              } else {
+                missing.push(name);
+              }
+            }
+
+            return (
+              <tr
+                key={entry.extensionId}
+                className="transition-all duration-200 hover:bg-slate-50/60"
+              >
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <ExtensionIcon
+                      extensionId={entry.extensionId}
+                      iconDataUrl={entry.iconDataUrl}
+                    />
+                    <div className="min-w-0">
+                      <span className="block truncate font-medium text-slate-800">
+                        {displayName(entry.extensionId)}
+                      </span>
+                      <span
+                        className="block truncate font-mono text-xs text-slate-400"
+                        title={entry.extensionId}
+                      >
+                        {shortenExtensionId(entry.extensionId)}
+                      </span>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-4 py-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {installed.map((name) => (
+                      <EditorPresenceBadge
+                        key={name}
+                        name={name}
+                        editorByName={editorByName}
+                      />
+                    ))}
+                  </div>
+                </td>
+                <td className="px-4 py-3">
+                  {missing.length === 0 ? (
+                    <span
+                      className="inline-flex h-[22px] w-[22px] items-center justify-center text-emerald-600"
+                      title="Installed in all editors"
+                      aria-label="Installed in all editors"
+                    >
+                      <CheckCheck size={14} strokeWidth={1.9} />
+                    </span>
+                  ) : (
+                    <div className="flex flex-wrap items-center gap-2">
+                      {missing.map((name) => (
+                        <EditorPresenceBadge
+                          key={name}
+                          name={name}
+                          editorByName={editorByName}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </td>
+              </tr>
+            );
+          })
+        )}
+      </tbody>
+    </table>
+  );
+}
+
+function ExtensionsByEditorView({
+  editorNames,
+  rows,
+  editorByName,
+}: {
+  editorNames: string[];
+  rows: ExtensionPresence[];
+  editorByName: Map<string, ResolvedEditor>;
+}) {
+  return (
+    <div className="grid grid-cols-1 gap-4 p-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+      {editorNames.map((editorName) => {
+        const editor = editorByName.get(editorName);
+        const installed = rows.filter((entry) => entry.presence[editorName]);
+
+        return (
+          <section
+            key={editorName}
+            className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
+          >
+            <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
+              <div className="flex min-w-0 items-center gap-3">
+                {editor ? (
+                  <EditorIdentity
+                    editor={editor}
+                    mode={EDITOR_IDENTITY_MODE.ICON}
+                    className="h-9 w-9 rounded-lg"
+                  />
+                ) : (
+                  <span
+                    className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-sm font-semibold text-slate-600"
+                    aria-label={editorName}
+                    title={editorName}
+                  >
+                    {editorName[0]}
+                  </span>
+                )}
+                <div className="min-w-0">
+                  <h3 className="truncate text-sm font-semibold text-slate-900">
+                    {editor?.displayName ?? editorName}
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    {installed.length} {installed.length === 1 ? "extension" : "extensions"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 max-h-[360px] space-y-3 overflow-y-auto pr-1">
+              {installed.length === 0 ? (
+                <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-3 py-6 text-center text-sm text-slate-500">
+                  No extensions detected.
+                </div>
+              ) : (
+                installed.map((entry) => (
+                  <div
+                    key={`${editorName}-${entry.extensionId}`}
+                    className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50/50 px-3 py-2.5"
+                  >
+                    <ExtensionIcon
+                      extensionId={entry.extensionId}
+                      iconDataUrl={entry.iconDataUrl}
+                    />
+                    <div className="min-w-0">
+                      <span className="block truncate text-sm font-medium text-slate-800">
+                        {displayName(entry.extensionId)}
+                      </span>
+                      <span
+                        className="block truncate font-mono text-xs text-slate-400"
+                        title={entry.extensionId}
+                      >
+                        {shortenExtensionId(entry.extensionId)}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </section>
+        );
+      })}
+    </div>
+  );
+}
+
 export function ExtensionsTab() {
   const editors = useAppStore((s) => s.editors);
   const [diffResult, setDiffResult] = useState<ExtensionDiffResult | null>(null);
-  const [filter, setFilter] = useState<ExtensionFilter>(EXTENSION_FILTER.ALL);
+  const [viewMode, setViewMode] = useState<ExtensionViewMode>(
+    EXTENSION_VIEW_MODE.BY_EXTENSION,
+  );
 
   useEffect(() => {
     invoke<ExtensionDiffResult>("compute_extension_diff").then(setDiffResult);
@@ -84,69 +401,28 @@ export function ExtensionsTab() {
     return map;
   }, [editors]);
 
-  const rows = filter === EXTENSION_FILTER.ALL ? diffResult?.all : diffResult?.onlyDiffs;
+  const rows = diffResult?.all ?? [];
+
+  const toolbar = (
+    <div className="border-b border-slate-100 px-4 py-3">
+      <SegmentedTabs
+        items={[...EXTENSION_VIEW_MODE_ITEMS]}
+        value={viewMode}
+        onChange={setViewMode}
+        className="w-full sm:w-fit"
+      />
+    </div>
+  );
 
   if (!diffResult) {
     return (
       <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-100 px-4 py-3">
-          <SegmentedTabs
-            items={[...EXTENSION_FILTER_ITEMS]}
-            value={filter}
-            onChange={setFilter}
-            className="w-fit"
-          />
-        </div>
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-slate-100 bg-slate-50">
-              <th className="w-1/3 px-4 py-3 text-left text-xs font-medium text-slate-500">
-                Extension
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-slate-500">
-                Installed In
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-slate-500">
-                Not Installed In
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {[1, 2, 3].map((index) => (
-              <tr key={index}>
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <div className="h-6 w-6 rounded bg-slate-100 animate-pulse" />
-                    <div className="space-y-1.5">
-                      <div className="h-3.5 w-28 rounded bg-slate-100 animate-pulse" />
-                      <div className="h-3 w-24 rounded bg-slate-100 animate-pulse" />
-                    </div>
-                  </div>
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex gap-2">
-                    {[1, 2, 3].map((item) => (
-                      <div
-                        key={item}
-                        className="h-[22px] w-[22px] rounded-full bg-slate-100 animate-pulse"
-                      />
-                    ))}
-                  </div>
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex gap-2">
-                    {[1, 2, 3, 4].map((item) => (
-                      <div
-                        key={item}
-                        className="h-[22px] w-[22px] rounded-full bg-slate-100 animate-pulse"
-                      />
-                    ))}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        {toolbar}
+        {viewMode === EXTENSION_VIEW_MODE.BY_EXTENSION ? (
+          <ExtensionTableSkeleton />
+        ) : (
+          <EditorGridSkeleton />
+        )}
       </div>
     );
   }
@@ -164,129 +440,20 @@ export function ExtensionsTab() {
 
   return (
     <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-100 px-4 py-3">
-        <SegmentedTabs
-          items={[...EXTENSION_FILTER_ITEMS]}
-          value={filter}
-          onChange={setFilter}
-          className="w-fit"
+      {toolbar}
+      {viewMode === EXTENSION_VIEW_MODE.BY_EXTENSION ? (
+        <ExtensionsByExtensionView
+          rows={rows}
+          editorNames={diffResult.editorNames}
+          editorByName={editorByName}
         />
-      </div>
-
-      <table className="w-full table-fixed text-sm">
-        <thead>
-          <tr className="border-b border-slate-100 bg-slate-50">
-            <th className="w-[42%] px-4 py-3 text-left text-xs font-medium text-slate-500">
-              Extension
-            </th>
-            <th className="w-[29%] px-4 py-3 text-left text-xs font-medium text-slate-500">
-              Installed In
-            </th>
-            <th className="w-[29%] px-4 py-3 text-left text-xs font-medium text-slate-500">
-              Not Installed In
-            </th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-slate-100">
-          {rows?.map((entry) => {
-            const installed: string[] = [];
-            const missing: string[] = [];
-
-            for (const name of diffResult.editorNames) {
-              if (entry.presence[name]) {
-                installed.push(name);
-              } else {
-                missing.push(name);
-              }
-            }
-
-            return (
-              <tr
-                key={entry.extensionId}
-                className="hover:bg-slate-50/60 transition-all duration-200"
-              >
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <ExtensionIcon
-                      extensionId={entry.extensionId}
-                      iconDataUrl={entry.iconDataUrl}
-                    />
-                    <div className="min-w-0">
-                      <span className="block truncate font-medium text-slate-800">
-                        {displayName(entry.extensionId)}
-                      </span>
-                      <span
-                        className="block truncate text-xs text-slate-400 font-mono"
-                        title={entry.extensionId}
-                      >
-                        {shortenExtensionId(entry.extensionId)}
-                      </span>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex flex-wrap items-center gap-2">
-                    {installed.map((name) => {
-                      const editor = editorByName.get(name);
-                      return editor ? (
-                        <EditorIdentity
-                          key={name}
-                          editor={editor}
-                          mode={EDITOR_IDENTITY_MODE.ICON}
-                          className="h-[22px] w-[22px] rounded-md"
-                        />
-                      ) : (
-                        <span
-                          key={name}
-                          className="inline-flex h-[22px] w-[22px] items-center justify-center rounded-full bg-slate-100 text-[10px] font-medium text-slate-600"
-                          title={name}
-                          aria-label={name}
-                        >
-                          {name[0]}
-                        </span>
-                      );
-                    })}
-                  </div>
-                </td>
-                <td className="px-4 py-3">
-                  {missing.length === 0 ? (
-                    <span
-                      className="inline-flex h-[22px] w-[22px] items-center justify-center text-emerald-600"
-                      title="Installed in all editors"
-                      aria-label="Installed in all editors"
-                    >
-                      <CheckCheck size={14} strokeWidth={1.9} />
-                    </span>
-                  ) : (
-                    <div className="flex flex-wrap items-center gap-2">
-                      {missing.map((name) => {
-                        const editor = editorByName.get(name);
-                        return editor ? (
-                          <EditorIdentity
-                            key={name}
-                            editor={editor}
-                            mode={EDITOR_IDENTITY_MODE.ICON}
-                            className="h-[22px] w-[22px] rounded-md"
-                          />
-                        ) : (
-                          <span
-                            key={name}
-                            className="inline-flex h-[22px] w-[22px] items-center justify-center rounded-full bg-slate-100 text-[10px] font-medium text-slate-600"
-                            title={name}
-                            aria-label={name}
-                          >
-                            {name[0]}
-                          </span>
-                        );
-                      })}
-                    </div>
-                  )}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      ) : (
+        <ExtensionsByEditorView
+          editorNames={diffResult.editorNames}
+          rows={rows}
+          editorByName={editorByName}
+        />
+      )}
     </div>
   );
 }

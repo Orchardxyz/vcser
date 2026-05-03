@@ -1,12 +1,5 @@
-import { useState } from "react";
-
-const THEME_MODE = {
-  LIGHT: "light",
-  DARK: "dark",
-  SYSTEM: "system",
-} as const;
-
-type ThemeMode = (typeof THEME_MODE)[keyof typeof THEME_MODE];
+import { useAppStore } from "../store";
+import { THEME_MODE, type ThemeMode } from "../types";
 
 interface SectionCardProps {
   title: string;
@@ -42,14 +35,15 @@ function SettingRow({ label, description, children }: SettingRowProps) {
   );
 }
 
-export function Settings() {
-  const [themeMode, setThemeMode] = useState<ThemeMode>(THEME_MODE.LIGHT);
+const themeModes: { value: ThemeMode; label: string }[] = [
+  { value: THEME_MODE.LIGHT, label: "Light" },
+  { value: THEME_MODE.DARK, label: "Dark" },
+  { value: THEME_MODE.SYSTEM, label: "System" },
+];
 
-  const themeModes: { value: ThemeMode; label: string }[] = [
-    { value: THEME_MODE.LIGHT, label: "Light" },
-    { value: THEME_MODE.DARK, label: "Dark" },
-    { value: THEME_MODE.SYSTEM, label: "System" },
-  ];
+export function Settings() {
+  const themeMode = useAppStore((s) => s.themeMode);
+  const setThemeMode = useAppStore((s) => s.setThemeMode);
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-8 p-8">
@@ -59,7 +53,7 @@ export function Settings() {
       </div>
 
       <SectionCard title="Appearance">
-        <SettingRow label="Theme Mode" description="Adapt to your work environment">
+        <SettingRow label="Theme Mode" description="Choose Light, Dark, or follow your system appearance">
           <div className="flex items-center rounded-lg border border-slate-200 bg-slate-50 p-0.5">
             {themeModes.map(({ value, label }) => (
               <button

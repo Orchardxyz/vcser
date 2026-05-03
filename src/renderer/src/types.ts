@@ -55,6 +55,14 @@ export const SETTINGS_MODE = {
 
 export type SettingsMode = (typeof SETTINGS_MODE)[keyof typeof SETTINGS_MODE];
 
+export const THEME_MODE = {
+  LIGHT: "light",
+  DARK: "dark",
+  SYSTEM: "system",
+} as const;
+
+export type ThemeMode = (typeof THEME_MODE)[keyof typeof THEME_MODE];
+
 export const CHANGE_TYPE = {
   ADD: "add",
   UPDATE: "update",

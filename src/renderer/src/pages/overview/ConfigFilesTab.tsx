@@ -33,21 +33,31 @@ export function ConfigFilesTab() {
     <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
       <div className="flex items-center gap-3 border-b border-slate-100 px-4 py-3">
         {editors.length > 0 ? (
-          <>
-            <EditorSelect editors={editors} value={leftEditorSlug} onChange={setLeftSlug} />
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <EditorSelect
+              editors={editors}
+              value={leftEditorSlug}
+              onChange={setLeftSlug}
+              className="min-w-0 flex-1"
+            />
             <button
               type="button"
               className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-500 transition-colors outline-none hover:bg-slate-100 hover:text-slate-700 focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
             >
               <ArrowLeftRight size={16} />
             </button>
-            <EditorSelect editors={editors} value={rightEditorSlug} onChange={setRightSlug} />
-          </>
+            <EditorSelect
+              editors={editors}
+              value={rightEditorSlug}
+              onChange={setRightSlug}
+              className="min-w-0 flex-1"
+            />
+          </div>
         ) : (
           <span className="text-sm text-slate-400">No editors detected</span>
         )}
 
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex shrink-0 items-center gap-2">
           <button type="button" className={secondaryButtonClass}>
             Override with Left
           </button>

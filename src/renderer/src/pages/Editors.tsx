@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { BadgeCheck, Plus, FolderOpen, FileText, Terminal } from "lucide-react";
-import { BaseModal } from "../components/BaseModal";
-import { EditorIdentity, EDITOR_IDENTITY_MODE } from "../components/EditorIdentity";
+import { BaseModal } from "../components/ui/BaseModal";
+import { EditorIdentity, EDITOR_IDENTITY_MODE } from "../components/editor/EditorIdentity";
 import { useAppStore } from "../store";
 
 function EditorsSkeleton() {

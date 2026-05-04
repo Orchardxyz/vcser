@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import classNames from "classnames";
 import { CheckCheck, CircleOff, Package } from "lucide-react";
-import { EditorIdentity, EDITOR_IDENTITY_MODE } from "../../components/EditorIdentity";
-import { Popover } from "../../components/Popover";
-import { SegmentedTabs } from "../../components/SegmentedTabs";
+import { EditorIdentity, EDITOR_IDENTITY_MODE } from "../../components/editor/EditorIdentity";
+import { Popover } from "../../components/ui/Popover";
+import { SegmentedTabs } from "../../components/ui/SegmentedTabs";
 import { invoke } from "../../ipc";
 import { useAppStore } from "../../store";
 import {

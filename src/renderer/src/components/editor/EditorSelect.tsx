@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import { useClickAway } from "react-use";
 import { ChevronDown } from "lucide-react";
-import type { ResolvedEditor } from "../types";
+import type { ResolvedEditor } from "../../types";
 import { EditorIdentity, EDITOR_IDENTITY_MODE } from "./EditorIdentity";
 
 interface EditorSelectProps {

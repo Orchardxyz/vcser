@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { SegmentedTabs } from "../components/SegmentedTabs";
+import { SegmentedTabs } from "../components/ui/SegmentedTabs";
 import { ConfigFilesTab } from "./overview/ConfigFilesTab";
 import { ExtensionsTab } from "./overview/ExtensionsTab";
 

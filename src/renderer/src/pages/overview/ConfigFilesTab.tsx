@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { ArrowLeftRight } from "lucide-react";
-import { EditorSelect } from "../../components/EditorSelect";
+import { EditorSelect } from "../../components/editor/EditorSelect";
 import { useAppStore } from "../../store";
 
 const CONFIG_FILES = [

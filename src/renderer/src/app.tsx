@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useMedia } from "react-use";
-import { PAGE, Sidebar, type Page } from "./components/Sidebar";
+import { PAGE, Sidebar, type Page } from "./components/layout/Sidebar";
 import { Overview } from "./pages/Overview";
 import { Editors } from "./pages/Editors";
 import { Settings } from "./pages/Settings";

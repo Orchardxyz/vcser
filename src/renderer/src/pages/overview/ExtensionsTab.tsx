@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { CheckCheck, Package } from "lucide-react";
+import classNames from "classnames";
+import { CheckCheck, CircleOff, Package } from "lucide-react";
 import { EditorIdentity, EDITOR_IDENTITY_MODE } from "../../components/EditorIdentity";
+import { Popover } from "../../components/Popover";
 import { SegmentedTabs } from "../../components/SegmentedTabs";
 import { invoke } from "../../ipc";
 import { useAppStore } from "../../store";
@@ -222,10 +224,14 @@ function ExtensionsByExtensionView({
           rows.map((entry) => {
             const installed: string[] = [];
             const missing: string[] = [];
+            const disabledIn: string[] = [];
 
             for (const name of editorNames) {
               if (entry.presence[name]) {
                 installed.push(name);
+                if (entry.disabled[name]) {
+                  disabledIn.push(name);
+                }
               } else {
                 missing.push(name);
               }
@@ -243,9 +249,46 @@ function ExtensionsByExtensionView({
                       iconDataUrl={entry.iconDataUrl}
                     />
                     <div className="min-w-0">
-                      <span className="block truncate font-medium text-slate-800">
-                        {displayName(entry.extensionId)}
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="truncate font-medium text-slate-800">
+                          {displayName(entry.extensionId)}
+                        </span>
+                        {disabledIn.length > 0 && (
+                          <Popover
+                            trigger="click"
+                            placement="bottom"
+                            align="start"
+                            sideOffset={10}
+                            showArrow
+                            panelClassName="min-w-[180px]"
+                            content={
+                              <div className="space-y-2">
+                                <div className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
+                                  Disabled in
+                                </div>
+                                <div className="space-y-1">
+                                  {disabledIn.map((name) => (
+                                    <div
+                                      key={name}
+                                      className="rounded-md bg-slate-50 px-2 py-1 text-sm text-slate-700"
+                                    >
+                                      {name}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            }
+                          >
+                            <button
+                              type="button"
+                              className="inline-flex shrink-0 rounded-sm text-amber-600 transition-colors hover:text-amber-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                              aria-label={`Show disabled editors for ${entry.extensionId}`}
+                            >
+                              <CircleOff size={14} strokeWidth={1.9} />
+                            </button>
+                          </Popover>
+                        )}
+                      </div>
                       <span
                         className="block truncate font-mono text-xs text-slate-400"
                         title={entry.extensionId}
@@ -350,28 +393,47 @@ function ExtensionsByEditorView({
                   No extensions detected.
                 </div>
               ) : (
-                installed.map((entry) => (
-                  <div
-                    key={`${editorName}-${entry.extensionId}`}
-                    className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50/50 px-3 py-2.5"
-                  >
-                    <ExtensionIcon
-                      extensionId={entry.extensionId}
-                      iconDataUrl={entry.iconDataUrl}
-                    />
-                    <div className="min-w-0">
-                      <span className="block truncate text-sm font-medium text-slate-800">
-                        {displayName(entry.extensionId)}
-                      </span>
-                      <span
-                        className="block truncate font-mono text-xs text-slate-400"
-                        title={entry.extensionId}
-                      >
-                        {shortenExtensionId(entry.extensionId)}
-                      </span>
+                installed.map((entry) => {
+                  const isDisabled = entry.disabled[editorName];
+
+                  return (
+                    <div
+                      key={`${editorName}-${entry.extensionId}`}
+                      className={classNames(
+                        "flex items-center gap-3 rounded-lg px-3 py-2.5",
+                        isDisabled
+                          ? "border border-slate-100 bg-white opacity-60"
+                          : "border border-slate-200 bg-slate-50/50",
+                      )}
+                    >
+                      <div className={classNames({ "opacity-50": isDisabled })}>
+                        <ExtensionIcon
+                          extensionId={entry.extensionId}
+                          iconDataUrl={entry.iconDataUrl}
+                        />
+                      </div>
+                      <div className="min-w-0">
+                        <span
+                          className={classNames(
+                            "block truncate text-sm font-medium",
+                            isDisabled ? "text-slate-400" : "text-slate-800",
+                          )}
+                        >
+                          {displayName(entry.extensionId)}
+                        </span>
+                        <span
+                          className={classNames(
+                            "block truncate font-mono text-xs",
+                            isDisabled ? "text-slate-300" : "text-slate-400",
+                          )}
+                          title={entry.extensionId}
+                        >
+                          {shortenExtensionId(entry.extensionId)}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </section>

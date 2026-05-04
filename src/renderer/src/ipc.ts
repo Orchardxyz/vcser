@@ -67,32 +67,39 @@ const defaultResponses: Record<SupportedCommand, unknown> = {
       {
         extensionId: "bradlc.vscode-tailwindcss",
         presence: { Cursor: true, Windsurf: true, "VS Code": true },
+        disabled: { Cursor: false, Windsurf: false, "VS Code": true },
       },
       {
         extensionId: "dbaeumer.vscode-eslint",
         presence: { Cursor: true, Windsurf: false, "VS Code": true },
+        disabled: { Cursor: true, Windsurf: false, "VS Code": false },
       },
       {
         extensionId: "github.copilot-chat",
         presence: { Cursor: true, Windsurf: false, "VS Code": false },
+        disabled: { Cursor: false, Windsurf: false, "VS Code": false },
       },
       {
         extensionId: "ms-python.python",
         presence: { Cursor: false, Windsurf: true, "VS Code": true },
+        disabled: { Cursor: false, Windsurf: false, "VS Code": false },
       },
     ],
     onlyDiffs: [
       {
         extensionId: "dbaeumer.vscode-eslint",
         presence: { Cursor: true, Windsurf: false, "VS Code": true },
+        disabled: { Cursor: true, Windsurf: false, "VS Code": false },
       },
       {
         extensionId: "github.copilot-chat",
         presence: { Cursor: true, Windsurf: false, "VS Code": false },
+        disabled: { Cursor: false, Windsurf: false, "VS Code": false },
       },
       {
         extensionId: "ms-python.python",
         presence: { Cursor: false, Windsurf: true, "VS Code": true },
+        disabled: { Cursor: false, Windsurf: false, "VS Code": false },
       },
     ],
   } as ExtensionDiffResult,

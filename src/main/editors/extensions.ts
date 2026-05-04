@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import { extname, join, resolve, sep } from "node:path";
@@ -6,6 +7,12 @@ import type { ExtensionDiffResult, ExtensionPresence } from "../../renderer/src/
 interface EditorWithExtensions {
   name: string;
   extensionsPath: string;
+  stateDbPath?: string;
+}
+
+interface DisabledExtensionRow {
+  id: string;
+  uuid?: string;
 }
 
 interface ExtensionManifestEntry {
@@ -34,6 +41,49 @@ function isExtensionPackageJson(value: unknown): value is ExtensionPackageJson {
 
   const icon = (value as { icon?: unknown }).icon;
   return icon === undefined || typeof icon === "string";
+}
+
+function isDisabledExtensionRow(value: unknown): value is DisabledExtensionRow {
+  return !!value && typeof value === "object" && typeof (value as DisabledExtensionRow).id === "string";
+}
+
+function parseDisabledExtensionIds(rawValue: string): Set<string> {
+  const parsed: unknown = JSON.parse(rawValue);
+
+  if (!Array.isArray(parsed)) {
+    return new Set();
+  }
+
+  const ids = new Set<string>();
+
+  for (const item of parsed) {
+    if (isDisabledExtensionRow(item)) {
+      ids.add(item.id);
+    }
+  }
+
+  return ids;
+}
+
+function readDisabledExtensionIdsFromSqliteCli(stateDbPath: string): Set<string> {
+  try {
+    const rawValue = execFileSync(
+      "sqlite3",
+      [
+        stateDbPath,
+        "SELECT value FROM ItemTable WHERE key = 'extensionsIdentifiers/disabled'",
+      ],
+      { encoding: "utf8" },
+    ).trim();
+
+    if (!rawValue) {
+      return new Set();
+    }
+
+    return parseDisabledExtensionIds(rawValue);
+  } catch {
+    return new Set();
+  }
 }
 
 function mimeTypeForPath(filePath: string): string | undefined {
@@ -134,6 +184,14 @@ export function listInstalledExtensions(extensionsPath: string): string[] {
 }
 
 /**
+ * Read disabled extension IDs from a VS Code state.vscdb database.
+ * Returns an empty set on any failure — this is best-effort.
+ */
+function readDisabledExtensionIds(stateDbPath: string): Set<string> {
+  return readDisabledExtensionIdsFromSqliteCli(stateDbPath);
+}
+
+/**
  * Build an ExtensionDiffResult from a list of editors with their extensions paths.
  */
 export async function computeExtensionDiff(
@@ -144,11 +202,18 @@ export async function computeExtensionDiff(
 
   const allIds = new Set<string>();
   const byEditor = new Map<string, Set<string>>();
+  const disabledByEditor = new Map<string, Set<string>>();
 
   for (const editor of editors) {
     const ids = new Set(listInstalledExtensions(editor.extensionsPath));
     byEditor.set(editor.name, ids);
     for (const id of ids) allIds.add(id);
+
+    if (editor.stateDbPath) {
+      disabledByEditor.set(editor.name, readDisabledExtensionIds(editor.stateDbPath));
+    } else {
+      disabledByEditor.set(editor.name, new Set());
+    }
   }
 
   const all: ExtensionPresence[] = [];
@@ -156,15 +221,17 @@ export async function computeExtensionDiff(
 
   for (const extensionId of Array.from(allIds).sort()) {
     const presence: Record<string, boolean> = {};
+    const disabled: Record<string, boolean> = {};
     let allTrue = true;
 
     for (const name of editorNames) {
       const installed = byEditor.get(name)?.has(extensionId) ?? false;
       presence[name] = installed;
+      disabled[name] = installed && (disabledByEditor.get(name)?.has(extensionId) ?? false);
       if (!installed) allTrue = false;
     }
 
-    const entry: ExtensionPresence = { extensionId, presence };
+    const entry: ExtensionPresence = { extensionId, presence, disabled };
     all.push(entry);
     if (!allTrue) onlyDiffs.push(entry);
   }

@@ -181,6 +181,11 @@ export async function detectMacOSEditors(
       ? join(homedir(), template.slice(2))
       : template;
 
+    const stateDbTemplate = entry.stateDbPath.mac;
+    const stateDbPath = stateDbTemplate.startsWith("~/")
+      ? join(homedir(), stateDbTemplate.slice(2))
+      : stateDbTemplate;
+
     results.push({
       name: entry.displayName,
       displayName: entry.displayName,
@@ -189,6 +194,7 @@ export async function detectMacOSEditors(
       badgeColor: entry.badgeColor,
       appPath,
       extensionsPath,
+      stateDbPath,
       iconPayload: icon.iconPayload,
       iconStatus: icon.iconStatus,
     });

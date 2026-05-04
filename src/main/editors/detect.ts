@@ -17,6 +17,7 @@ export interface DetectedEditor {
   badgeColor: string;
   appPath: string;
   extensionsPath: string;
+  stateDbPath?: string;
   iconPayload?: string;
   iconStatus: AppIconStatus;
 }

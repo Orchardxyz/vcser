@@ -48,7 +48,11 @@ app.whenReady().then(() => {
   ipcMain.handle("compute_extension_diff", async () => {
     const detected = await detectEditors();
     return await computeExtensionDiff(
-      detected.map((e) => ({ name: e.name, extensionsPath: e.extensionsPath })),
+      detected.map((e) => ({
+        name: e.name,
+        extensionsPath: e.extensionsPath,
+        stateDbPath: e.stateDbPath,
+      })),
     );
   });
 

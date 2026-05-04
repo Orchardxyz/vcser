@@ -15,6 +15,14 @@ export interface EditorRegistryEntry {
     mac: string;
     win: string;
   };
+  /**
+   * Template for the state.vscdb SQLite database path.
+   * `~` is replaced with the user's home directory.
+   */
+  stateDbPath: {
+    mac: string;
+    win: string;
+  };
 }
 
 export const SUPPORTED_EDITORS: EditorRegistryEntry[] = [
@@ -28,6 +36,10 @@ export const SUPPORTED_EDITORS: EditorRegistryEntry[] = [
       mac: "~/.vscode/extensions",
       win: "~/.vscode/extensions",
     },
+    stateDbPath: {
+      mac: "~/Library/Application Support/Code/User/globalStorage/state.vscdb",
+      win: "~/AppData/Roaming/Code/User/globalStorage/state.vscdb",
+    },
   },
   {
     slug: "cursor",
@@ -38,6 +50,10 @@ export const SUPPORTED_EDITORS: EditorRegistryEntry[] = [
     extensionsPath: {
       mac: "~/.cursor/extensions",
       win: "~/.cursor/extensions",
+    },
+    stateDbPath: {
+      mac: "~/Library/Application Support/Cursor/User/globalStorage/state.vscdb",
+      win: "~/AppData/Roaming/Cursor/User/globalStorage/state.vscdb",
     },
   },
   {
@@ -50,6 +66,10 @@ export const SUPPORTED_EDITORS: EditorRegistryEntry[] = [
       mac: "~/.windsurf/extensions",
       win: "~/.windsurf/extensions",
     },
+    stateDbPath: {
+      mac: "~/Library/Application Support/Windsurf/User/globalStorage/state.vscdb",
+      win: "~/AppData/Roaming/Windsurf/User/globalStorage/state.vscdb",
+    },
   },
   {
     slug: "antigravity",
@@ -60,6 +80,10 @@ export const SUPPORTED_EDITORS: EditorRegistryEntry[] = [
     extensionsPath: {
       mac: "~/.antigravity/extensions",
       win: "~/.antigravity/extensions",
+    },
+    stateDbPath: {
+      mac: "~/Library/Application Support/Antigravity/User/globalStorage/state.vscdb",
+      win: "~/AppData/Roaming/Antigravity/User/globalStorage/state.vscdb",
     },
   },
   {
@@ -72,6 +96,10 @@ export const SUPPORTED_EDITORS: EditorRegistryEntry[] = [
       mac: "~/.kiro/extensions",
       win: "~/.kiro/extensions",
     },
+    stateDbPath: {
+      mac: "~/Library/Application Support/Kiro/User/globalStorage/state.vscdb",
+      win: "~/AppData/Roaming/Kiro/User/globalStorage/state.vscdb",
+    },
   },
   {
     slug: "trae",
@@ -82,6 +110,10 @@ export const SUPPORTED_EDITORS: EditorRegistryEntry[] = [
     extensionsPath: {
       mac: "~/.trae/extensions",
       win: "~/.trae/extensions",
+    },
+    stateDbPath: {
+      mac: "~/Library/Application Support/Trae/User/globalStorage/state.vscdb",
+      win: "~/AppData/Roaming/Trae/User/globalStorage/state.vscdb",
     },
   },
   {
@@ -94,6 +126,10 @@ export const SUPPORTED_EDITORS: EditorRegistryEntry[] = [
       mac: "~/.trae-cn/extensions",
       win: "~/.trae-cn/extensions",
     },
+    stateDbPath: {
+      mac: "~/Library/Application Support/Trae CN/User/globalStorage/state.vscdb",
+      win: "~/AppData/Roaming/Trae CN/User/globalStorage/state.vscdb",
+    },
   },
   {
     slug: "qoder",
@@ -104,6 +140,10 @@ export const SUPPORTED_EDITORS: EditorRegistryEntry[] = [
     extensionsPath: {
       mac: "~/.qoder/extensions",
       win: "~/.qoder/extensions",
+    },
+    stateDbPath: {
+      mac: "~/Library/Application Support/Qoder/User/globalStorage/state.vscdb",
+      win: "~/AppData/Roaming/Qoder/User/globalStorage/state.vscdb",
     },
   },
 ];

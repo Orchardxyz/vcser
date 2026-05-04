@@ -32,6 +32,7 @@ export interface ExtensionPresence {
   extensionId: string;
   iconDataUrl?: string;
   presence: Record<string, boolean>;
+  disabled: Record<string, boolean>;
 }
 
 export interface ExtensionDiffResult {

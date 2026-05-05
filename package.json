@@ -8,9 +8,33 @@
     "dev": "electron-vite dev",
     "build": "tsc -b && electron-vite build",
     "preview": "electron-vite preview",
+    "icons:generate": "bash scripts/generate-icons.sh",
     "postinstall": "prisma generate",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev"
+  },
+  "build": {
+    "appId": "com.vcser.app",
+    "productName": "vcser",
+    "extraResources": [
+      {
+        "from": "resources/icons",
+        "to": "icons"
+      },
+      {
+        "from": "resources/icon-macos-1024.png",
+        "to": "icon-macos-1024.png"
+      }
+    ],
+    "mac": {
+      "icon": "resources/icons/mac/icon.icns"
+    },
+    "win": {
+      "icon": "resources/icons/win/icon.ico"
+    },
+    "linux": {
+      "icon": "resources/icons/png/512x512.png"
+    }
   },
   "keywords": [
     "vscode",
@@ -41,6 +65,7 @@
     "@vitejs/plugin-react": "^4.3.4",
     "electron": "^33.0.0",
     "electron-builder": "^26.8.1",
+    "electron-icon-builder": "^2.0.1",
     "electron-vite": "^5.0.0",
     "prisma": "^7.7.0",
     "tailwindcss": "^4.1.0",

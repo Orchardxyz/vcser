@@ -3,7 +3,7 @@ set -euo pipefail
 
 script_dir="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 repo_root="$(CDPATH= cd -- "$script_dir/.." && pwd)"
-logo_svg="$repo_root/resources/logo.svg"
+logo_svg="$repo_root/resources/appIcon.svg"
 icon_png="$repo_root/resources/icon-1024.png"
 mac_icon_png="$repo_root/resources/icon-macos-1024.png"
 output_dir="$repo_root/resources"

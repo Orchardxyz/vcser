@@ -1,5 +1,6 @@
 import type { ElementType } from "react";
 import { LayoutDashboard, MonitorCog, Settings } from "lucide-react";
+import logoSvg from "../../../../assets/logo.svg";
 
 export const PAGE = {
   OVERVIEW: "overview",
@@ -24,10 +25,8 @@ export function Sidebar({ activePage, onNavigate }: SidebarProps) {
   return (
     <aside className="flex h-screen w-56 shrink-0 flex-col border-r border-slate-200 bg-slate-50 text-slate-600">
       <div className="flex items-center gap-3 border-b border-slate-200 px-4 py-5">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-white text-sm font-bold select-none shadow-xs">
-          V
-        </div>
-        <span className="text-sm font-semibold text-slate-950">vcser</span>
+        <img src={logoSvg} alt="vcser logo" className="h-8 w-8 shrink-0 select-none" />
+        <span className="text-2xl font-semibold text-slate-950">vcser</span>
       </div>
 
       <nav className="flex-1 px-2 py-3 space-y-0.5">

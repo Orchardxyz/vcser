@@ -60,3 +60,11 @@ node "$icon_gen_cli" \
 
 rm -rf "$mac_png_dir"
 rm -rf "$mac_tmp_dir"
+
+# Derive pure logo SVG (no background, no border, tight viewBox)
+logo_out="$repo_root/src/assets/logo.svg"
+perl -0777 -ne '
+  my ($path) = /(<path[^>]+fill-rule[^>]*\/>)\s*<\/svg>/s;
+  print qq{<svg xmlns="http://www.w3.org/2000/svg" viewBox="21.412 14.86 85.176 98.28">\n$path\n</svg>\n} if $path;
+' "$logo_svg" > "$logo_out"
+echo "Generated: $logo_out"

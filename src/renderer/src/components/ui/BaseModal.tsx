@@ -2,6 +2,7 @@ import { ReactNode, useId, useRef } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { useClickAway, useKey, useLockBodyScroll } from "react-use";
+import { Button, BUTTON_SIZE, BUTTON_VARIANT } from "./Button";
 
 interface BaseModalProps {
   open: boolean;
@@ -52,14 +53,14 @@ export function BaseModal({ open, title, onClose, children, footer }: BaseModalP
             <h3 id={titleId} className="text-xl font-semibold leading-7 text-slate-950">
               {title}
             </h3>
-            <button
-              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-colors outline-none hover:bg-slate-100 hover:text-slate-700 focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-              type="button"
+            <Button
+              variant={BUTTON_VARIANT.GHOST}
+              size={BUTTON_SIZE.ICON_SM}
               onClick={onClose}
               aria-label="Close"
             >
               <X size={15} />
-            </button>
+            </Button>
           </div>
 
           <div className="px-5 py-4">{children}</div>

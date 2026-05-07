@@ -1,6 +1,7 @@
 import type {
   ExtensionDiffResult,
   ResolvedEditor,
+  SettingsDiffByExtensionResult,
   SettingsDiffResult,
   SyncResult,
 } from "./types";
@@ -12,6 +13,7 @@ const SUPPORTED_COMMAND = {
   DETECT_EDITORS: "detect_editors",
   COMPUTE_EXTENSION_DIFF: "compute_extension_diff",
   COMPUTE_SETTINGS_DIFF: "compute_settings_diff",
+  COMPUTE_SETTINGS_DIFF_BY_EXTENSION: "compute_settings_diff_by_extension",
   EXECUTE_SYNC: "execute_sync",
 } as const;
 
@@ -126,6 +128,39 @@ const defaultResponses: Record<SupportedCommand, unknown> = {
       deleteCount: 0,
     },
   ] as SettingsDiffResult[],
+  [SUPPORTED_COMMAND.COMPUTE_SETTINGS_DIFF_BY_EXTENSION]: {
+    leftName: "Cursor",
+    rightName: "Windsurf",
+    groups: [
+      {
+        namespace: "eslint",
+        extensionId: "dbaeumer.vscode-eslint",
+        extensionIconDataUrl: undefined,
+        leftHasExtension: true,
+        rightHasExtension: true,
+        diffs: [
+          {
+            key: "eslint.validate",
+            changeType: CHANGE_TYPE.UPDATE,
+            sourceValue: ["javascript", "typescript"],
+            targetValue: ["javascript"],
+          },
+        ],
+        identicalCount: 1,
+        totalCount: 2,
+      },
+      {
+        namespace: "tailwindCSS",
+        extensionId: "bradlc.vscode-tailwindcss",
+        extensionIconDataUrl: undefined,
+        leftHasExtension: true,
+        rightHasExtension: false,
+        diffs: [],
+        identicalCount: 2,
+        totalCount: 2,
+      },
+    ],
+  } as SettingsDiffByExtensionResult,
   [SUPPORTED_COMMAND.EXECUTE_SYNC]: [] as SyncResult[],
 };
 

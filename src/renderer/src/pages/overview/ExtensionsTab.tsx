@@ -2,8 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import classNames from "classnames";
 import { CheckCheck, CircleOff, Package } from "lucide-react";
 import { EditorIdentity, EDITOR_IDENTITY_MODE } from "../../components/editor/EditorIdentity";
+import { Button, BUTTON_SIZE, BUTTON_VARIANT } from "../../components/ui/Button";
 import { Popover } from "../../components/ui/Popover";
 import { SegmentedTabs } from "../../components/ui/SegmentedTabs";
+import { Skeleton } from "../../components/ui/Skeleton";
 import { invoke } from "../../ipc";
 import { useAppStore } from "../../store";
 import {
@@ -118,30 +120,24 @@ function ExtensionTableSkeleton() {
           <tr key={index}>
             <td className="px-4 py-3">
               <div className="flex items-center gap-2">
-                <div className="h-6 w-6 animate-pulse rounded bg-slate-100" />
+                <Skeleton className="h-6 w-6" />
                 <div className="space-y-1.5">
-                  <div className="h-3.5 w-28 animate-pulse rounded bg-slate-100" />
-                  <div className="h-3 w-24 animate-pulse rounded bg-slate-100" />
+                  <Skeleton className="h-3.5 w-28" />
+                  <Skeleton className="h-3 w-24" />
                 </div>
               </div>
             </td>
             <td className="px-4 py-3">
               <div className="flex gap-2">
                 {[1, 2, 3].map((item) => (
-                  <div
-                    key={item}
-                    className="h-[22px] w-[22px] animate-pulse rounded-full bg-slate-100"
-                  />
+                  <Skeleton key={item} className="h-[22px] w-[22px] rounded-full" />
                 ))}
               </div>
             </td>
             <td className="px-4 py-3">
               <div className="flex gap-2">
                 {[1, 2, 3, 4].map((item) => (
-                  <div
-                    key={item}
-                    className="h-[22px] w-[22px] animate-pulse rounded-full bg-slate-100"
-                  />
+                  <Skeleton key={item} className="h-[22px] w-[22px] rounded-full" />
                 ))}
               </div>
             </td>
@@ -162,20 +158,20 @@ function EditorGridSkeleton() {
         >
           <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
             <div className="flex items-center gap-3">
-              <div className="h-9 w-9 animate-pulse rounded-lg bg-slate-100" />
+              <Skeleton className="h-9 w-9 rounded-lg" />
               <div className="space-y-1.5">
-                <div className="h-4 w-24 animate-pulse rounded bg-slate-100" />
-                <div className="h-3 w-16 animate-pulse rounded bg-slate-100" />
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-3 w-16" />
               </div>
             </div>
           </div>
           <div className="mt-4 space-y-3">
             {[1, 2, 3, 4].map((item) => (
               <div key={item} className="flex items-center gap-2">
-                <div className="h-7 w-7 animate-pulse rounded bg-slate-100" />
+                <Skeleton className="h-7 w-7" />
                 <div className="min-w-0 flex-1 space-y-1.5">
-                  <div className="h-3.5 w-28 animate-pulse rounded bg-slate-100" />
-                  <div className="h-3 w-24 animate-pulse rounded bg-slate-100" />
+                  <Skeleton className="h-3.5 w-28" />
+                  <Skeleton className="h-3 w-24" />
                 </div>
               </div>
             ))}
@@ -279,13 +275,14 @@ function ExtensionsByExtensionView({
                               </div>
                             }
                           >
-                            <button
-                              type="button"
-                              className="inline-flex shrink-0 rounded-sm text-amber-600 transition-colors hover:text-amber-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                            <Button
+                              variant={BUTTON_VARIANT.GHOST}
+                              size={BUTTON_SIZE.ICON_XS}
+                              className="text-amber-600 hover:bg-transparent hover:text-amber-700 active:bg-transparent"
                               aria-label={`Show disabled editors for ${entry.extensionId}`}
                             >
                               <CircleOff size={14} strokeWidth={1.9} />
-                            </button>
+                            </Button>
                           </Popover>
                         )}
                       </div>

@@ -181,6 +181,11 @@ export async function detectMacOSEditors(
       ? join(homedir(), template.slice(2))
       : template;
 
+    const settingsTemplate = entry.settingsPath.mac;
+    const settingsPath = settingsTemplate.startsWith("~/")
+      ? join(homedir(), settingsTemplate.slice(2))
+      : settingsTemplate;
+
     const stateDbTemplate = entry.stateDbPath.mac;
     const stateDbPath = stateDbTemplate.startsWith("~/")
       ? join(homedir(), stateDbTemplate.slice(2))
@@ -194,6 +199,7 @@ export async function detectMacOSEditors(
       badgeColor: entry.badgeColor,
       appPath,
       extensionsPath,
+      settingsPath,
       stateDbPath,
       iconPayload: icon.iconPayload,
       iconStatus: icon.iconStatus,

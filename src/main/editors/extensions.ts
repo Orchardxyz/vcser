@@ -1,8 +1,9 @@
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
-import { extname, join, resolve, sep } from "node:path";
+import { join, resolve, sep } from "node:path";
 import type { ExtensionDiffResult, ExtensionPresence } from "../../renderer/src/types";
+import { mimeTypeForPath } from "./utils";
 
 interface EditorWithExtensions {
   name: string;
@@ -83,26 +84,6 @@ function readDisabledExtensionIdsFromSqliteCli(stateDbPath: string): Set<string>
     return parseDisabledExtensionIds(rawValue);
   } catch {
     return new Set();
-  }
-}
-
-function mimeTypeForPath(filePath: string): string | undefined {
-  switch (extname(filePath).toLowerCase()) {
-    case ".png":
-      return "image/png";
-    case ".svg":
-      return "image/svg+xml";
-    case ".jpg":
-    case ".jpeg":
-      return "image/jpeg";
-    case ".gif":
-      return "image/gif";
-    case ".webp":
-      return "image/webp";
-    case ".ico":
-      return "image/x-icon";
-    default:
-      return undefined;
   }
 }
 

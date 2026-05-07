@@ -121,3 +121,21 @@ export interface ActionItem {
   targetEditor: string;
   diffs?: SettingsKeyDiff[];
 }
+
+export interface ExtensionSettingsGroup {
+  namespace: string;
+  extensionId?: string;
+  extensionIconDataUrl?: string;
+  /** null when extensionId is unknown (built-in / unmatched namespace) */
+  leftHasExtension: boolean | null;
+  rightHasExtension: boolean | null;
+  diffs: SettingsKeyDiff[];
+  identicalCount: number;
+  totalCount: number;
+}
+
+export interface SettingsDiffByExtensionResult {
+  leftName: string;
+  rightName: string;
+  groups: ExtensionSettingsGroup[];
+}

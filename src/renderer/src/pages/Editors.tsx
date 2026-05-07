@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { BadgeCheck, Plus, FolderOpen, FileText, Terminal } from "lucide-react";
 import { BaseModal } from "../components/ui/BaseModal";
+import { Button, BUTTON_VARIANT } from "../components/ui/Button";
+import { Skeleton } from "../components/ui/Skeleton";
 import { EditorIdentity, EDITOR_IDENTITY_MODE } from "../components/editor/EditorIdentity";
 import { useAppStore } from "../store";
 
@@ -10,12 +12,12 @@ function EditorsSkeleton() {
       {[1, 2, 3].map((item) => (
         <div key={item} className="animate-pulse rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="h-11 w-11 rounded-lg bg-slate-100" />
-            <div className="h-5 w-24 rounded bg-slate-100" />
+            <Skeleton className="h-11 w-11 rounded-lg" />
+            <Skeleton className="h-5 w-24" />
           </div>
           <div className="mt-4 space-y-2">
-            <div className="h-3 w-3/4 rounded bg-slate-100" />
-            <div className="h-3 w-1/2 rounded bg-slate-100" />
+            <Skeleton className="h-3 w-3/4" />
+            <Skeleton className="h-3 w-1/2" />
           </div>
         </div>
       ))}
@@ -27,12 +29,6 @@ export function Editors() {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const editors = useAppStore((s) => s.editors);
   const editorsLoading = useAppStore((s) => s.editorsLoading);
-
-  const secondaryButtonClass =
-    "rounded-lg border border-slate-200 bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 transition-colors outline-none hover:bg-slate-200 active:bg-slate-300 focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white";
-
-  const primaryButtonClass =
-    "rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-xs transition-colors outline-none hover:bg-blue-600 hover:shadow-sm active:bg-blue-700 active:shadow-[inset_0_1px_0_rgba(0,0,0,0.05)] focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white";
 
   const inputClass =
     "rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 outline-none focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white";
@@ -119,19 +115,15 @@ export function Editors() {
         onClose={() => setAddModalOpen(false)}
         footer={
           <div className="flex justify-end gap-2">
-            <button
-              type="button"
+            <Button
+              variant={BUTTON_VARIANT.SECONDARY}
               onClick={() => setAddModalOpen(false)}
-              className={secondaryButtonClass}
             >
               Cancel
-            </button>
-            <button
-              type="button"
-              className={primaryButtonClass}
-            >
+            </Button>
+            <Button>
               Add Editor
-            </button>
+            </Button>
           </div>
         }
       >

@@ -16,6 +16,14 @@ export interface EditorRegistryEntry {
     win: string;
   };
   /**
+   * Template for the settings.json path.
+   * `~` is replaced with the user's home directory.
+   */
+  settingsPath: {
+    mac: string;
+    win: string;
+  };
+  /**
    * Template for the state.vscdb SQLite database path.
    * `~` is replaced with the user's home directory.
    */
@@ -36,6 +44,10 @@ export const SUPPORTED_EDITORS: EditorRegistryEntry[] = [
       mac: "~/.vscode/extensions",
       win: "~/.vscode/extensions",
     },
+    settingsPath: {
+      mac: "~/Library/Application Support/Code/User/settings.json",
+      win: "~/AppData/Roaming/Code/User/settings.json",
+    },
     stateDbPath: {
       mac: "~/Library/Application Support/Code/User/globalStorage/state.vscdb",
       win: "~/AppData/Roaming/Code/User/globalStorage/state.vscdb",
@@ -50,6 +62,10 @@ export const SUPPORTED_EDITORS: EditorRegistryEntry[] = [
     extensionsPath: {
       mac: "~/.cursor/extensions",
       win: "~/.cursor/extensions",
+    },
+    settingsPath: {
+      mac: "~/Library/Application Support/Cursor/User/settings.json",
+      win: "~/AppData/Roaming/Cursor/User/settings.json",
     },
     stateDbPath: {
       mac: "~/Library/Application Support/Cursor/User/globalStorage/state.vscdb",
@@ -66,6 +82,10 @@ export const SUPPORTED_EDITORS: EditorRegistryEntry[] = [
       mac: "~/.windsurf/extensions",
       win: "~/.windsurf/extensions",
     },
+    settingsPath: {
+      mac: "~/Library/Application Support/Windsurf/User/settings.json",
+      win: "~/AppData/Roaming/Windsurf/User/settings.json",
+    },
     stateDbPath: {
       mac: "~/Library/Application Support/Windsurf/User/globalStorage/state.vscdb",
       win: "~/AppData/Roaming/Windsurf/User/globalStorage/state.vscdb",
@@ -80,6 +100,10 @@ export const SUPPORTED_EDITORS: EditorRegistryEntry[] = [
     extensionsPath: {
       mac: "~/.antigravity/extensions",
       win: "~/.antigravity/extensions",
+    },
+    settingsPath: {
+      mac: "~/Library/Application Support/Antigravity/User/settings.json",
+      win: "~/AppData/Roaming/Antigravity/User/settings.json",
     },
     stateDbPath: {
       mac: "~/Library/Application Support/Antigravity/User/globalStorage/state.vscdb",
@@ -96,6 +120,10 @@ export const SUPPORTED_EDITORS: EditorRegistryEntry[] = [
       mac: "~/.kiro/extensions",
       win: "~/.kiro/extensions",
     },
+    settingsPath: {
+      mac: "~/Library/Application Support/Kiro/User/settings.json",
+      win: "~/AppData/Roaming/Kiro/User/settings.json",
+    },
     stateDbPath: {
       mac: "~/Library/Application Support/Kiro/User/globalStorage/state.vscdb",
       win: "~/AppData/Roaming/Kiro/User/globalStorage/state.vscdb",
@@ -110,6 +138,10 @@ export const SUPPORTED_EDITORS: EditorRegistryEntry[] = [
     extensionsPath: {
       mac: "~/.trae/extensions",
       win: "~/.trae/extensions",
+    },
+    settingsPath: {
+      mac: "~/Library/Application Support/Trae/User/settings.json",
+      win: "~/AppData/Roaming/Trae/User/settings.json",
     },
     stateDbPath: {
       mac: "~/Library/Application Support/Trae/User/globalStorage/state.vscdb",
@@ -126,6 +158,10 @@ export const SUPPORTED_EDITORS: EditorRegistryEntry[] = [
       mac: "~/.trae-cn/extensions",
       win: "~/.trae-cn/extensions",
     },
+    settingsPath: {
+      mac: "~/Library/Application Support/Trae CN/User/settings.json",
+      win: "~/AppData/Roaming/Trae CN/User/settings.json",
+    },
     stateDbPath: {
       mac: "~/Library/Application Support/Trae CN/User/globalStorage/state.vscdb",
       win: "~/AppData/Roaming/Trae CN/User/globalStorage/state.vscdb",
@@ -140,6 +176,10 @@ export const SUPPORTED_EDITORS: EditorRegistryEntry[] = [
     extensionsPath: {
       mac: "~/.qoder/extensions",
       win: "~/.qoder/extensions",
+    },
+    settingsPath: {
+      mac: "~/Library/Application Support/Qoder/User/settings.json",
+      win: "~/AppData/Roaming/Qoder/User/settings.json",
     },
     stateDbPath: {
       mac: "~/Library/Application Support/Qoder/User/globalStorage/state.vscdb",

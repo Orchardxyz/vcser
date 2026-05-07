@@ -2,8 +2,16 @@ import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { app, BrowserWindow, ipcMain, nativeImage, type NativeImage } from "electron";
+import { getPrismaClient } from "./db";
 import { detectEditors } from "./editors/detect";
-import { computeExtensionDiff } from "./editors/extensions";
+import { resolveNamespacesToExtensions } from "./editors/configNamespace";
+import { computeExtensionDiff, listInstalledExtensions } from "./editors/extensions";
+import {
+  readSettingsJson,
+  diffSettings,
+  groupSettingsByNamespace,
+} from "./editors/settings";
+import type { ExtensionSettingsGroup, SettingsDiffByExtensionResult } from "../renderer/src/types";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -93,6 +101,79 @@ app.whenReady().then(() => {
       })),
     );
   });
+
+  ipcMain.handle(
+    "compute_settings_diff_by_extension",
+    async (_event, payload: { leftEditor: string; rightEditor: string }) => {
+      const prisma = getPrismaClient();
+      const detected = await detectEditors();
+
+      const leftEditor = detected.find((e) => e.name === payload.leftEditor);
+      const rightEditor = detected.find((e) => e.name === payload.rightEditor);
+
+      if (!leftEditor || !rightEditor) {
+        const result: SettingsDiffByExtensionResult = {
+          leftName: payload.leftEditor,
+          rightName: payload.rightEditor,
+          groups: [],
+        };
+        return result;
+      }
+
+      const leftSettings = readSettingsJson(leftEditor.settingsPath);
+      const rightSettings = readSettingsJson(rightEditor.settingsPath);
+
+      const diffs = diffSettings(leftSettings, rightSettings);
+      const grouped = groupSettingsByNamespace(leftSettings, rightSettings, diffs);
+
+      const leftExtensions = new Set(listInstalledExtensions(leftEditor.extensionsPath));
+      const rightExtensions = new Set(listInstalledExtensions(rightEditor.extensionsPath));
+      const allExtensionIds = Array.from(new Set([...leftExtensions, ...rightExtensions]));
+
+      const extensionsPaths = Array.from(
+        new Set([leftEditor.extensionsPath, rightEditor.extensionsPath]),
+      );
+
+      const { namespaceToExtension, extensionIcons } = await resolveNamespacesToExtensions({
+        extensionIds: allExtensionIds,
+        extensionsPaths,
+        prisma,
+      });
+
+      const groups: ExtensionSettingsGroup[] = Array.from(grouped.entries())
+        .sort(([a], [b]) => a.localeCompare(b))
+        .flatMap(([namespace, stats]) => {
+          const extensionId = namespaceToExtension.get(namespace);
+          if (!extensionId) {
+            return [];
+          }
+
+          const extensionIconDataUrl = extensionIcons.get(extensionId);
+          const leftHasExtension = leftExtensions.has(extensionId);
+          const rightHasExtension = rightExtensions.has(extensionId);
+
+          return [
+            {
+              namespace,
+              extensionId,
+              extensionIconDataUrl,
+              leftHasExtension,
+              rightHasExtension,
+              diffs: stats.diffs,
+              identicalCount: stats.identicalCount,
+              totalCount: stats.totalCount,
+            },
+          ];
+        });
+
+      const result: SettingsDiffByExtensionResult = {
+        leftName: leftEditor.name,
+        rightName: rightEditor.name,
+        groups,
+      };
+      return result;
+    },
+  );
 
   createMainWindow(appIcon);
 

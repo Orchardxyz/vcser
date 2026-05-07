@@ -6,3 +6,12 @@ generator client {
 datasource db {
   provider = "sqlite"
 }
+
+model ExtensionNamespaceCache {
+  id          Int    @id @default(autoincrement())
+  extensionId String
+  namespace   String
+
+  @@unique([extensionId, namespace])
+  @@index([namespace])
+}

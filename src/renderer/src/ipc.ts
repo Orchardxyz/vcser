@@ -5,7 +5,11 @@ import type {
   SettingsDiffResult,
   SyncResult,
 } from "./types";
-import { CHANGE_TYPE, APP_ICON_STATUS } from "./types";
+import {
+  APP_ICON_STATUS,
+  CHANGE_TYPE,
+  EXTENSION_SETTINGS_GROUP_KIND,
+} from "./types";
 
 type InvokePayload = Record<string, unknown> | undefined;
 
@@ -17,7 +21,8 @@ const SUPPORTED_COMMAND = {
   EXECUTE_SYNC: "execute_sync",
 } as const;
 
-type SupportedCommand = (typeof SUPPORTED_COMMAND)[keyof typeof SUPPORTED_COMMAND];
+type SupportedCommand =
+  (typeof SUPPORTED_COMMAND)[keyof typeof SUPPORTED_COMMAND];
 
 const demoEditors: ResolvedEditor[] = [
   {
@@ -53,7 +58,8 @@ const demoEditors: ResolvedEditor[] = [
     cli: "code",
     badgeColor: "sky",
     extensionsPath: "/Users/demo/.vscode/extensions",
-    settingsPath: "/Users/demo/Library/Application Support/Code/User/settings.json",
+    settingsPath:
+      "/Users/demo/Library/Application Support/Code/User/settings.json",
     cliAvailable: true,
     extensionsExist: true,
     settingsExist: true,
@@ -70,38 +76,75 @@ const defaultResponses: Record<SupportedCommand, unknown> = {
         extensionId: "bradlc.vscode-tailwindcss",
         presence: { Cursor: true, Windsurf: true, "VS Code": true },
         disabled: { Cursor: false, Windsurf: false, "VS Code": true },
+        versions: {
+          Cursor: "0.14.26",
+          Windsurf: "0.14.26",
+          "VS Code": "0.14.25",
+        },
+        hasVersionMismatch: true,
       },
       {
         extensionId: "dbaeumer.vscode-eslint",
         presence: { Cursor: true, Windsurf: false, "VS Code": true },
         disabled: { Cursor: true, Windsurf: false, "VS Code": false },
+        versions: { Cursor: "3.0.10", Windsurf: null, "VS Code": "3.0.10" },
+        hasVersionMismatch: false,
       },
       {
         extensionId: "github.copilot-chat",
         presence: { Cursor: true, Windsurf: false, "VS Code": false },
         disabled: { Cursor: false, Windsurf: false, "VS Code": false },
+        versions: {
+          Cursor: "0.27.2025050801",
+          Windsurf: null,
+          "VS Code": null,
+        },
+        hasVersionMismatch: false,
       },
       {
         extensionId: "ms-python.python",
         presence: { Cursor: false, Windsurf: true, "VS Code": true },
         disabled: { Cursor: false, Windsurf: false, "VS Code": false },
+        versions: { Cursor: null, Windsurf: "2026.4.1", "VS Code": "2026.4.1" },
+        hasVersionMismatch: false,
       },
     ],
     onlyDiffs: [
       {
+        extensionId: "bradlc.vscode-tailwindcss",
+        presence: { Cursor: true, Windsurf: true, "VS Code": true },
+        disabled: { Cursor: false, Windsurf: false, "VS Code": true },
+        versions: {
+          Cursor: "0.14.26",
+          Windsurf: "0.14.26",
+          "VS Code": "0.14.25",
+        },
+        hasVersionMismatch: true,
+      },
+      {
         extensionId: "dbaeumer.vscode-eslint",
         presence: { Cursor: true, Windsurf: false, "VS Code": true },
         disabled: { Cursor: true, Windsurf: false, "VS Code": false },
+        versions: { Cursor: "3.0.10", Windsurf: null, "VS Code": "3.0.10" },
+        hasVersionMismatch: false,
       },
       {
         extensionId: "github.copilot-chat",
         presence: { Cursor: true, Windsurf: false, "VS Code": false },
         disabled: { Cursor: false, Windsurf: false, "VS Code": false },
+        versions: {
+          Cursor: "0.27.2025050801",
+          Windsurf: null,
+          "VS Code": null,
+        },
+        hasVersionMismatch: false,
       },
       {
         extensionId: "ms-python.python",
         presence: { Cursor: false, Windsurf: true, "VS Code": true },
         disabled: { Cursor: false, Windsurf: false, "VS Code": false },
+        versions: { Cursor: null, Windsurf: "2026.4.1", "VS Code": "2026.4.1" },
+        hasVersionMismatch: false,
       },
     ],
   } as ExtensionDiffResult,
@@ -133,11 +176,15 @@ const defaultResponses: Record<SupportedCommand, unknown> = {
     rightName: "Windsurf",
     groups: [
       {
+        kind: EXTENSION_SETTINGS_GROUP_KIND.NAMESPACE,
         namespace: "eslint",
         extensionId: "dbaeumer.vscode-eslint",
         extensionIconDataUrl: undefined,
         leftHasExtension: true,
         rightHasExtension: true,
+        leftVersion: "3.0.10",
+        rightVersion: "3.0.8",
+        hasVersionMismatch: true,
         diffs: [
           {
             key: "eslint.validate",
@@ -150,11 +197,15 @@ const defaultResponses: Record<SupportedCommand, unknown> = {
         totalCount: 2,
       },
       {
+        kind: EXTENSION_SETTINGS_GROUP_KIND.NAMESPACE,
         namespace: "tailwindCSS",
         extensionId: "bradlc.vscode-tailwindcss",
         extensionIconDataUrl: undefined,
         leftHasExtension: true,
         rightHasExtension: false,
+        leftVersion: "0.14.26",
+        rightVersion: null,
+        hasVersionMismatch: false,
         diffs: [],
         identicalCount: 2,
         totalCount: 2,
@@ -164,7 +215,10 @@ const defaultResponses: Record<SupportedCommand, unknown> = {
   [SUPPORTED_COMMAND.EXECUTE_SYNC]: [] as SyncResult[],
 };
 
-export async function invoke<T>(command: string, payload?: InvokePayload): Promise<T> {
+export async function invoke<T>(
+  command: string,
+  payload?: InvokePayload,
+): Promise<T> {
   if (window.electronAPI?.invoke) {
     try {
       return (await window.electronAPI.invoke(command, payload ?? {})) as T;

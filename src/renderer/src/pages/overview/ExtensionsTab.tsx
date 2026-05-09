@@ -1,8 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import classNames from "classnames";
-import { CheckCheck, CircleOff, Package } from "lucide-react";
-import { EditorIdentity, EDITOR_IDENTITY_MODE } from "../../components/editor/EditorIdentity";
-import { Button, BUTTON_SIZE, BUTTON_VARIANT } from "../../components/ui/Button";
+import { ArrowLeftRight, CheckCheck, CircleOff, Package } from "lucide-react";
+import {
+  EditorIdentity,
+  EDITOR_IDENTITY_MODE,
+} from "../../components/editor/EditorIdentity";
+import {
+  Button,
+  BUTTON_SIZE,
+  BUTTON_VARIANT,
+} from "../../components/ui/Button";
+import { Badge, BADGE_VARIANT } from "../../components/ui/Badge";
 import { Popover } from "../../components/ui/Popover";
 import { SegmentedTabs } from "../../components/ui/SegmentedTabs";
 import { Skeleton } from "../../components/ui/Skeleton";
@@ -23,9 +31,7 @@ const EXTENSION_VIEW_MODE_ITEMS = [
 
 function displayName(id: string): string {
   const local = id.split(".")[1] ?? id;
-  return local
-    .replace(/-/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+  return local.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function shortenExtensionId(id: string, maxLength = 28): string {
@@ -36,6 +42,10 @@ function shortenExtensionId(id: string, maxLength = 28): string {
   const prefixLength = Math.max(12, Math.floor((maxLength - 1) * 0.6));
   const suffixLength = Math.max(8, maxLength - prefixLength - 1);
   return `${id.slice(0, prefixLength)}…${id.slice(-suffixLength)}`;
+}
+
+function formatVersion(version: string | null | undefined): string {
+  return version ?? "Unknown";
 }
 
 function ExtensionIcon({
@@ -83,19 +93,88 @@ function EditorPresenceBadge({
       <EditorIdentity
         editor={editor}
         mode={EDITOR_IDENTITY_MODE.ICON}
-        className="h-[22px] w-[22px] rounded-md"
+        className="h-5.5 w-5.5 rounded-md"
       />
     );
   }
 
   return (
     <span
-      className="inline-flex h-[22px] w-[22px] items-center justify-center rounded-full bg-slate-100 text-[10px] font-medium text-slate-600"
+      className="inline-flex h-5.5 w-5.5 items-center justify-center rounded-full bg-slate-100 text-[10px] font-medium text-slate-600"
       title={name}
       aria-label={name}
     >
       {name[0]}
     </span>
+  );
+}
+
+function EditorVersionPill({
+  name,
+  version,
+  editorByName,
+}: {
+  name: string;
+  version: string | null;
+  editorByName: Map<string, ResolvedEditor>;
+}) {
+  return (
+    <div className="relative inline-flex pr-7 pt-1">
+      <EditorPresenceBadge name={name} editorByName={editorByName} />
+      <span className="absolute right-4 top-0 rounded-full border border-slate-200 bg-white/95 px-1.5 py-0.5 text-[10px] font-medium leading-none text-slate-500 shadow-[0_1px_3px_rgba(15,23,42,0.08)]">
+        {formatVersion(version)}
+      </span>
+    </div>
+  );
+}
+
+function VersionMismatchIndicator({
+  entry,
+  editorNames,
+}: {
+  entry: ExtensionPresence;
+  editorNames: string[];
+}) {
+  if (!entry.hasVersionMismatch) {
+    return null;
+  }
+
+  const installedVersions = editorNames.filter((name) => entry.presence[name]);
+
+  return (
+    <Popover
+      trigger="click"
+      placement="bottom"
+      align="start"
+      sideOffset={10}
+      showArrow
+      panelClassName="min-w-[200px]"
+      content={
+        <div className="space-y-2">
+          <div className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
+            Installed versions
+          </div>
+          <div className="space-y-1">
+            {installedVersions.map((name) => (
+              <div
+                key={name}
+                className="rounded-md bg-slate-50 px-2 py-1 text-sm text-slate-700"
+              >
+                <span className="font-medium">{name}:</span>{" "}
+                {formatVersion(entry.versions[name])}
+              </div>
+            ))}
+          </div>
+        </div>
+      }
+    >
+      <Badge
+        variant={BADGE_VARIANT.INFO}
+        leadingIcon={<ArrowLeftRight size={12} />}
+      >
+        Version mismatch
+      </Badge>
+    </Popover>
   );
 }
 
@@ -130,14 +209,14 @@ function ExtensionTableSkeleton() {
             <td className="px-4 py-3">
               <div className="flex gap-2">
                 {[1, 2, 3].map((item) => (
-                  <Skeleton key={item} className="h-[22px] w-[22px] rounded-full" />
+                  <Skeleton key={item} className="h-5.5 w-5.5 rounded-full" />
                 ))}
               </div>
             </td>
             <td className="px-4 py-3">
               <div className="flex gap-2">
                 {[1, 2, 3, 4].map((item) => (
-                  <Skeleton key={item} className="h-[22px] w-[22px] rounded-full" />
+                  <Skeleton key={item} className="h-5.5 w-5.5 rounded-full" />
                 ))}
               </div>
             </td>
@@ -212,7 +291,9 @@ function ExtensionsByExtensionView({
             <td colSpan={3} className="px-4 py-12">
               <div className="flex flex-col items-center justify-center gap-3 text-center text-slate-500">
                 <CheckCheck size={24} className="text-emerald-500" />
-                <p className="text-sm">No extensions available for this view.</p>
+                <p className="text-sm">
+                  No extensions available for this view.
+                </p>
               </div>
             </td>
           </tr>
@@ -249,6 +330,10 @@ function ExtensionsByExtensionView({
                         <span className="truncate font-medium text-slate-800">
                           {displayName(entry.extensionId)}
                         </span>
+                        <VersionMismatchIndicator
+                          entry={entry}
+                          editorNames={editorNames}
+                        />
                         {disabledIn.length > 0 && (
                           <Popover
                             trigger="click"
@@ -296,11 +381,12 @@ function ExtensionsByExtensionView({
                   </div>
                 </td>
                 <td className="px-4 py-3">
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex flex-wrap items-start gap-x-3 gap-y-2">
                     {installed.map((name) => (
-                      <EditorPresenceBadge
+                      <EditorVersionPill
                         key={name}
                         name={name}
+                        version={entry.versions[name]}
                         editorByName={editorByName}
                       />
                     ))}
@@ -309,7 +395,7 @@ function ExtensionsByExtensionView({
                 <td className="px-4 py-3">
                   {missing.length === 0 ? (
                     <span
-                      className="inline-flex h-[22px] w-[22px] items-center justify-center text-emerald-600"
+                      className="inline-flex h-5.5 w-5.5 items-center justify-center text-emerald-600"
                       title="Installed in all editors"
                       aria-label="Installed in all editors"
                     >
@@ -378,13 +464,14 @@ function ExtensionsByEditorView({
                     {editor?.displayName ?? editorName}
                   </h3>
                   <p className="text-xs text-slate-500">
-                    {installed.length} {installed.length === 1 ? "extension" : "extensions"}
+                    {installed.length}{" "}
+                    {installed.length === 1 ? "extension" : "extensions"}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="mt-4 max-h-[360px] space-y-3 overflow-y-auto pr-1">
+            <div className="mt-4 max-h-90 space-y-3 overflow-y-auto pr-1">
               {installed.length === 0 ? (
                 <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-3 py-6 text-center text-sm text-slate-500">
                   No extensions detected.
@@ -400,7 +487,9 @@ function ExtensionsByEditorView({
                         "flex items-center gap-3 rounded-lg px-3 py-2.5",
                         isDisabled
                           ? "border border-slate-100 bg-white opacity-60"
-                          : "border border-slate-200 bg-slate-50/50",
+                          : entry.hasVersionMismatch
+                            ? "border border-sky-200 bg-sky-50/40"
+                            : "border border-slate-200 bg-slate-50/50",
                       )}
                     >
                       <div className={classNames({ "opacity-50": isDisabled })}>
@@ -410,14 +499,20 @@ function ExtensionsByEditorView({
                         />
                       </div>
                       <div className="min-w-0">
-                        <span
-                          className={classNames(
-                            "block truncate text-sm font-medium",
-                            isDisabled ? "text-slate-400" : "text-slate-800",
-                          )}
-                        >
-                          {displayName(entry.extensionId)}
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span
+                            className={classNames(
+                              "block truncate text-sm font-medium",
+                              isDisabled ? "text-slate-400" : "text-slate-800",
+                            )}
+                          >
+                            {displayName(entry.extensionId)}
+                          </span>
+                          <VersionMismatchIndicator
+                            entry={entry}
+                            editorNames={editorNames}
+                          />
+                        </div>
                         <span
                           className={classNames(
                             "block truncate font-mono text-xs",
@@ -426,6 +521,14 @@ function ExtensionsByEditorView({
                           title={entry.extensionId}
                         >
                           {shortenExtensionId(entry.extensionId)}
+                        </span>
+                        <span
+                          className={classNames(
+                            "mt-1 block text-[11px] font-medium",
+                            isDisabled ? "text-slate-300" : "text-slate-500",
+                          )}
+                        >
+                          Version {formatVersion(entry.versions[editorName])}
                         </span>
                       </div>
                     </div>
@@ -442,7 +545,9 @@ function ExtensionsByEditorView({
 
 export function ExtensionsTab() {
   const editors = useAppStore((s) => s.editors);
-  const [diffResult, setDiffResult] = useState<ExtensionDiffResult | null>(null);
+  const [diffResult, setDiffResult] = useState<ExtensionDiffResult | null>(
+    null,
+  );
   const [viewMode, setViewMode] = useState<ExtensionViewMode>(
     EXTENSION_VIEW_MODE.BY_EXTENSION,
   );

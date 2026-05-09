@@ -3,7 +3,8 @@ export const APP_ICON_STATUS = {
   FALLBACK: "fallback",
 } as const;
 
-export type AppIconStatus = (typeof APP_ICON_STATUS)[keyof typeof APP_ICON_STATUS];
+export type AppIconStatus =
+  (typeof APP_ICON_STATUS)[keyof typeof APP_ICON_STATUS];
 
 export interface ResolvedEditor {
   name: string;
@@ -33,6 +34,8 @@ export interface ExtensionPresence {
   iconDataUrl?: string;
   presence: Record<string, boolean>;
   disabled: Record<string, boolean>;
+  versions: Record<string, string | null>;
+  hasVersionMismatch: boolean;
 }
 
 export interface ExtensionDiffResult {
@@ -94,7 +97,8 @@ export const SYNC_ACTION_TYPE = {
   SETTINGS: "settings",
 } as const;
 
-export type SyncActionType = (typeof SYNC_ACTION_TYPE)[keyof typeof SYNC_ACTION_TYPE];
+export type SyncActionType =
+  (typeof SYNC_ACTION_TYPE)[keyof typeof SYNC_ACTION_TYPE];
 
 export interface SyncActionInput {
   actionType: SyncActionType;
@@ -122,13 +126,25 @@ export interface ActionItem {
   diffs?: SettingsKeyDiff[];
 }
 
+export const EXTENSION_SETTINGS_GROUP_KIND = {
+  NAMESPACE: "namespace",
+  VERSION_ONLY: "version_only",
+} as const;
+
+export type ExtensionSettingsGroupKind =
+  (typeof EXTENSION_SETTINGS_GROUP_KIND)[keyof typeof EXTENSION_SETTINGS_GROUP_KIND];
+
 export interface ExtensionSettingsGroup {
+  kind: ExtensionSettingsGroupKind;
   namespace: string;
   extensionId?: string;
   extensionIconDataUrl?: string;
   /** null when extensionId is unknown (built-in / unmatched namespace) */
   leftHasExtension: boolean | null;
   rightHasExtension: boolean | null;
+  leftVersion: string | null;
+  rightVersion: string | null;
+  hasVersionMismatch: boolean;
   diffs: SettingsKeyDiff[];
   identicalCount: number;
   totalCount: number;

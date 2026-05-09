@@ -1,5 +1,5 @@
+import * as PopoverPrimitive from "@radix-ui/react-popover";
 import {
-  cloneElement,
   ReactElement,
   ReactNode,
   useCallback,
@@ -8,7 +8,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { useClickAway, useKey } from "react-use";
 import classNames from "classnames";
 
 const POPOVER_PLACEMENT = {
@@ -58,7 +57,7 @@ interface PopoverProps {
    * How the popover is triggered.
    * - `"click"` — toggles on click.
    * - `"hover"` — opens on mouse enter, closes on mouse leave.
-  * @default "hover"
+   * @default "hover"
    */
   trigger?: "click" | "hover";
 
@@ -96,50 +95,14 @@ interface PopoverProps {
   panelClassName?: string;
 }
 
-const PLACEMENT_CLASSES: Record<
-  PopoverPlacement,
-  string
-> = {
-  top: "bottom-full",
-  bottom: "top-full",
-  left: "right-full",
-  right: "left-full",
-};
+const HOVER_CLOSE_DELAY = 120;
 
-const VERTICAL_ALIGN_CLASSES: Record<
-  PopoverAlign,
-  string
-> = {
-  start: "left-0",
-  center: "left-1/2 -translate-x-1/2",
-  end: "right-0",
-};
-
-const HORIZONTAL_ALIGN_CLASSES: Record<
-  PopoverAlign,
-  string
-> = {
-  start: "top-0",
-  center: "top-1/2 -translate-y-1/2",
-  end: "bottom-0",
-};
-
-const ANIMATION_CLASSES: Record<
-  PopoverPlacement,
-  string
-> = {
-  top: "translate-y-1",
-  bottom: "-translate-y-1",
-  left: "translate-x-1",
-  right: "-translate-x-1",
-};
-
-const ARROW_CLASSES: Record<PopoverPlacement, string> = {
-  top: "bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2",
-  bottom: "top-0 left-1/2 -translate-x-1/2 -translate-y-1/2",
-  left: "right-0 top-1/2 translate-x-1/2 -translate-y-1/2",
-  right: "left-0 top-1/2 -translate-x-1/2 -translate-y-1/2",
-};
+function containsTarget(
+  node: HTMLElement | null,
+  target: EventTarget | null,
+): target is Node {
+  return target instanceof Node && node?.contains(target) === true;
+}
 
 export function Popover({
   content,
@@ -164,8 +127,9 @@ export function Popover({
   const isOpen = isControlled ? controlledOpen : internalOpen;
 
   const panelId = useId();
-  const rootRef = useRef<HTMLDivElement | null>(null);
-  const triggerRef = useRef<HTMLElement | null>(null);
+  const contentRef = useRef<HTMLDivElement | null>(null);
+  const triggerRef = useRef<HTMLSpanElement | null>(null);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const setOpen = useCallback(
     (next: boolean) => {
@@ -178,170 +142,160 @@ export function Popover({
     [disabled, isControlled, onOpenChange],
   );
 
-  const openPopover = useCallback(() => setOpen(true), [setOpen]);
-  const closePopover = useCallback(() => setOpen(false), [setOpen]);
-  const togglePopover = useCallback(
-    () => setOpen(!isOpen),
-    [setOpen, isOpen],
-  );
+  const clearCloseTimer = useCallback(() => {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+  }, []);
 
-  // Dismiss on outside click
-  useClickAway(rootRef, () => {
-    if (!isOpen || !closeOnOutsideClick) return;
-    closePopover();
-  });
+  const openPopover = useCallback(() => {
+    clearCloseTimer();
+    setOpen(true);
+  }, [clearCloseTimer, setOpen]);
 
-  // Dismiss on Escape
-  useKey(
-    "Escape",
-    () => {
-      if (!isOpen || !closeOnEscape) return;
-      closePopover();
-      triggerRef.current?.focus();
-    },
-    {},
-    [isOpen, closeOnEscape, closePopover],
-  );
+  const closePopover = useCallback(() => {
+    clearCloseTimer();
+    setOpen(false);
+  }, [clearCloseTimer, setOpen]);
 
-  // Dismiss when focus leaves the root
-  function handleRootBlur() {
-    requestAnimationFrame(() => {
-      if (
-        rootRef.current &&
-        !rootRef.current.contains(document.activeElement)
-      ) {
-        closePopover();
-      }
-    });
-  }
+  const scheduleClose = useCallback(() => {
+    clearCloseTimer();
+    closeTimerRef.current = setTimeout(() => {
+      setOpen(false);
+    }, HOVER_CLOSE_DELAY);
+  }, [clearCloseTimer, setOpen]);
 
-  // Keep latest values for unmount cleanup
-  const isOpenRef = useRef(isOpen);
-  isOpenRef.current = isOpen;
-  const onOpenChangeRef = useRef(onOpenChange);
-  onOpenChangeRef.current = onOpenChange;
+  const togglePopover = useCallback(() => setOpen(!isOpen), [setOpen, isOpen]);
 
   useEffect(() => {
     return () => {
-      if (isOpenRef.current) {
-        onOpenChangeRef.current?.(false);
+      if (closeTimerRef.current) {
+        clearTimeout(closeTimerRef.current);
       }
     };
   }, []);
 
-  const alignmentClass =
-    placement === "top" || placement === "bottom"
-      ? VERTICAL_ALIGN_CLASSES[align]
-      : HORIZONTAL_ALIGN_CLASSES[align];
+  if (disabled) {
+    return children;
+  }
 
-  const panelOffsetStyle: React.CSSProperties = {
-    maxWidth,
-    marginTop: placement === "bottom" ? sideOffset : undefined,
-    marginBottom: placement === "top" ? sideOffset : undefined,
-    marginLeft: placement === "right" ? sideOffset : undefined,
-    marginRight: placement === "left" ? sideOffset : undefined,
-  };
+  function handleHoverBlur() {
+    requestAnimationFrame(() => {
+      const activeElement = document.activeElement;
+      if (
+        containsTarget(triggerRef.current, activeElement) ||
+        containsTarget(contentRef.current, activeElement)
+      ) {
+        return;
+      }
 
-  // ARIA attributes for the trigger
-  const ariaProps = {
-    "aria-haspopup": "dialog" as const,
-    "aria-expanded": isOpen,
-    ...(isOpen ? { "aria-controls": panelId } : {}),
-  };
-
-  // Clone the trigger with appropriate event handlers
-  const childProps = children.props as {
-    onClick?: (e: React.MouseEvent) => void;
-    onMouseEnter?: (e: React.MouseEvent) => void;
-    onMouseLeave?: (e: React.MouseEvent) => void;
-  };
-
-  function mergeRef(node: HTMLElement) {
-    triggerRef.current = node;
-    const originalRef = (children as { ref?: React.Ref<HTMLElement> }).ref;
-    if (typeof originalRef === "function") {
-      originalRef(node);
-    } else if (originalRef && "current" in originalRef) {
-      (originalRef as React.MutableRefObject<HTMLElement | null>).current =
-        node;
-    }
+      closePopover();
+    });
   }
 
   const trigger =
-    triggerType === "click"
-      ? cloneElement(children, {
-          ...ariaProps,
-          ref: mergeRef,
-          onClick(e: React.MouseEvent) {
-            childProps.onClick?.(e);
-            togglePopover();
-          },
-        })
-      : cloneElement(children, {
-          ...ariaProps,
-          ref: mergeRef,
-          onClick(e: React.MouseEvent) {
-            childProps.onClick?.(e);
-          },
-        });
+    triggerType === "click" ? (
+      <span ref={triggerRef} className="inline-flex">
+        {children}
+      </span>
+    ) : (
+      <span
+        ref={triggerRef}
+        className="inline-flex"
+        aria-haspopup="dialog"
+        aria-expanded={isOpen}
+        {...(isOpen ? { "aria-controls": panelId } : {})}
+        onMouseEnter={openPopover}
+        onMouseLeave={scheduleClose}
+        onFocus={openPopover}
+        onBlur={handleHoverBlur}
+      >
+        {children}
+      </span>
+    );
 
   return (
-    <div
-      ref={rootRef}
-      className="relative inline-flex"
-      onBlurCapture={handleRootBlur}
-      {...(triggerType === "hover"
-        ? {
-            onMouseEnter: openPopover,
-            onMouseLeave: closePopover,
-          }
-        : {})}
-    >
-      {trigger}
+    <PopoverPrimitive.Root open={isOpen} onOpenChange={setOpen} modal={false}>
+      {triggerType === "click" ? (
+        <PopoverPrimitive.Trigger asChild>{trigger}</PopoverPrimitive.Trigger>
+      ) : (
+        <PopoverPrimitive.Anchor asChild>{trigger}</PopoverPrimitive.Anchor>
+      )}
 
-      <div
-        role="dialog"
-        id={panelId}
-        data-open={isOpen}
-        className={classNames(
-          "absolute z-50",
-          "rounded-xl border border-border bg-popover text-popover-foreground",
-          "shadow-lg p-3",
-          "opacity-0 scale-[0.98]",
-          "transition-[opacity,transform] duration-150 ease-out",
-          "data-[open=true]:opacity-100 data-[open=true]:scale-100",
-          PLACEMENT_CLASSES[placement],
-          alignmentClass,
-          ANIMATION_CLASSES[placement],
-          "data-[open=true]:translate-y-0 data-[open=true]:translate-x-0",
-          panelClassName,
-        )}
-        style={panelOffsetStyle}
-        onClickCapture={
-          closeOnSelect
-            ? (e) => {
-                if (
-                  e.target instanceof Element &&
-                  e.target.closest('[data-popover-keep-open="true"]')
-                ) {
-                  return;
+      <PopoverPrimitive.Portal>
+        <PopoverPrimitive.Content
+          ref={contentRef}
+          role="dialog"
+          id={panelId}
+          side={placement}
+          align={align}
+          sideOffset={sideOffset}
+          arrowPadding={12}
+          collisionPadding={8}
+          className={classNames(
+            "z-50 rounded-xl border border-border bg-popover p-3 text-popover-foreground shadow-lg outline-none",
+            "opacity-0 scale-[0.98] transition-[opacity,transform] duration-150 ease-out",
+            "data-[state=open]:opacity-100 data-[state=open]:scale-100",
+            "data-[side=top]:data-[state=closed]:translate-y-1",
+            "data-[side=bottom]:data-[state=closed]:-translate-y-1",
+            "data-[side=left]:data-[state=closed]:translate-x-1",
+            "data-[side=right]:data-[state=closed]:-translate-x-1",
+            panelClassName,
+          )}
+          style={{ maxWidth }}
+          onOpenAutoFocus={(event) => event.preventDefault()}
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+          }}
+          onEscapeKeyDown={
+            closeOnEscape
+              ? undefined
+              : (event) => {
+                  event.preventDefault();
                 }
-                closePopover();
-              }
-            : undefined
-        }
-      >
-        {content}
-        {showArrow && (
-          <span
-            aria-hidden="true"
-            className={classNames(
-              "absolute rotate-45 size-[8px] bg-popover",
-              ARROW_CLASSES[placement],
-            )}
-          />
-        )}
-      </div>
-    </div>
+          }
+          onInteractOutside={
+            closeOnOutsideClick
+              ? undefined
+              : (event) => {
+                  event.preventDefault();
+                }
+          }
+          onMouseEnter={triggerType === "hover" ? clearCloseTimer : undefined}
+          onMouseLeave={triggerType === "hover" ? scheduleClose : undefined}
+          onFocusCapture={triggerType === "hover" ? openPopover : undefined}
+          onBlurCapture={triggerType === "hover" ? handleHoverBlur : undefined}
+          onClickCapture={
+            closeOnSelect
+              ? (event) => {
+                  if (
+                    event.target instanceof Element &&
+                    event.target.closest('[data-popover-keep-open="true"]')
+                  ) {
+                    return;
+                  }
+
+                  closePopover();
+                }
+              : undefined
+          }
+        >
+          {content}
+          {showArrow && (
+            <PopoverPrimitive.Arrow
+              width={16}
+              height={8}
+              style={{
+                fill: "var(--color-popover)",
+                stroke: "var(--color-border)",
+                strokeWidth: 1,
+                strokeLinejoin: "round",
+              }}
+            />
+          )}
+        </PopoverPrimitive.Content>
+      </PopoverPrimitive.Portal>
+    </PopoverPrimitive.Root>
   );
 }

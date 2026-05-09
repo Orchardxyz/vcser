@@ -68,11 +68,11 @@
   box-sizing: border-box;
 }
 
- html,
- body,
- #root {
+html,
+body,
+#root {
   min-height: 100%;
- }
+}
 
 body {
   margin: 0;
@@ -80,19 +80,21 @@ body {
   font-family: var(--font-sans);
   color: var(--color-foreground);
   background-color: var(--color-background);
-  transition: background-color 150ms ease, color 150ms ease;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
 }
 
 #root {
   min-height: 100vh;
 }
 
- button,
- input,
- select,
- textarea {
+button,
+input,
+select,
+textarea {
   font: inherit;
- }
+}
 
 :root[data-theme="dark"] body {
   color: var(--app-text-primary);

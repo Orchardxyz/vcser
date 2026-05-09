@@ -1,12 +1,6 @@
-import {
-  cloneElement,
-  ReactElement,
-  ReactNode,
-  useEffect,
-  useId,
-  useRef,
-  useState,
-} from "react";
+import * as PopoverPrimitive from "@radix-ui/react-popover";
+import * as TooltipPrimitive from "@radix-ui/react-tooltip";
+import { cloneElement, ReactElement, ReactNode, useState } from "react";
 import classNames from "classnames";
 
 const TOOLTIP_PLACEMENT = {
@@ -18,6 +12,10 @@ const TOOLTIP_PLACEMENT = {
 
 type TooltipPlacement =
   (typeof TOOLTIP_PLACEMENT)[keyof typeof TOOLTIP_PLACEMENT];
+
+type TooltipTriggerProps = {
+  onClick?: (e: React.MouseEvent<HTMLElement>) => void;
+};
 
 interface TooltipProps {
   /** Content shown inside the bubble. String or any ReactNode. */
@@ -46,7 +44,7 @@ interface TooltipProps {
    */
   delay?: number;
 
-  /** Renders the tooltip but keeps it permanently invisible. */
+  /** Disable all tooltip behavior. */
   disabled?: boolean;
 
   /**
@@ -56,19 +54,20 @@ interface TooltipProps {
   maxWidth?: number;
 }
 
-const PLACEMENT_CLASSES: Record<TooltipPlacement, string> = {
-  top: "bottom-full left-1/2 -translate-x-1/2 mb-2",
-  bottom: "top-full left-1/2 -translate-x-1/2 mt-2",
-  left: "right-full top-1/2 -translate-y-1/2 mr-2",
-  right: "left-full top-1/2 -translate-y-1/2 ml-2",
-};
-
-const CARET_CLASSES: Record<TooltipPlacement, string> = {
-  top: "bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2",
-  bottom: "top-0 left-1/2 -translate-x-1/2 -translate-y-1/2",
-  left: "right-0 top-1/2 translate-x-1/2 -translate-y-1/2",
-  right: "left-0 top-1/2 -translate-x-1/2 -translate-y-1/2",
-};
+const TOOLTIP_CONTENT_CLASS_NAME = classNames(
+  "z-50 rounded-sm px-2 py-1",
+  "text-xs leading-4 font-medium",
+  "bg-foreground text-primary-foreground",
+  "shadow-md outline-none",
+  "pointer-events-none",
+  "opacity-0 scale-[0.98] transition-[opacity,transform] duration-150 ease-out",
+  "data-[state=instant-open]:opacity-100 data-[state=instant-open]:scale-100",
+  "data-[state=delayed-open]:opacity-100 data-[state=delayed-open]:scale-100",
+  "data-[side=top]:data-[state=closed]:translate-y-1",
+  "data-[side=bottom]:data-[state=closed]:-translate-y-1",
+  "data-[side=left]:data-[state=closed]:translate-x-1",
+  "data-[side=right]:data-[state=closed]:-translate-x-1",
+);
 
 export function Tooltip({
   content,
@@ -79,105 +78,74 @@ export function Tooltip({
   disabled = false,
   maxWidth = 240,
 }: TooltipProps) {
-  const [open, setOpen] = useState(false);
-  const id = useId();
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [clickOpen, setClickOpen] = useState(false);
 
-  function handleOpen() {
-    if (disabled) return;
-    timerRef.current = setTimeout(() => setOpen(true), delay);
+  if (disabled) {
+    return children;
   }
 
-  function handleClose() {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-    setOpen(false);
+  if (triggerType === "click") {
+    const clickChild = children as ReactElement<TooltipTriggerProps>;
+    const clickChildProps = clickChild.props as TooltipTriggerProps;
+
+    return (
+      <PopoverPrimitive.Root open={clickOpen} onOpenChange={setClickOpen}>
+        <PopoverPrimitive.Anchor asChild>
+          {cloneElement(clickChild, {
+            onClick(e: React.MouseEvent<HTMLElement>) {
+              e.stopPropagation();
+              clickChildProps.onClick?.(e);
+              setClickOpen((previous) => !previous);
+            },
+          })}
+        </PopoverPrimitive.Anchor>
+        <PopoverPrimitive.Portal>
+          <PopoverPrimitive.Content
+            role="tooltip"
+            side={placement}
+            align="center"
+            sideOffset={8}
+            arrowPadding={6}
+            collisionPadding={8}
+            className={TOOLTIP_CONTENT_CLASS_NAME}
+            style={{ maxWidth }}
+            onOpenAutoFocus={(event) => event.preventDefault()}
+          >
+            {content}
+            <PopoverPrimitive.Arrow
+              width={10}
+              height={5}
+              style={{ fill: "var(--color-foreground)" }}
+            />
+          </PopoverPrimitive.Content>
+        </PopoverPrimitive.Portal>
+      </PopoverPrimitive.Root>
+    );
   }
-
-  function handleToggle() {
-    if (disabled) return;
-    setOpen((prev) => !prev);
-  }
-
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, []);
-
-  const triggerProps =
-    open && !disabled ? { "aria-describedby": id } : {};
-
-  const childProps = children.props as {
-    onMouseEnter?: (e: React.MouseEvent) => void;
-    onMouseLeave?: (e: React.MouseEvent) => void;
-    onFocus?: (e: React.FocusEvent) => void;
-    onBlur?: (e: React.FocusEvent) => void;
-    onClick?: (e: React.MouseEvent) => void;
-  };
-
-  const trigger =
-    triggerType === "click"
-      ? cloneElement(children, {
-          ...triggerProps,
-          onClick(e: React.MouseEvent) {
-            e.stopPropagation();
-            childProps.onClick?.(e);
-            handleToggle();
-          },
-        })
-      : cloneElement(children, {
-          ...triggerProps,
-          onMouseEnter(e: React.MouseEvent) {
-            childProps.onMouseEnter?.(e);
-            handleOpen();
-          },
-          onMouseLeave(e: React.MouseEvent) {
-            childProps.onMouseLeave?.(e);
-            handleClose();
-          },
-          onFocus(e: React.FocusEvent) {
-            childProps.onFocus?.(e);
-            handleOpen();
-          },
-          onBlur(e: React.FocusEvent) {
-            childProps.onBlur?.(e);
-            handleClose();
-          },
-        });
 
   return (
-    <div className="relative inline-flex">
-      {trigger}
-
-      <div
-        role="tooltip"
-        id={id}
-        data-open={open}
-        className={classNames(
-          "absolute z-50 rounded-sm px-2 py-1",
-          "text-xs leading-4 font-medium",
-          "bg-foreground text-primary-foreground",
-          "shadow-md",
-          "opacity-0 translate-y-1",
-          "transition-[opacity,transform] duration-150 ease-out",
-          "data-[open=true]:opacity-100 data-[open=true]:translate-y-0",
-          "pointer-events-none",
-          PLACEMENT_CLASSES[placement],
-        )}
-        style={{ maxWidth }}
-      >
-        {content}
-        <span
-          aria-hidden="true"
-          className={classNames(
-            "absolute rotate-45 size-[5px] bg-foreground",
-            CARET_CLASSES[placement],
-          )}
-        />
-      </div>
-    </div>
+    <TooltipPrimitive.Provider delayDuration={delay} skipDelayDuration={0}>
+      <TooltipPrimitive.Root>
+        <TooltipPrimitive.Trigger asChild>{children}</TooltipPrimitive.Trigger>
+        <TooltipPrimitive.Portal>
+          <TooltipPrimitive.Content
+            side={placement}
+            align="center"
+            sideOffset={8}
+            arrowPadding={6}
+            collisionPadding={8}
+            className={TOOLTIP_CONTENT_CLASS_NAME}
+            style={{ maxWidth }}
+          >
+            {content}
+            <TooltipPrimitive.Arrow
+              width={10}
+              height={5}
+              style={{ fill: "var(--color-foreground)" }}
+            />
+          </TooltipPrimitive.Content>
+        </TooltipPrimitive.Portal>
+      </TooltipPrimitive.Root>
+    </TooltipPrimitive.Provider>
   );
 }

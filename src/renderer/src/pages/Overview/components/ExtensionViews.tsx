@@ -12,7 +12,7 @@ import {
   EditorPresenceBadge,
   EditorVersionPill,
   VersionMismatchIndicator
-} from "./extension-helpers";
+} from "./ExtensionHelpers";
 
 export function ExtensionsByExtensionView({
   rows,

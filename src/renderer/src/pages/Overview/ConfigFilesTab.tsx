@@ -5,8 +5,8 @@ import { Button, BUTTON_SIZE, BUTTON_VARIANT } from "../../components/ui/Button"
 import { invoke } from "../../ipc";
 import { useAppStore } from "../../store";
 import type { ResolvedEditor, SettingsDiffByExtensionResult } from "../../types";
-import { ExtensionGroupRow } from "./components/extension-group-row";
-import { SkeletonRow } from "./components/extension-group-row";
+import { ExtensionGroupRow } from "./components/ExtensionGroupRow";
+import { SkeletonRow } from "./components/ExtensionSkeletons";
 
 export function ConfigFilesTab() {
   const editors = useAppStore((s) => s.editors);

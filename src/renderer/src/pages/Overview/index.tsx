@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { SegmentedTabs } from "../components/ui/SegmentedTabs";
-import { ConfigFilesTab } from "./overview/ConfigFilesTab";
-import { ExtensionsTab } from "./overview/ExtensionsTab";
+import { SegmentedTabs } from "../../components/ui/SegmentedTabs";
+import { ConfigFilesTab } from "./ConfigFilesTab";
+import { ExtensionsTab } from "./ExtensionsTab";
 
 const TAB = {
   EXTENSIONS: "extensions",

@@ -3,9 +3,9 @@ import classNames from "classnames";
 import { AlertCircle, ArrowLeftRight, CheckCheck, ChevronDown, ChevronRight } from "lucide-react";
 import { Badge, BADGE_VARIANT } from "../../../components/ui/Badge";
 import { Popover } from "../../../components/ui/Popover";
-import { Skeleton } from "../../../components/ui/Skeleton";
+
 import { EXTENSION_SETTINGS_GROUP_KIND, type ExtensionSettingsGroup } from "../../../types";
-import { DiffTable, DiffBadge } from "./diff-components";
+import { DiffTable, DiffBadge } from "./DiffComponents";
 
 export function groupPrimaryLabel(group: ExtensionSettingsGroup): string {
   if (group.kind === EXTENSION_SETTINGS_GROUP_KIND.VERSION_ONLY) {
@@ -120,20 +120,6 @@ export function ExtensionIcon({ group }: { group: ExtensionSettingsGroup }) {
   return (
     <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-slate-200 text-xs font-bold uppercase text-slate-600">
       {(group.namespace || group.extensionId || "?")[0]}
-    </div>
-  );
-}
-
-export function SkeletonRow() {
-  return (
-    <div className="flex items-center gap-3 border-b border-slate-100 px-4 py-3">
-      <Skeleton className="h-4 w-4" />
-      <Skeleton className="h-7 w-7" />
-      <div className="flex-1 space-y-1.5">
-        <Skeleton className="h-3.5 w-32" />
-        <Skeleton className="h-3 w-24" />
-      </div>
-      <Skeleton className="h-5 w-16 rounded-full" />
     </div>
   );
 }

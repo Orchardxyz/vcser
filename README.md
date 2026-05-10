@@ -34,7 +34,7 @@ The future production Electron IPC layer will replace the current stub implement
 
 ## Requirements
 
-- Node.js `>=20.19` or `>=22.12`
+- Node.js `>=22.13`
 - pnpm
 - Editor CLI commands available on `PATH` for extension install/uninstall operations
 
@@ -57,6 +57,17 @@ pnpm dev
 ```bash
 pnpm build
 ```
+
+## Lint & Format
+
+```bash
+pnpm lint          # check for lint errors
+pnpm lint:fix      # auto-fix lint errors
+pnpm format:check  # check formatting
+pnpm format        # auto-format all files
+```
+
+Pre-commit hooks are installed automatically during `pnpm install` via the `prepare` script. If hooks are missing after cloning or reinstalling dependencies, run `pnpm prepare` manually.
 
 ## Prisma
 

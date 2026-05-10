@@ -1,5 +1,12 @@
 import { execFileSync } from "node:child_process";
-import { accessSync, constants, existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import {
+  accessSync,
+  constants,
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+} from "node:fs";
 import { homedir, tmpdir } from "node:os";
 import { extname, join } from "node:path";
 import type { EditorRegistryEntry } from "./registry";
@@ -37,7 +44,10 @@ function resolveAppPaths(): string[] {
   return paths;
 }
 
-function findAppBundle(entry: EditorRegistryEntry, searchPaths: string[]): string | null {
+function findAppBundle(
+  entry: EditorRegistryEntry,
+  searchPaths: string[],
+): string | null {
   for (const base of searchPaths) {
     const candidate = join(base, entry.macOSBundleName);
     try {
@@ -52,28 +62,34 @@ function findAppBundle(entry: EditorRegistryEntry, searchPaths: string[]): strin
 
 function readAppInfo(appPath: string): MacOSAppInfo {
   const plistPath = join(appPath, "Contents", "Info.plist");
-  const output = execFileSync("plutil", ["-convert", "json", "-o", "-", plistPath], {
-    encoding: "utf8",
-  });
+  const output = execFileSync(
+    "plutil",
+    ["-convert", "json", "-o", "-", plistPath],
+    {
+      encoding: "utf8",
+    },
+  );
 
   return JSON.parse(output) as MacOSAppInfo;
 }
 
 function collectIconNames(info: MacOSAppInfo): string[] {
-  const primaryIcons = info.CFBundleIcons?.CFBundlePrimaryIcon?.CFBundleIconFiles ?? [];
+  const primaryIcons =
+    info.CFBundleIcons?.CFBundlePrimaryIcon?.CFBundleIconFiles ?? [];
 
   return Array.from(
     new Set(
-      [
-        info.CFBundleIconFile,
-        info.CFBundleIconName,
-        ...primaryIcons,
-      ].filter((value): value is string => Boolean(value && value.trim())),
+      [info.CFBundleIconFile, info.CFBundleIconName, ...primaryIcons].filter(
+        (value): value is string => Boolean(value && value.trim()),
+      ),
     ),
   );
 }
 
-function resolveResourceIconPath(resourcesDir: string, iconName: string): string | null {
+function resolveResourceIconPath(
+  resourcesDir: string,
+  iconName: string,
+): string | null {
   const normalized = iconName.trim();
   const candidates = normalized.includes(".")
     ? [normalized]
@@ -109,9 +125,13 @@ function convertIcnsToPngDataUrl(iconPath: string): string | null {
   const tempPngPath = join(tempDir, "icon.png");
 
   try {
-    execFileSync("sips", ["-s", "format", "png", iconPath, "--out", tempPngPath], {
-      stdio: "ignore",
-    });
+    execFileSync(
+      "sips",
+      ["-s", "format", "png", iconPath, "--out", tempPngPath],
+      {
+        stdio: "ignore",
+      },
+    );
 
     if (!existsSync(tempPngPath)) {
       return null;

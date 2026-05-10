@@ -61,17 +61,17 @@ Primary typeface is Inter, spanning full weight coverage from 100 to 900. Techni
 
 Recommended hierarchy:
 
-| Role | Size | Line Height | Weight |
-| --- | --- | --- | --- |
-| Caption / Token | 12px | 16px | 400-500 |
-| Small UI text | 14px | 20px | 400-500 |
-| Body | 16px | 24px | 400-500 |
-| Emphasis body | 18px | 28px | 500-600 |
-| Section title | 20px | 28px | 600 |
-| Card title | 24px | 32px | 600-700 |
-| Page title | 30px | 36px | 700 |
-| Hero / major stat | 36px | 40px | 700-800 |
-| Display | 48px | 48px | 700-900 |
+| Role              | Size | Line Height | Weight  |
+| ----------------- | ---- | ----------- | ------- |
+| Caption / Token   | 12px | 16px        | 400-500 |
+| Small UI text     | 14px | 20px        | 400-500 |
+| Body              | 16px | 24px        | 400-500 |
+| Emphasis body     | 18px | 28px        | 500-600 |
+| Section title     | 20px | 28px        | 600     |
+| Card title        | 24px | 32px        | 600-700 |
+| Page title        | 30px | 36px        | 700     |
+| Hero / major stat | 36px | 40px        | 700-800 |
+| Display           | 48px | 48px        | 700-900 |
 
 Typography constraints:
 
@@ -102,13 +102,13 @@ Secondary button:
 
 5-state button specification:
 
-| State | Visual Rule |
-| --- | --- |
-| Default | `background: var(--primary)`, `color: var(--primary-foreground)`, use `shadow-xs`, clean edge, no extra stroke |
-| Hover | Keep same hue family, shift perceived brightness by ~4% to ~8%, raise to `shadow-sm`, avoid exaggerated movement |
-| Active / Pressed | Slightly darker than hover, reduce to `shadow-2xs` or use subtle `inset-shadow-2xs` for a pressed feel |
-| Focus Visible | Add a 2px to 3px outer focus ring using `--ring`, ideally with small ring offset to avoid visual collision with fill color |
-| Disabled | Move surface toward `--secondary` or reduce primary strength to ~40% to ~50%, text uses `--muted-foreground`, no hover/elevation feedback |
+| State            | Visual Rule                                                                                                                               |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Default          | `background: var(--primary)`, `color: var(--primary-foreground)`, use `shadow-xs`, clean edge, no extra stroke                            |
+| Hover            | Keep same hue family, shift perceived brightness by ~4% to ~8%, raise to `shadow-sm`, avoid exaggerated movement                          |
+| Active / Pressed | Slightly darker than hover, reduce to `shadow-2xs` or use subtle `inset-shadow-2xs` for a pressed feel                                    |
+| Focus Visible    | Add a 2px to 3px outer focus ring using `--ring`, ideally with small ring offset to avoid visual collision with fill color                |
+| Disabled         | Move surface toward `--secondary` or reduce primary strength to ~40% to ~50%, text uses `--muted-foreground`, no hover/elevation feedback |
 
 Note: These 5 states are not frame-by-frame copied from Figma. They are a stable implementation contract derived from the Figma token system (`primary`, `secondary`, `ring`, `shadow`, etc.).
 
@@ -157,10 +157,13 @@ The shadow system is one of the highest-value assets in this design because it i
 ```css
 --shadow-2xs: 0 1px 0 rgba(0, 0, 0, 0.05);
 --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
---shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.10), 0 1px 2px rgba(0, 0, 0, 0.06);
---shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.10), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
---shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.10), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
---shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.10), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+--shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+--shadow-md:
+  0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+--shadow-lg:
+  0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+--shadow-xl:
+  0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 
 --inset-shadow-2xs: inset 0 1px 0 rgba(0, 0, 0, 0.05);

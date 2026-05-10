@@ -7,7 +7,8 @@ export const BUTTON_VARIANT = {
   GHOST: "ghost",
 } as const;
 
-export type ButtonVariant = (typeof BUTTON_VARIANT)[keyof typeof BUTTON_VARIANT];
+export type ButtonVariant =
+  (typeof BUTTON_VARIANT)[keyof typeof BUTTON_VARIANT];
 
 export const BUTTON_SIZE = {
   SM: "sm",
@@ -43,34 +44,36 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   trailingIcon?: ReactNode;
 }
 
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  {
-    className,
-    variant = BUTTON_VARIANT.PRIMARY,
-    size = BUTTON_SIZE.MD,
-    leadingIcon,
-    trailingIcon,
-    children,
-    type = "button",
-    ...props
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  function Button(
+    {
+      className,
+      variant = BUTTON_VARIANT.PRIMARY,
+      size = BUTTON_SIZE.MD,
+      leadingIcon,
+      trailingIcon,
+      children,
+      type = "button",
+      ...props
+    },
+    ref,
+  ) {
+    return (
+      <button
+        ref={ref}
+        type={type}
+        className={classNames(
+          "inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg text-sm font-medium outline-none transition-[background-color,color,box-shadow,border-color] duration-150 focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:pointer-events-none disabled:cursor-not-allowed",
+          variantClassName[variant],
+          sizeClassName[size],
+          className,
+        )}
+        {...props}
+      >
+        {leadingIcon}
+        {children}
+        {trailingIcon}
+      </button>
+    );
   },
-  ref,
-) {
-  return (
-    <button
-      ref={ref}
-      type={type}
-      className={classNames(
-        "inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg text-sm font-medium outline-none transition-[background-color,color,box-shadow,border-color] duration-150 focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:pointer-events-none disabled:cursor-not-allowed",
-        variantClassName[variant],
-        sizeClassName[size],
-        className,
-      )}
-      {...props}
-    >
-      {leadingIcon}
-      {children}
-      {trailingIcon}
-    </button>
-  );
-});
+);

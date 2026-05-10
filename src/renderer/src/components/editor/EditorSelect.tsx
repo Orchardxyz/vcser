@@ -9,7 +9,12 @@ interface EditorSelectProps {
   className?: string;
 }
 
-export function EditorSelect({ editors, value, onChange, className }: EditorSelectProps) {
+export function EditorSelect({
+  editors,
+  value,
+  onChange,
+  className,
+}: EditorSelectProps) {
   return (
     <Select<ResolvedEditor>
       options={editors}

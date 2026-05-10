@@ -29,7 +29,10 @@ export function getPrismaClient(): PrismaClient | undefined {
       prismaGlobal.prisma = new PrismaClientCtor({ adapter });
     } catch (error) {
       prismaGlobal.prismaUnavailable = true;
-      console.warn("Prisma cache unavailable; falling back to uncached namespace resolution.", error);
+      console.warn(
+        "Prisma cache unavailable; falling back to uncached namespace resolution.",
+        error,
+      );
       return undefined;
     }
   }

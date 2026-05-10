@@ -12,7 +12,13 @@ interface BaseModalProps {
   footer?: ReactNode;
 }
 
-export function BaseModal({ open, title, onClose, children, footer }: BaseModalProps) {
+export function BaseModal({
+  open,
+  title,
+  onClose,
+  children,
+  footer,
+}: BaseModalProps) {
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement | null>(null);
 
@@ -26,7 +32,7 @@ export function BaseModal({ open, title, onClose, children, footer }: BaseModalP
       }
     },
     {},
-    [open, onClose]
+    [open, onClose],
   );
 
   useClickAway(dialogRef, () => {
@@ -50,7 +56,10 @@ export function BaseModal({ open, title, onClose, children, footer }: BaseModalP
           className="w-full max-w-2xl rounded-2xl border border-slate-200 bg-white shadow-xl"
         >
           <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-            <h3 id={titleId} className="text-xl font-semibold leading-7 text-slate-950">
+            <h3
+              id={titleId}
+              className="text-xl font-semibold leading-7 text-slate-950"
+            >
               {title}
             </h3>
             <Button
@@ -65,10 +74,12 @@ export function BaseModal({ open, title, onClose, children, footer }: BaseModalP
 
           <div className="px-5 py-4">{children}</div>
 
-          {footer && <div className="border-t border-slate-200 px-5 py-4">{footer}</div>}
+          {footer && (
+            <div className="border-t border-slate-200 px-5 py-4">{footer}</div>
+          )}
         </div>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }

@@ -5,11 +5,16 @@ import { CHANGE_TYPE } from "../../renderer/src/types";
 
 function formatParseErrors(errors: ParseError[]): string {
   return errors
-    .map((error) => `${printParseErrorCode(error.error)} at offset ${error.offset}`)
+    .map(
+      (error) =>
+        `${printParseErrorCode(error.error)} at offset ${error.offset}`,
+    )
     .join("; ");
 }
 
-export function readSettingsJson(settingsPath: string): Record<string, unknown> {
+export function readSettingsJson(
+  settingsPath: string,
+): Record<string, unknown> {
   try {
     const raw = readFileSync(settingsPath, "utf-8");
     const errors: ParseError[] = [];
@@ -31,7 +36,9 @@ export function readSettingsJson(settingsPath: string): Record<string, unknown> 
     return {};
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.warn(`[vcser] Failed to parse settings file: ${settingsPath} (${message})`);
+    console.warn(
+      `[vcser] Failed to parse settings file: ${settingsPath} (${message})`,
+    );
     return {};
   }
 }

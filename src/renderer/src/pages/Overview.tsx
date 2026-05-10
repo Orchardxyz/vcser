@@ -26,8 +26,12 @@ export function Overview() {
   return (
     <div className="flex flex-col gap-8 p-8">
       <div>
-        <h1 className="text-[30px] font-bold leading-9 text-slate-950">Global Overview</h1>
-        <p className="mt-1 text-sm text-slate-500">Cross-editor config diff comparison and one-click sync</p>
+        <h1 className="text-[30px] font-bold leading-9 text-slate-950">
+          Global Overview
+        </h1>
+        <p className="mt-1 text-sm text-slate-500">
+          Cross-editor config diff comparison and one-click sync
+        </p>
       </div>
 
       <SegmentedTabs

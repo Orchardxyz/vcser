@@ -10,7 +10,9 @@ function SectionCard({ title, children }: SectionCardProps) {
   return (
     <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
       <div className="border-b border-slate-100 px-6 py-4">
-        <h2 className="text-xl font-semibold leading-7 text-slate-950">{title}</h2>
+        <h2 className="text-xl font-semibold leading-7 text-slate-950">
+          {title}
+        </h2>
       </div>
       <div className="divide-y divide-slate-100">{children}</div>
     </div>
@@ -48,12 +50,19 @@ export function Settings() {
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-8 p-8">
       <div>
-        <h1 className="text-[30px] font-bold leading-9 text-slate-950">Settings</h1>
-        <p className="mt-1 text-sm text-slate-500">Manage application appearance preferences</p>
+        <h1 className="text-[30px] font-bold leading-9 text-slate-950">
+          Settings
+        </h1>
+        <p className="mt-1 text-sm text-slate-500">
+          Manage application appearance preferences
+        </p>
       </div>
 
       <SectionCard title="Appearance">
-        <SettingRow label="Theme Mode" description="Choose Light, Dark, or follow your system appearance">
+        <SettingRow
+          label="Theme Mode"
+          description="Choose Light, Dark, or follow your system appearance"
+        >
           <div className="flex items-center rounded-lg border border-slate-200 bg-slate-50 p-0.5">
             {themeModes.map(({ value, label }) => (
               <button

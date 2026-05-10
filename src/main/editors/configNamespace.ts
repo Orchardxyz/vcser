@@ -30,7 +30,8 @@ async function findExtensionDir(
     const prefix = `${extensionId.toLowerCase()}-`;
     const entries = await readdir(extensionsPath, { withFileTypes: true });
     const match = entries.find(
-      (entry) => entry.isDirectory() && entry.name.toLowerCase().startsWith(prefix),
+      (entry) =>
+        entry.isDirectory() && entry.name.toLowerCase().startsWith(prefix),
     );
     return match ? join(extensionsPath, match.name) : undefined;
   } catch {
@@ -86,7 +87,10 @@ async function readExtensionIconDataUrl(
     if (!isExtensionPackage(parsed) || !parsed.icon) return undefined;
 
     const iconPath = resolve(extensionDir, parsed.icon);
-    if (iconPath !== extensionDir && !iconPath.startsWith(`${extensionDir}${sep}`)) {
+    if (
+      iconPath !== extensionDir &&
+      !iconPath.startsWith(`${extensionDir}${sep}`)
+    ) {
       return undefined;
     }
 
@@ -107,7 +111,9 @@ export interface ResolvedNamespaceMap {
   extensionIcons: Map<string, string>;
 }
 
-function deduplicateNamespaceRows(rows: NamespaceCacheRow[]): NamespaceCacheRow[] {
+function deduplicateNamespaceRows(
+  rows: NamespaceCacheRow[],
+): NamespaceCacheRow[] {
   const seen = new Set<string>();
   return rows.filter(({ extensionId, namespace }) => {
     const key = `${extensionId}::${namespace}`;
@@ -127,7 +133,10 @@ async function collectNamespaceRows(opts: {
   await Promise.allSettled(
     extensionIds.map(async (extensionId) => {
       for (const extensionsPath of extensionsPaths) {
-        const namespaces = await readExtensionNamespaces(extensionsPath, extensionId);
+        const namespaces = await readExtensionNamespaces(
+          extensionsPath,
+          extensionId,
+        );
         if (namespaces.length === 0) continue;
 
         for (const namespace of namespaces) {
@@ -203,12 +212,17 @@ export async function resolveNamespacesToExtensions(opts: {
   }
 
   const extensionIcons = new Map<string, string>();
-  const resolvedExtensionIds = Array.from(new Set(namespaceToExtension.values()));
+  const resolvedExtensionIds = Array.from(
+    new Set(namespaceToExtension.values()),
+  );
 
   await Promise.allSettled(
     resolvedExtensionIds.map(async (extensionId) => {
       for (const extensionsPath of extensionsPaths) {
-        const iconDataUrl = await readExtensionIconDataUrl(extensionsPath, extensionId);
+        const iconDataUrl = await readExtensionIconDataUrl(
+          extensionsPath,
+          extensionId,
+        );
         if (iconDataUrl) {
           extensionIcons.set(extensionId, iconDataUrl);
           break;
@@ -219,4 +233,3 @@ export async function resolveNamespacesToExtensions(opts: {
 
   return { namespaceToExtension, extensionIcons };
 }
-

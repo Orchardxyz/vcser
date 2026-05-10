@@ -1,0 +1,11 @@
+out/
+dist/
+dist-electron/
+node_modules/
+src/generated/
+.pnpm-store/
+coverage/
+*.tsbuildinfo
+pnpm-lock.yaml
+prisma/dev.db
+prisma/dev.db-journal

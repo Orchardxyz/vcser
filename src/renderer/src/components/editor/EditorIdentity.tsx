@@ -31,7 +31,13 @@ function FallbackIcon({ className }: { className?: string }) {
   );
 }
 
-function EditorImg({ editor, className }: { editor: ResolvedEditor; className?: string }) {
+function EditorImg({
+  editor,
+  className,
+}: {
+  editor: ResolvedEditor;
+  className?: string;
+}) {
   if (editor.iconStatus === APP_ICON_STATUS.READY && editor.iconPayload) {
     return (
       <img
@@ -45,7 +51,11 @@ function EditorImg({ editor, className }: { editor: ResolvedEditor; className?: 
   return <FallbackIcon className={className} />;
 }
 
-export function EditorIdentity({ editor, mode = "compact", className }: EditorIdentityProps) {
+export function EditorIdentity({
+  editor,
+  mode = "compact",
+  className,
+}: EditorIdentityProps) {
   switch (mode) {
     case EDITOR_IDENTITY_MODE.CARD:
       return (
@@ -72,15 +82,21 @@ export function EditorIdentity({ editor, mode = "compact", className }: EditorId
       return (
         <EditorImg
           editor={editor}
-          className={["h-11 w-11 rounded-lg", className].filter(Boolean).join(" ")}
+          className={["h-11 w-11 rounded-lg", className]
+            .filter(Boolean)
+            .join(" ")}
         />
       );
     case EDITOR_IDENTITY_MODE.COMPACT:
     default:
       return (
-        <span className={["inline-flex items-center gap-2", className].join(" ")}>
+        <span
+          className={["inline-flex items-center gap-2", className].join(" ")}
+        >
           <EditorImg editor={editor} className="h-5 w-5 rounded-sm" />
-          <span className="text-sm text-slate-700">{editor.displayName ?? editor.name}</span>
+          <span className="text-sm text-slate-700">
+            {editor.displayName ?? editor.name}
+          </span>
         </span>
       );
   }

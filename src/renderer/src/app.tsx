@@ -9,7 +9,10 @@ import { THEME_MODE, type ThemeMode } from "./types";
 
 const PREFERS_DARK_MEDIA_QUERY = "(prefers-color-scheme: dark)";
 
-function resolveThemeMode(themeMode: ThemeMode, prefersDark: boolean): ThemeMode {
+function resolveThemeMode(
+  themeMode: ThemeMode,
+  prefersDark: boolean,
+): ThemeMode {
   if (themeMode !== THEME_MODE.SYSTEM) {
     return themeMode;
   }
@@ -27,7 +30,9 @@ export default function App() {
   const themeMode = useAppStore((s) => s.themeMode);
   const prefersDark = useMedia(
     PREFERS_DARK_MEDIA_QUERY,
-    typeof window !== "undefined" ? window.matchMedia(PREFERS_DARK_MEDIA_QUERY).matches : false,
+    typeof window !== "undefined"
+      ? window.matchMedia(PREFERS_DARK_MEDIA_QUERY).matches
+      : false,
   );
 
   const resolvedTheme = resolveThemeMode(themeMode, prefersDark);

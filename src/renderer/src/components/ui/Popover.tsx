@@ -166,8 +166,6 @@ export function Popover({
     }, HOVER_CLOSE_DELAY);
   }, [clearCloseTimer, setOpen]);
 
-  const togglePopover = useCallback(() => setOpen(!isOpen), [setOpen, isOpen]);
-
   useEffect(() => {
     return () => {
       if (closeTimerRef.current) {

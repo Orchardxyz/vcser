@@ -57,5 +57,5 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
     } finally {
       set({ editorsLoading: false });
     }
-  },
+  }
 }));

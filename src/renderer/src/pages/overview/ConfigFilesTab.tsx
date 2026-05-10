@@ -1,20 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactDiffViewer from "react-diff-viewer-continued";
-import {
-  AlertCircle,
-  ArrowLeftRight,
-  CheckCheck,
-  ChevronDown,
-  ChevronRight,
-  FileJson,
-} from "lucide-react";
+import { AlertCircle, ArrowLeftRight, CheckCheck, ChevronDown, ChevronRight, FileJson } from "lucide-react";
 import classNames from "classnames";
 import { EditorSelect } from "../../components/editor/EditorSelect";
-import {
-  Button,
-  BUTTON_SIZE,
-  BUTTON_VARIANT,
-} from "../../components/ui/Button";
+import { Button, BUTTON_SIZE, BUTTON_VARIANT } from "../../components/ui/Button";
 import { Badge, BADGE_VARIANT } from "../../components/ui/Badge";
 import { Popover } from "../../components/ui/Popover";
 import { invoke } from "../../ipc";
@@ -25,20 +14,12 @@ import {
   type ExtensionSettingsGroup,
   type ResolvedEditor,
   type SettingsDiffByExtensionResult,
-  type SettingsKeyDiff,
+  type SettingsKeyDiff
 } from "../../types";
 import { formatDiffValue } from "../../utils";
 import { diffHeaderClass, diffViewerStyles } from "../../lib/diff-constants";
 
-function DiffHtml({
-  diff,
-  leftName,
-  rightName,
-}: {
-  diff: SettingsKeyDiff;
-  leftName: string;
-  rightName: string;
-}) {
+function DiffHtml({ diff, leftName, rightName }: { diff: SettingsKeyDiff; leftName: string; rightName: string }) {
   const isDark = document.documentElement.dataset.theme === "dark";
   const oldValue = formatDiffValue(diff.sourceValue);
   const newValue = formatDiffValue(diff.targetValue);
@@ -53,13 +34,9 @@ function DiffHtml({
       <div className="bg-emerald-50">
         {presentLines.map((line, i) => (
           <div key={i} className="flex items-baseline gap-1 px-2 py-px">
-            <span className="w-6 shrink-0 select-none text-right text-emerald-300">
-              {i + 1}
-            </span>
+            <span className="w-6 shrink-0 select-none text-right text-emerald-300">{i + 1}</span>
             <span className="select-none text-emerald-400">+</span>
-            <span className="whitespace-pre-wrap break-all text-emerald-800">
-              {line}
-            </span>
+            <span className="whitespace-pre-wrap break-all text-emerald-800">{line}</span>
           </div>
         ))}
       </div>
@@ -67,13 +44,9 @@ function DiffHtml({
       <div className="border-r border-slate-100 bg-rose-50">
         {presentLines.map((line, i) => (
           <div key={i} className="flex items-baseline gap-1 px-2 py-px">
-            <span className="w-6 shrink-0 select-none text-right text-rose-300">
-              {i + 1}
-            </span>
+            <span className="w-6 shrink-0 select-none text-right text-rose-300">{i + 1}</span>
             <span className="select-none text-rose-400">−</span>
-            <span className="whitespace-pre-wrap break-all text-rose-800">
-              {line}
-            </span>
+            <span className="whitespace-pre-wrap break-all text-rose-800">{line}</span>
           </div>
         ))}
       </div>
@@ -83,9 +56,7 @@ function DiffHtml({
       <div
         className={classNames(
           "flex items-center justify-center px-3 py-3 text-xs italic text-slate-400",
-          isAddition
-            ? "border-r border-slate-100 bg-slate-50/40"
-            : "bg-slate-50/40",
+          isAddition ? "border-r border-slate-100 bg-slate-50/40" : "bg-slate-50/40"
         )}
       >
         — not set —
@@ -94,12 +65,7 @@ function DiffHtml({
 
     return (
       <div className="overflow-hidden rounded-lg border border-slate-200">
-        <div
-          className={classNames(
-            "grid grid-cols-2 border-b border-slate-200 bg-slate-50/70",
-            diffHeaderClass,
-          )}
-        >
+        <div className={classNames("grid grid-cols-2 border-b border-slate-200 bg-slate-50/70", diffHeaderClass)}>
           <div className="border-r border-slate-200 px-3 py-2">{leftName}</div>
           <div className="px-3 py-2">{rightName}</div>
         </div>
@@ -132,10 +98,7 @@ function DiffHtml({
 function DiffBadge({ count }: { count: number }) {
   if (count === 0) {
     return (
-      <Badge
-        variant={BADGE_VARIANT.SUCCESS}
-        leadingIcon={<CheckCheck size={10} strokeWidth={2} />}
-      >
+      <Badge variant={BADGE_VARIANT.SUCCESS} leadingIcon={<CheckCheck size={10} strokeWidth={2} />}>
         Identical
       </Badge>
     );
@@ -155,15 +118,7 @@ function VersionMismatchBadge({ group }: { group: ExtensionSettingsGroup }) {
   return <Badge variant={BADGE_VARIANT.INFO}>Version mismatch</Badge>;
 }
 
-function VersionMismatchIndicator({
-  group,
-  leftName,
-  rightName,
-}: {
-  group: ExtensionSettingsGroup;
-  leftName: string;
-  rightName: string;
-}) {
+function VersionMismatchIndicator({ group, leftName, rightName }: { group: ExtensionSettingsGroup; leftName: string; rightName: string }) {
   if (!group.hasVersionMismatch) {
     return null;
   }
@@ -178,16 +133,12 @@ function VersionMismatchIndicator({
       panelClassName="min-w-[180px]"
       content={
         <div className="space-y-1.5 text-sm text-slate-700">
-          <div className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
-            Installed versions
+          <div className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Installed versions</div>
+          <div className="rounded-md bg-slate-50 px-2 py-1">
+            <span className="font-medium">{leftName}:</span> {group.leftVersion ?? "Unknown"}
           </div>
           <div className="rounded-md bg-slate-50 px-2 py-1">
-            <span className="font-medium">{leftName}:</span>{" "}
-            {group.leftVersion ?? "Unknown"}
-          </div>
-          <div className="rounded-md bg-slate-50 px-2 py-1">
-            <span className="font-medium">{rightName}:</span>{" "}
-            {group.rightVersion ?? "Unknown"}
+            <span className="font-medium">{rightName}:</span> {group.rightVersion ?? "Unknown"}
           </div>
         </div>
       }
@@ -207,9 +158,7 @@ function groupPrimaryLabel(group: ExtensionSettingsGroup): string {
   return group.namespace;
 }
 
-function groupSecondaryLabel(
-  group: ExtensionSettingsGroup,
-): string | undefined {
+function groupSecondaryLabel(group: ExtensionSettingsGroup): string | undefined {
   if (group.extensionId) {
     return group.extensionId;
   }
@@ -221,23 +170,9 @@ function groupSecondaryLabel(
   return undefined;
 }
 
-function GroupDetails({
-  group,
-  leftName,
-  rightName,
-}: {
-  group: ExtensionSettingsGroup;
-  leftName: string;
-  rightName: string;
-}) {
+function GroupDetails({ group, leftName, rightName }: { group: ExtensionSettingsGroup; leftName: string; rightName: string }) {
   if (group.diffs.length > 0) {
-    return (
-      <DiffTable
-        diffs={group.diffs}
-        leftName={leftName}
-        rightName={rightName}
-      />
-    );
+    return <DiffTable diffs={group.diffs} leftName={leftName} rightName={rightName} />;
   }
 
   if (group.hasVersionMismatch) {
@@ -259,15 +194,7 @@ function GroupDetails({
   );
 }
 
-function MissingExtensionIndicator({
-  group,
-  leftName,
-  rightName,
-}: {
-  group: ExtensionSettingsGroup;
-  leftName: string;
-  rightName: string;
-}) {
+function MissingExtensionIndicator({ group, leftName, rightName }: { group: ExtensionSettingsGroup; leftName: string; rightName: string }) {
   const missing: string[] = [];
   if (group.leftHasExtension === false) missing.push(leftName);
   if (group.rightHasExtension === false) missing.push(rightName);
@@ -283,14 +210,9 @@ function MissingExtensionIndicator({
       panelClassName="min-w-[160px]"
       content={
         <div className="space-y-1.5">
-          <div className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
-            Not installed in
-          </div>
+          <div className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Not installed in</div>
           {missing.map((name) => (
-            <div
-              key={name}
-              className="rounded-md bg-slate-50 px-2 py-1 text-sm text-slate-700"
-            >
+            <div key={name} className="rounded-md bg-slate-50 px-2 py-1 text-sm text-slate-700">
               {name}
             </div>
           ))}
@@ -329,40 +251,22 @@ function ExtensionIcon({ group }: { group: ExtensionSettingsGroup }) {
   );
 }
 
-function DiffTable({
-  diffs,
-  leftName,
-  rightName,
-}: {
-  diffs: SettingsKeyDiff[];
-  leftName: string;
-  rightName: string;
-}) {
+function DiffTable({ diffs, leftName, rightName }: { diffs: SettingsKeyDiff[]; leftName: string; rightName: string }) {
   return (
     <table className="w-full table-fixed text-xs">
       <thead>
         <tr className="border-b border-slate-100 bg-slate-50/60">
-          <th className="w-[24%] px-3 py-2 text-left font-medium text-slate-500">
-            Key
-          </th>
-          <th className="w-[76%] px-3 py-2 text-left font-medium text-slate-500">
-            Diff
-          </th>
+          <th className="w-[24%] px-3 py-2 text-left font-medium text-slate-500">Key</th>
+          <th className="w-[76%] px-3 py-2 text-left font-medium text-slate-500">Diff</th>
         </tr>
       </thead>
       <tbody className="divide-y divide-slate-100">
         {diffs.map((diff) => {
           return (
             <tr key={diff.key} className="align-top hover:bg-slate-50/60">
-              <td className="break-all px-3 py-3 font-mono text-slate-600">
-                {diff.key}
-              </td>
+              <td className="break-all px-3 py-3 font-mono text-slate-600">{diff.key}</td>
               <td className="px-3 py-3">
-                <DiffHtml
-                  diff={diff}
-                  leftName={leftName}
-                  rightName={rightName}
-                />
+                <DiffHtml diff={diff} leftName={leftName} rightName={rightName} />
               </td>
             </tr>
           );
@@ -391,7 +295,7 @@ function ExtensionGroupRow({
   leftName,
   rightName,
   checked,
-  onCheckedChange,
+  onCheckedChange
 }: {
   group: ExtensionSettingsGroup;
   leftName: string;
@@ -405,10 +309,9 @@ function ExtensionGroupRow({
   return (
     <div className="border-b border-slate-100 last:border-b-0">
       <div
-        className={classNames(
-          "flex cursor-pointer items-center gap-3 px-4 py-3 transition-colors hover:bg-slate-50/60",
-          { "bg-slate-50/40": expanded },
-        )}
+        className={classNames("flex cursor-pointer items-center gap-3 px-4 py-3 transition-colors hover:bg-slate-50/60", {
+          "bg-slate-50/40": expanded
+        })}
         onClick={(e) => {
           if (checkboxRef.current?.contains(e.target as Node)) return;
           setExpanded((v) => !v);
@@ -428,42 +331,22 @@ function ExtensionGroupRow({
 
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
-            <span className="truncate text-sm font-medium text-slate-800">
-              {groupPrimaryLabel(group)}
-            </span>
-            <MissingExtensionIndicator
-              group={group}
-              leftName={leftName}
-              rightName={rightName}
-            />
-            <VersionMismatchIndicator
-              group={group}
-              leftName={leftName}
-              rightName={rightName}
-            />
+            <span className="truncate text-sm font-medium text-slate-800">{groupPrimaryLabel(group)}</span>
+            <MissingExtensionIndicator group={group} leftName={leftName} rightName={rightName} />
+            <VersionMismatchIndicator group={group} leftName={leftName} rightName={rightName} />
           </div>
-          {groupSecondaryLabel(group) && (
-            <span className="block truncate font-mono text-xs text-slate-400">
-              {groupSecondaryLabel(group)}
-            </span>
-          )}
+          {groupSecondaryLabel(group) && <span className="block truncate font-mono text-xs text-slate-400">{groupSecondaryLabel(group)}</span>}
         </div>
 
         <VersionMismatchBadge group={group} />
         <DiffBadge count={group.diffs.length} />
 
-        <span className="ml-1 shrink-0 text-slate-400">
-          {expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-        </span>
+        <span className="ml-1 shrink-0 text-slate-400">{expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}</span>
       </div>
 
       {expanded && (
         <div className="border-t border-slate-100 bg-slate-50/30">
-          <GroupDetails
-            group={group}
-            leftName={leftName}
-            rightName={rightName}
-          />
+          <GroupDetails group={group} leftName={leftName} rightName={rightName} />
         </div>
       )}
     </div>
@@ -474,12 +357,9 @@ export function ConfigFilesTab() {
   const editors = useAppStore((s) => s.editors);
   const [leftSlug, setLeftSlug] = useState<string>("");
   const [rightSlug, setRightSlug] = useState<string>("");
-  const [diffResult, setDiffResult] =
-    useState<SettingsDiffByExtensionResult | null>(null);
+  const [diffResult, setDiffResult] = useState<SettingsDiffByExtensionResult | null>(null);
   const [loading, setLoading] = useState(false);
-  const [selectedNamespaces, setSelectedNamespaces] = useState<Set<string>>(
-    new Set(),
-  );
+  const [selectedNamespaces, setSelectedNamespaces] = useState<Set<string>>(new Set());
 
   const editorSlugs = useMemo(() => editors.map((e) => e.slug), [editors]);
   const editorBySlug = useMemo(() => {
@@ -488,14 +368,8 @@ export function ConfigFilesTab() {
     return m;
   }, [editors]);
 
-  const leftEditorSlug =
-    leftSlug && editorSlugs.includes(leftSlug)
-      ? leftSlug
-      : (editorSlugs[0] ?? "");
-  const rightEditorSlug =
-    rightSlug && editorSlugs.includes(rightSlug)
-      ? rightSlug
-      : (editorSlugs[1] ?? editorSlugs[0] ?? "");
+  const leftEditorSlug = leftSlug && editorSlugs.includes(leftSlug) ? leftSlug : (editorSlugs[0] ?? "");
+  const rightEditorSlug = rightSlug && editorSlugs.includes(rightSlug) ? rightSlug : (editorSlugs[1] ?? editorSlugs[0] ?? "");
 
   const leftEditor = editorBySlug.get(leftEditorSlug);
   const rightEditor = editorBySlug.get(rightEditorSlug);
@@ -512,13 +386,10 @@ export function ConfigFilesTab() {
     if (!leftName || !rightName || leftName === rightName) return;
     setLoading(true);
     setSelectedNamespaces(new Set());
-    invoke<SettingsDiffByExtensionResult>(
-      "compute_settings_diff_by_extension",
-      {
-        leftEditor: leftName,
-        rightEditor: rightName,
-      },
-    )
+    invoke<SettingsDiffByExtensionResult>("compute_settings_diff_by_extension", {
+      leftEditor: leftName,
+      rightEditor: rightName
+    })
       .then((result) => {
         setDiffResult(result);
       })
@@ -527,11 +398,8 @@ export function ConfigFilesTab() {
 
   const groups = diffResult?.groups ?? [];
   const allNamespaces = groups.map((g) => g.namespace);
-  const allSelected =
-    allNamespaces.length > 0 &&
-    allNamespaces.every((n) => selectedNamespaces.has(n));
-  const someSelected =
-    !allSelected && allNamespaces.some((n) => selectedNamespaces.has(n));
+  const allSelected = allNamespaces.length > 0 && allNamespaces.every((n) => selectedNamespaces.has(n));
+  const someSelected = !allSelected && allNamespaces.some((n) => selectedNamespaces.has(n));
 
   const toggleAll = useCallback(() => {
     if (allSelected) {
@@ -550,36 +418,18 @@ export function ConfigFilesTab() {
     });
   }, []);
 
-  const selectedGroups = groups.filter((g) =>
-    selectedNamespaces.has(g.namespace),
-  );
+  const selectedGroups = groups.filter((g) => selectedNamespaces.has(g.namespace));
   const canOverride = selectedGroups.length > 0;
 
   const headerBar = (
     <div className="flex items-center gap-3 border-b border-slate-100 px-4 py-3">
       {editors.length > 0 ? (
         <div className="flex min-w-0 flex-1 items-center gap-3">
-          <EditorSelect
-            editors={editors}
-            value={leftEditorSlug}
-            onChange={setLeftSlug}
-            className="min-w-0 flex-1"
-          />
-          <Button
-            variant={BUTTON_VARIANT.GHOST}
-            size={BUTTON_SIZE.ICON}
-            onClick={handleSwap}
-            title="Swap editors"
-            aria-label="Swap editors"
-          >
+          <EditorSelect editors={editors} value={leftEditorSlug} onChange={setLeftSlug} className="min-w-0 flex-1" />
+          <Button variant={BUTTON_VARIANT.GHOST} size={BUTTON_SIZE.ICON} onClick={handleSwap} title="Swap editors" aria-label="Swap editors">
             <ArrowLeftRight size={16} />
           </Button>
-          <EditorSelect
-            editors={editors}
-            value={rightEditorSlug}
-            onChange={setRightSlug}
-            className="min-w-0 flex-1"
-          />
+          <EditorSelect editors={editors} value={rightEditorSlug} onChange={setRightSlug} className="min-w-0 flex-1" />
         </div>
       ) : (
         <span className="text-sm text-slate-400">No editors detected</span>
@@ -634,9 +484,7 @@ export function ConfigFilesTab() {
 
   const hasDiffs = groups.some((g) => g.diffs.length > 0);
   const diffCount = groups.reduce((acc, g) => acc + g.diffs.length, 0);
-  const versionMismatchCount = groups.filter(
-    (group) => group.hasVersionMismatch,
-  ).length;
+  const versionMismatchCount = groups.filter((group) => group.hasVersionMismatch).length;
 
   return (
     <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -663,11 +511,8 @@ export function ConfigFilesTab() {
 
         {hasDiffs && (
           <span className="ml-auto text-xs text-slate-400">
-            {diffCount} total {diffCount === 1 ? "diff" : "diffs"} across{" "}
-            {groups.filter((g) => g.diffs.length > 0).length} groups
-            {versionMismatchCount > 0
-              ? `, ${versionMismatchCount} version mismatch${versionMismatchCount === 1 ? "" : "es"}`
-              : ""}
+            {diffCount} total {diffCount === 1 ? "diff" : "diffs"} across {groups.filter((g) => g.diffs.length > 0).length} groups
+            {versionMismatchCount > 0 ? `, ${versionMismatchCount} version mismatch${versionMismatchCount === 1 ? "" : "es"}` : ""}
           </span>
         )}
 
@@ -695,9 +540,7 @@ export function ConfigFilesTab() {
             leftName={leftName}
             rightName={rightName}
             checked={selectedNamespaces.has(group.namespace)}
-            onCheckedChange={(checked) =>
-              toggleNamespace(group.namespace, checked)
-            }
+            onCheckedChange={(checked) => toggleNamespace(group.namespace, checked)}
           />
         ))}
       </div>

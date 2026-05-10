@@ -11,9 +11,7 @@ type NamespaceCacheRow = {
 
 interface ExtensionPackageContrib {
   contributes?: {
-    configuration?:
-      | { properties?: Record<string, unknown> }
-      | Array<{ properties?: Record<string, unknown> }>;
+    configuration?: { properties?: Record<string, unknown> } | Array<{ properties?: Record<string, unknown> }>;
   };
   icon?: string;
 }
@@ -22,17 +20,11 @@ function isExtensionPackage(value: unknown): value is ExtensionPackageContrib {
   return !!value && typeof value === "object";
 }
 
-async function findExtensionDir(
-  extensionsPath: string,
-  extensionId: string,
-): Promise<string | undefined> {
+async function findExtensionDir(extensionsPath: string, extensionId: string): Promise<string | undefined> {
   try {
     const prefix = `${extensionId.toLowerCase()}-`;
     const entries = await readdir(extensionsPath, { withFileTypes: true });
-    const match = entries.find(
-      (entry) =>
-        entry.isDirectory() && entry.name.toLowerCase().startsWith(prefix),
-    );
+    const match = entries.find((entry) => entry.isDirectory() && entry.name.toLowerCase().startsWith(prefix));
     return match ? join(extensionsPath, match.name) : undefined;
   } catch {
     return undefined;
@@ -56,10 +48,7 @@ function extractConfigNamespaces(pkg: ExtensionPackageContrib): string[] {
   return Array.from(namespaces);
 }
 
-async function readExtensionNamespaces(
-  extensionsPath: string,
-  extensionId: string,
-): Promise<string[]> {
+async function readExtensionNamespaces(extensionsPath: string, extensionId: string): Promise<string[]> {
   try {
     const extensionDir = await findExtensionDir(extensionsPath, extensionId);
     if (!extensionDir) return [];
@@ -74,10 +63,7 @@ async function readExtensionNamespaces(
   }
 }
 
-async function readExtensionIconDataUrl(
-  extensionsPath: string,
-  extensionId: string,
-): Promise<string | undefined> {
+async function readExtensionIconDataUrl(extensionsPath: string, extensionId: string): Promise<string | undefined> {
   try {
     const extensionDir = await findExtensionDir(extensionsPath, extensionId);
     if (!extensionDir) return undefined;
@@ -87,10 +73,7 @@ async function readExtensionIconDataUrl(
     if (!isExtensionPackage(parsed) || !parsed.icon) return undefined;
 
     const iconPath = resolve(extensionDir, parsed.icon);
-    if (
-      iconPath !== extensionDir &&
-      !iconPath.startsWith(`${extensionDir}${sep}`)
-    ) {
+    if (iconPath !== extensionDir && !iconPath.startsWith(`${extensionDir}${sep}`)) {
       return undefined;
     }
 
@@ -111,9 +94,7 @@ export interface ResolvedNamespaceMap {
   extensionIcons: Map<string, string>;
 }
 
-function deduplicateNamespaceRows(
-  rows: NamespaceCacheRow[],
-): NamespaceCacheRow[] {
+function deduplicateNamespaceRows(rows: NamespaceCacheRow[]): NamespaceCacheRow[] {
   const seen = new Set<string>();
   return rows.filter(({ extensionId, namespace }) => {
     const key = `${extensionId}::${namespace}`;
@@ -123,20 +104,14 @@ function deduplicateNamespaceRows(
   });
 }
 
-async function collectNamespaceRows(opts: {
-  extensionIds: string[];
-  extensionsPaths: string[];
-}): Promise<NamespaceCacheRow[]> {
+async function collectNamespaceRows(opts: { extensionIds: string[]; extensionsPaths: string[] }): Promise<NamespaceCacheRow[]> {
   const { extensionIds, extensionsPaths } = opts;
   const rows: NamespaceCacheRow[] = [];
 
   await Promise.allSettled(
     extensionIds.map(async (extensionId) => {
       for (const extensionsPath of extensionsPaths) {
-        const namespaces = await readExtensionNamespaces(
-          extensionsPath,
-          extensionId,
-        );
+        const namespaces = await readExtensionNamespaces(extensionsPath, extensionId);
         if (namespaces.length === 0) continue;
 
         for (const namespace of namespaces) {
@@ -144,40 +119,34 @@ async function collectNamespaceRows(opts: {
         }
         break;
       }
-    }),
+    })
   );
 
   return deduplicateNamespaceRows(rows);
 }
 
-async function readCachedNamespaceRows(
-  prisma: PrismaClient | undefined,
-  extensionIds: string[],
-): Promise<NamespaceCacheRow[]> {
+async function readCachedNamespaceRows(prisma: PrismaClient | undefined, extensionIds: string[]): Promise<NamespaceCacheRow[]> {
   if (!prisma || extensionIds.length === 0) {
     return [];
   }
 
   try {
     return await prisma.extensionNamespaceCache.findMany({
-      where: { extensionId: { in: extensionIds } },
+      where: { extensionId: { in: extensionIds } }
     });
   } catch {
     return [];
   }
 }
 
-async function writeCachedNamespaceRows(
-  prisma: PrismaClient | undefined,
-  rows: NamespaceCacheRow[],
-): Promise<void> {
+async function writeCachedNamespaceRows(prisma: PrismaClient | undefined, rows: NamespaceCacheRow[]): Promise<void> {
   if (!prisma || rows.length === 0) {
     return;
   }
 
   try {
     await prisma.extensionNamespaceCache.createMany({
-      data: deduplicateNamespaceRows(rows),
+      data: deduplicateNamespaceRows(rows)
     });
   } catch {
     // Namespace resolution must still work without a writable cache.
@@ -197,7 +166,7 @@ export async function resolveNamespacesToExtensions(opts: {
   const uncachedIds = extensionIds.filter((id) => !cachedIds.has(id));
   const secondBatch = await collectNamespaceRows({
     extensionIds: uncachedIds,
-    extensionsPaths,
+    extensionsPaths
   });
 
   await writeCachedNamespaceRows(prisma, secondBatch);
@@ -212,23 +181,18 @@ export async function resolveNamespacesToExtensions(opts: {
   }
 
   const extensionIcons = new Map<string, string>();
-  const resolvedExtensionIds = Array.from(
-    new Set(namespaceToExtension.values()),
-  );
+  const resolvedExtensionIds = Array.from(new Set(namespaceToExtension.values()));
 
   await Promise.allSettled(
     resolvedExtensionIds.map(async (extensionId) => {
       for (const extensionsPath of extensionsPaths) {
-        const iconDataUrl = await readExtensionIconDataUrl(
-          extensionsPath,
-          extensionId,
-        );
+        const iconDataUrl = await readExtensionIconDataUrl(extensionsPath, extensionId);
         if (iconDataUrl) {
           extensionIcons.set(extensionId, iconDataUrl);
           break;
         }
       }
-    }),
+    })
   );
 
   return { namespaceToExtension, extensionIcons };

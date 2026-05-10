@@ -42,16 +42,16 @@ export const SUPPORTED_EDITORS: EditorRegistryEntry[] = [
     macOSBundleName: "Visual Studio Code.app",
     extensionsPath: {
       mac: "~/.vscode/extensions",
-      win: "~/.vscode/extensions",
+      win: "~/.vscode/extensions"
     },
     settingsPath: {
       mac: "~/Library/Application Support/Code/User/settings.json",
-      win: "~/AppData/Roaming/Code/User/settings.json",
+      win: "~/AppData/Roaming/Code/User/settings.json"
     },
     stateDbPath: {
       mac: "~/Library/Application Support/Code/User/globalStorage/state.vscdb",
-      win: "~/AppData/Roaming/Code/User/globalStorage/state.vscdb",
-    },
+      win: "~/AppData/Roaming/Code/User/globalStorage/state.vscdb"
+    }
   },
   {
     slug: "cursor",
@@ -61,16 +61,16 @@ export const SUPPORTED_EDITORS: EditorRegistryEntry[] = [
     macOSBundleName: "Cursor.app",
     extensionsPath: {
       mac: "~/.cursor/extensions",
-      win: "~/.cursor/extensions",
+      win: "~/.cursor/extensions"
     },
     settingsPath: {
       mac: "~/Library/Application Support/Cursor/User/settings.json",
-      win: "~/AppData/Roaming/Cursor/User/settings.json",
+      win: "~/AppData/Roaming/Cursor/User/settings.json"
     },
     stateDbPath: {
       mac: "~/Library/Application Support/Cursor/User/globalStorage/state.vscdb",
-      win: "~/AppData/Roaming/Cursor/User/globalStorage/state.vscdb",
-    },
+      win: "~/AppData/Roaming/Cursor/User/globalStorage/state.vscdb"
+    }
   },
   {
     slug: "windsurf",
@@ -80,16 +80,16 @@ export const SUPPORTED_EDITORS: EditorRegistryEntry[] = [
     macOSBundleName: "Windsurf.app",
     extensionsPath: {
       mac: "~/.windsurf/extensions",
-      win: "~/.windsurf/extensions",
+      win: "~/.windsurf/extensions"
     },
     settingsPath: {
       mac: "~/Library/Application Support/Windsurf/User/settings.json",
-      win: "~/AppData/Roaming/Windsurf/User/settings.json",
+      win: "~/AppData/Roaming/Windsurf/User/settings.json"
     },
     stateDbPath: {
       mac: "~/Library/Application Support/Windsurf/User/globalStorage/state.vscdb",
-      win: "~/AppData/Roaming/Windsurf/User/globalStorage/state.vscdb",
-    },
+      win: "~/AppData/Roaming/Windsurf/User/globalStorage/state.vscdb"
+    }
   },
   {
     slug: "antigravity",
@@ -99,16 +99,16 @@ export const SUPPORTED_EDITORS: EditorRegistryEntry[] = [
     macOSBundleName: "Antigravity.app",
     extensionsPath: {
       mac: "~/.antigravity/extensions",
-      win: "~/.antigravity/extensions",
+      win: "~/.antigravity/extensions"
     },
     settingsPath: {
       mac: "~/Library/Application Support/Antigravity/User/settings.json",
-      win: "~/AppData/Roaming/Antigravity/User/settings.json",
+      win: "~/AppData/Roaming/Antigravity/User/settings.json"
     },
     stateDbPath: {
       mac: "~/Library/Application Support/Antigravity/User/globalStorage/state.vscdb",
-      win: "~/AppData/Roaming/Antigravity/User/globalStorage/state.vscdb",
-    },
+      win: "~/AppData/Roaming/Antigravity/User/globalStorage/state.vscdb"
+    }
   },
   {
     slug: "kiro",
@@ -118,16 +118,16 @@ export const SUPPORTED_EDITORS: EditorRegistryEntry[] = [
     macOSBundleName: "Kiro.app",
     extensionsPath: {
       mac: "~/.kiro/extensions",
-      win: "~/.kiro/extensions",
+      win: "~/.kiro/extensions"
     },
     settingsPath: {
       mac: "~/Library/Application Support/Kiro/User/settings.json",
-      win: "~/AppData/Roaming/Kiro/User/settings.json",
+      win: "~/AppData/Roaming/Kiro/User/settings.json"
     },
     stateDbPath: {
       mac: "~/Library/Application Support/Kiro/User/globalStorage/state.vscdb",
-      win: "~/AppData/Roaming/Kiro/User/globalStorage/state.vscdb",
-    },
+      win: "~/AppData/Roaming/Kiro/User/globalStorage/state.vscdb"
+    }
   },
   {
     slug: "trae",
@@ -137,16 +137,16 @@ export const SUPPORTED_EDITORS: EditorRegistryEntry[] = [
     macOSBundleName: "Trae.app",
     extensionsPath: {
       mac: "~/.trae/extensions",
-      win: "~/.trae/extensions",
+      win: "~/.trae/extensions"
     },
     settingsPath: {
       mac: "~/Library/Application Support/Trae/User/settings.json",
-      win: "~/AppData/Roaming/Trae/User/settings.json",
+      win: "~/AppData/Roaming/Trae/User/settings.json"
     },
     stateDbPath: {
       mac: "~/Library/Application Support/Trae/User/globalStorage/state.vscdb",
-      win: "~/AppData/Roaming/Trae/User/globalStorage/state.vscdb",
-    },
+      win: "~/AppData/Roaming/Trae/User/globalStorage/state.vscdb"
+    }
   },
   {
     slug: "trae-cn",
@@ -156,16 +156,16 @@ export const SUPPORTED_EDITORS: EditorRegistryEntry[] = [
     macOSBundleName: "Trae CN.app",
     extensionsPath: {
       mac: "~/.trae-cn/extensions",
-      win: "~/.trae-cn/extensions",
+      win: "~/.trae-cn/extensions"
     },
     settingsPath: {
       mac: "~/Library/Application Support/Trae CN/User/settings.json",
-      win: "~/AppData/Roaming/Trae CN/User/settings.json",
+      win: "~/AppData/Roaming/Trae CN/User/settings.json"
     },
     stateDbPath: {
       mac: "~/Library/Application Support/Trae CN/User/globalStorage/state.vscdb",
-      win: "~/AppData/Roaming/Trae CN/User/globalStorage/state.vscdb",
-    },
+      win: "~/AppData/Roaming/Trae CN/User/globalStorage/state.vscdb"
+    }
   },
   {
     slug: "qoder",
@@ -175,15 +175,15 @@ export const SUPPORTED_EDITORS: EditorRegistryEntry[] = [
     macOSBundleName: "Qoder.app",
     extensionsPath: {
       mac: "~/.qoder/extensions",
-      win: "~/.qoder/extensions",
+      win: "~/.qoder/extensions"
     },
     settingsPath: {
       mac: "~/Library/Application Support/Qoder/User/settings.json",
-      win: "~/AppData/Roaming/Qoder/User/settings.json",
+      win: "~/AppData/Roaming/Qoder/User/settings.json"
     },
     stateDbPath: {
       mac: "~/Library/Application Support/Qoder/User/globalStorage/state.vscdb",
-      win: "~/AppData/Roaming/Qoder/User/globalStorage/state.vscdb",
-    },
-  },
+      win: "~/AppData/Roaming/Qoder/User/globalStorage/state.vscdb"
+    }
+  }
 ];

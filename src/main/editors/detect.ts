@@ -4,11 +4,10 @@ import { SUPPORTED_EDITORS } from "./registry";
 
 export const APP_ICON_STATUS = {
   READY: "ready",
-  FALLBACK: "fallback",
+  FALLBACK: "fallback"
 } as const;
 
-export type AppIconStatus =
-  (typeof APP_ICON_STATUS)[keyof typeof APP_ICON_STATUS];
+export type AppIconStatus = (typeof APP_ICON_STATUS)[keyof typeof APP_ICON_STATUS];
 
 export interface DetectedEditor {
   name: string;

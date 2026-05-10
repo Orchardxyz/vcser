@@ -13,10 +13,5 @@
     "noEmit": true,
     "types": ["node", "electron"]
   },
-  "include": [
-    "electron.vite.config.ts",
-    "src/main/**/*.ts",
-    "src/preload/**/*.ts",
-    "src/renderer/src/types.ts"
-  ]
+  "include": ["electron.vite.config.ts", "src/main/**/*.ts", "src/preload/**/*.ts", "src/renderer/src/types.ts"]
 }

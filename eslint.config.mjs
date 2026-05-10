@@ -5,97 +5,131 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import prettierConfig from "eslint-config-prettier";
 import globals from "globals";
 
+const typedLanguageOptions = {
+  parserOptions: {
+    projectService: true,
+    tsconfigRootDir: import.meta.dirname
+  }
+};
+
+const typeCheckedConfigs = tseslint.configs.recommendedTypeChecked.map((config) => ({
+  ...config,
+  files: ["**/*.ts", "**/*.tsx"]
+}));
+
+const maxLinesRuleOptions = {
+  skipBlankLines: true,
+  skipComments: true
+};
+
+const personalTypeScriptRules = {
+  "@typescript-eslint/consistent-type-imports": [
+    "warn",
+    {
+      prefer: "type-imports",
+      fixStyle: "separate-type-imports"
+    }
+  ],
+  "@typescript-eslint/no-base-to-string": "off",
+  "@typescript-eslint/no-floating-promises": "off",
+  "@typescript-eslint/no-unnecessary-type-assertion": "off",
+  "@typescript-eslint/no-unused-vars": [
+    "warn",
+    {
+      argsIgnorePattern: "^_",
+      caughtErrors: "all",
+      caughtErrorsIgnorePattern: "^_",
+      destructuredArrayIgnorePattern: "^_",
+      ignoreRestSiblings: true,
+      varsIgnorePattern: "^_"
+    }
+  ],
+  "@typescript-eslint/require-await": "off",
+  "no-console": [
+    "error",
+    {
+      allow: ["warn", "error", "info"]
+    }
+  ]
+};
+
 export default tseslint.config(
   { ignores: ["out/**", "dist/**", "src/generated/**", "*.tsbuildinfo"] },
 
   // Base JS/TS rules for all authored files
   js.configs.recommended,
-  ...tseslint.configs.recommended,
+  ...typeCheckedConfigs,
 
-  // Root config files (electron.vite.config.ts etc.)
+  // Shared TypeScript behavior
   {
-    files: ["electron.vite.config.ts"],
-    languageOptions: {
-      parserOptions: {
-        projectService: true,
-        tsconfigRootDir: import.meta.dirname,
-      },
-      globals: globals.node,
-    },
+    files: ["**/*.ts", "**/*.tsx"],
+    languageOptions: typedLanguageOptions,
+    rules: personalTypeScriptRules
   },
 
-  // Electron main process
   {
-    files: ["src/main/**/*.ts"],
-    languageOptions: {
-      parserOptions: {
-        projectService: true,
-        tsconfigRootDir: import.meta.dirname,
-      },
-      globals: globals.node,
-    },
+    files: ["**/*.ts"],
+    rules: {
+      "max-lines": ["warn", { ...maxLinesRuleOptions, max: 300 }]
+    }
   },
 
-  // Preload
   {
-    files: ["src/preload/**/*.ts"],
+    files: ["**/*.tsx"],
+    rules: {
+      "max-lines": ["warn", { ...maxLinesRuleOptions, max: 350 }]
+    }
+  },
+
+  // Root config files and node-side TypeScript
+  {
+    files: ["*.ts", "src/main/**/*.ts", "src/preload/**/*.ts"],
     languageOptions: {
-      parserOptions: {
-        projectService: true,
-        tsconfigRootDir: import.meta.dirname,
-      },
-      globals: globals.node,
-    },
+      ...typedLanguageOptions,
+      globals: globals.node
+    }
+  },
+
+  {
+    files: ["prisma.config.ts"],
+    ...tseslint.configs.disableTypeChecked,
+    languageOptions: {
+      ...tseslint.configs.disableTypeChecked.languageOptions,
+      globals: globals.node
+    }
   },
 
   // Renderer (web)
   {
     files: ["src/renderer/src/**/*.ts", "src/renderer/src/**/*.tsx"],
-    ...reactHooks.configs.recommended,
-    plugins: { "react-refresh": reactRefresh },
+    plugins: {
+      "react-hooks": reactHooks,
+      "react-refresh": reactRefresh
+    },
     rules: {
+      "react-hooks/exhaustive-deps": "warn",
+      "react-hooks/rules-of-hooks": "error",
       "react-refresh/only-export-components": [
         "warn",
         {
           allowConstantExport: true,
-          allowExportNames: [
-            "BADGE_SIZE",
-            "BADGE_VARIANT",
-            "BUTTON_SIZE",
-            "BUTTON_VARIANT",
-            "EDITOR_IDENTITY_MODE",
-            "PAGE",
-          ],
-        },
-      ],
+          allowExportNames: ["BADGE_SIZE", "BADGE_VARIANT", "BUTTON_SIZE", "BUTTON_VARIANT", "EDITOR_IDENTITY_MODE", "PAGE"]
+        }
+      ]
     },
     languageOptions: {
-      parserOptions: {
-        projectService: true,
-        tsconfigRootDir: import.meta.dirname,
-      },
-      globals: globals.browser,
-    },
-  },
-
-  // Shared types referenced by both node and web tsconfigs
-  {
-    files: ["src/renderer/src/types.ts"],
-    languageOptions: {
-      parserOptions: {
-        projectService: true,
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
+      ...typedLanguageOptions,
+      globals: globals.browser
+    }
   },
 
   // Root-level config/script files (JS/MJS/CJS)
   {
-    files: ["*.mjs", "*.cjs"],
+    files: ["*.js", "*.mjs", "*.cjs"],
     languageOptions: {
-      globals: globals.node,
-    },
+      globals: globals.node
+    }
   },
 
-  prettierConfig,
+  prettierConfig
 );

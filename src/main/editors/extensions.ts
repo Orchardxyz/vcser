@@ -3,10 +3,7 @@ import { readFileSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import { join, resolve, sep } from "node:path";
 import type { Schema } from "type-fest";
-import type {
-  ExtensionDiffResult,
-  ExtensionPresence,
-} from "../../renderer/src/types";
+import type { ExtensionDiffResult, ExtensionPresence } from "../../renderer/src/types";
 import { mimeTypeForPath } from "./utils";
 
 interface EditorWithExtensions {
@@ -40,9 +37,7 @@ interface InstalledExtensionMetadata {
   relativeLocation?: string;
 }
 
-function isExtensionManifestEntry(
-  value: unknown,
-): value is ExtensionManifestEntry {
+function isExtensionManifestEntry(value: unknown): value is ExtensionManifestEntry {
   if (!value || typeof value !== "object") {
     return false;
   }
@@ -58,8 +53,7 @@ function isExtensionManifestEntry(
     !!identifier &&
     typeof identifier.id === "string" &&
     (entry.version === undefined || typeof entry.version === "string") &&
-    (entry.relativeLocation === undefined ||
-      typeof entry.relativeLocation === "string")
+    (entry.relativeLocation === undefined || typeof entry.relativeLocation === "string")
   );
 }
 
@@ -73,11 +67,7 @@ function isExtensionPackageJson(value: unknown): value is ExtensionPackageJson {
 }
 
 function isDisabledExtensionRow(value: unknown): value is DisabledExtensionRow {
-  return (
-    !!value &&
-    typeof value === "object" &&
-    typeof (value as DisabledExtensionRow).id === "string"
-  );
+  return !!value && typeof value === "object" && typeof (value as DisabledExtensionRow).id === "string";
 }
 
 function parseDisabledExtensionIds(rawValue: string): Set<string> {
@@ -98,18 +88,11 @@ function parseDisabledExtensionIds(rawValue: string): Set<string> {
   return ids;
 }
 
-function readDisabledExtensionIdsFromSqliteCli(
-  stateDbPath: string,
-): Set<string> {
+function readDisabledExtensionIdsFromSqliteCli(stateDbPath: string): Set<string> {
   try {
-    const rawValue = execFileSync(
-      "sqlite3",
-      [
-        stateDbPath,
-        "SELECT value FROM ItemTable WHERE key = 'extensionsIdentifiers/disabled'",
-      ],
-      { encoding: "utf8" },
-    ).trim();
+    const rawValue = execFileSync("sqlite3", [stateDbPath, "SELECT value FROM ItemTable WHERE key = 'extensionsIdentifiers/disabled'"], {
+      encoding: "utf8"
+    }).trim();
 
     if (!rawValue) {
       return new Set();
@@ -121,17 +104,11 @@ function readDisabledExtensionIdsFromSqliteCli(
   }
 }
 
-async function findExtensionDir(
-  extensionsPath: string,
-  extensionId: string,
-): Promise<string | undefined> {
+async function findExtensionDir(extensionsPath: string, extensionId: string): Promise<string | undefined> {
   try {
     const prefix = `${extensionId.toLowerCase()}-`;
     const entries = await readdir(extensionsPath, { withFileTypes: true });
-    const match = entries.find(
-      (entry) =>
-        entry.isDirectory() && entry.name.toLowerCase().startsWith(prefix),
-    );
+    const match = entries.find((entry) => entry.isDirectory() && entry.name.toLowerCase().startsWith(prefix));
 
     return match ? join(extensionsPath, match.name) : undefined;
   } catch {
@@ -139,20 +116,14 @@ async function findExtensionDir(
   }
 }
 
-async function getExtensionIconDataUrl(
-  extensionsPath: string,
-  extensionId: string,
-): Promise<string | undefined> {
+async function getExtensionIconDataUrl(extensionsPath: string, extensionId: string): Promise<string | undefined> {
   try {
     const extensionDir = await findExtensionDir(extensionsPath, extensionId);
     if (!extensionDir) {
       return undefined;
     }
 
-    const manifestRaw = await readFile(
-      join(extensionDir, "package.json"),
-      "utf-8",
-    );
+    const manifestRaw = await readFile(join(extensionDir, "package.json"), "utf-8");
     const manifestParsed: unknown = JSON.parse(manifestRaw);
 
     if (!isExtensionPackageJson(manifestParsed) || !manifestParsed.icon) {
@@ -160,10 +131,7 @@ async function getExtensionIconDataUrl(
     }
 
     const iconPath = resolve(extensionDir, manifestParsed.icon);
-    if (
-      iconPath !== extensionDir &&
-      !iconPath.startsWith(`${extensionDir}${sep}`)
-    ) {
+    if (iconPath !== extensionDir && !iconPath.startsWith(`${extensionDir}${sep}`)) {
       return undefined;
     }
 
@@ -179,14 +147,11 @@ async function getExtensionIconDataUrl(
   }
 }
 
-function addInstalledExtensionMetadata(
-  byId: Map<string, InstalledExtensionMetadata>,
-  entry: ExtensionManifestEntry,
-): void {
+function addInstalledExtensionMetadata(byId: Map<string, InstalledExtensionMetadata>, entry: ExtensionManifestEntry): void {
   const next: InstalledExtensionMetadata = {
     extensionId: entry.identifier.id,
     version: entry.version ?? null,
-    relativeLocation: entry.relativeLocation,
+    relativeLocation: entry.relativeLocation
   };
   const existing = byId.get(next.extensionId);
 
@@ -200,9 +165,7 @@ function addInstalledExtensionMetadata(
   }
 }
 
-export function listInstalledExtensionMetadata(
-  extensionsPath: string,
-): InstalledExtensionMetadata[] {
+export function listInstalledExtensionMetadata(extensionsPath: string): InstalledExtensionMetadata[] {
   try {
     const manifestPath = join(extensionsPath, "extensions.json");
     const raw = readFileSync(manifestPath, "utf-8");
@@ -231,9 +194,7 @@ export function listInstalledExtensionMetadata(
  * Returns an empty array if the directory is missing or unreadable.
  */
 export function listInstalledExtensions(extensionsPath: string): string[] {
-  return listInstalledExtensionMetadata(extensionsPath).map(
-    (entry) => entry.extensionId,
-  );
+  return listInstalledExtensionMetadata(extensionsPath).map((entry) => entry.extensionId);
 }
 
 /**
@@ -247,13 +208,9 @@ function readDisabledExtensionIds(stateDbPath: string): Set<string> {
 /**
  * Build an ExtensionDiffResult from a list of editors with their extensions paths.
  */
-export async function computeExtensionDiff(
-  editors: EditorWithExtensions[],
-): Promise<ExtensionDiffResult> {
+export async function computeExtensionDiff(editors: EditorWithExtensions[]): Promise<ExtensionDiffResult> {
   const editorNames = editors.map((e) => e.name);
-  const editorExtensionsPath = new Map(
-    editors.map((editor) => [editor.name, editor.extensionsPath]),
-  );
+  const editorExtensionsPath = new Map(editors.map((editor) => [editor.name, editor.extensionsPath]));
 
   const allIds = new Set<string>();
   const byEditor = new Map<string, Map<string, InstalledExtensionMetadata>>();
@@ -261,17 +218,12 @@ export async function computeExtensionDiff(
 
   for (const editor of editors) {
     const installed = listInstalledExtensionMetadata(editor.extensionsPath);
-    const installedById = new Map(
-      installed.map((entry) => [entry.extensionId, entry]),
-    );
+    const installedById = new Map(installed.map((entry) => [entry.extensionId, entry]));
     byEditor.set(editor.name, installedById);
     for (const id of installedById.keys()) allIds.add(id);
 
     if (editor.stateDbPath) {
-      disabledByEditor.set(
-        editor.name,
-        readDisabledExtensionIds(editor.stateDbPath),
-      );
+      disabledByEditor.set(editor.name, readDisabledExtensionIds(editor.stateDbPath));
     } else {
       disabledByEditor.set(editor.name, new Set());
     }
@@ -291,8 +243,7 @@ export async function computeExtensionDiff(
       const installedMeta = byEditor.get(name)?.get(extensionId);
       const installed = installedMeta !== undefined;
       presence[name] = installed;
-      disabled[name] =
-        installed && (disabledByEditor.get(name)?.has(extensionId) ?? false);
+      disabled[name] = installed && (disabledByEditor.get(name)?.has(extensionId) ?? false);
       versions[name] = installedMeta?.version ?? null;
       if (installedMeta?.version) {
         installedVersions.add(installedMeta.version);
@@ -306,7 +257,7 @@ export async function computeExtensionDiff(
       presence,
       disabled,
       versions,
-      hasVersionMismatch,
+      hasVersionMismatch
     };
     all.push(entry);
     if (!allTrue || hasVersionMismatch) onlyDiffs.push(entry);
@@ -324,11 +275,8 @@ export async function computeExtensionDiff(
         return;
       }
 
-      entry.iconDataUrl = await getExtensionIconDataUrl(
-        extensionsPath,
-        entry.extensionId,
-      );
-    }),
+      entry.iconDataUrl = await getExtensionIconDataUrl(extensionsPath, entry.extensionId);
+    })
   );
 
   return { editorNames, all, onlyDiffs };

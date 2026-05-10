@@ -1,29 +1,21 @@
 import * as PopoverPrimitive from "@radix-ui/react-popover";
-import {
-  ReactElement,
-  ReactNode,
-  useCallback,
-  useEffect,
-  useId,
-  useRef,
-  useState,
-} from "react";
+import type { ReactElement, ReactNode } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import classNames from "classnames";
 
 const POPOVER_PLACEMENT = {
   TOP: "top",
   BOTTOM: "bottom",
   LEFT: "left",
-  RIGHT: "right",
+  RIGHT: "right"
 } as const;
 
-type PopoverPlacement =
-  (typeof POPOVER_PLACEMENT)[keyof typeof POPOVER_PLACEMENT];
+type PopoverPlacement = (typeof POPOVER_PLACEMENT)[keyof typeof POPOVER_PLACEMENT];
 
 const POPOVER_ALIGN = {
   START: "start",
   CENTER: "center",
-  END: "end",
+  END: "end"
 } as const;
 
 type PopoverAlign = (typeof POPOVER_ALIGN)[keyof typeof POPOVER_ALIGN];
@@ -97,10 +89,7 @@ interface PopoverProps {
 
 const HOVER_CLOSE_DELAY = 120;
 
-function containsTarget(
-  node: HTMLElement | null,
-  target: EventTarget | null,
-): target is Node {
+function containsTarget(node: HTMLElement | null, target: EventTarget | null): target is Node {
   return target instanceof Node && node?.contains(target) === true;
 }
 
@@ -120,7 +109,7 @@ export function Popover({
   closeOnSelect = false,
   showArrow = false,
   maxWidth,
-  panelClassName,
+  panelClassName
 }: PopoverProps) {
   const [internalOpen, setInternalOpen] = useState(defaultOpen);
   const isControlled = controlledOpen !== undefined;
@@ -139,7 +128,7 @@ export function Popover({
       }
       onOpenChange?.(next);
     },
-    [disabled, isControlled, onOpenChange],
+    [disabled, isControlled, onOpenChange]
   );
 
   const clearCloseTimer = useCallback(() => {
@@ -181,10 +170,7 @@ export function Popover({
   function handleHoverBlur() {
     requestAnimationFrame(() => {
       const activeElement = document.activeElement;
-      if (
-        containsTarget(triggerRef.current, activeElement) ||
-        containsTarget(contentRef.current, activeElement)
-      ) {
+      if (containsTarget(triggerRef.current, activeElement) || containsTarget(contentRef.current, activeElement)) {
         return;
       }
 
@@ -239,7 +225,7 @@ export function Popover({
             "data-[side=bottom]:data-[state=closed]:-translate-y-1",
             "data-[side=left]:data-[state=closed]:translate-x-1",
             "data-[side=right]:data-[state=closed]:-translate-x-1",
-            panelClassName,
+            panelClassName
           )}
           style={{ maxWidth }}
           onOpenAutoFocus={(event) => event.preventDefault()}
@@ -267,10 +253,7 @@ export function Popover({
           onClickCapture={
             closeOnSelect
               ? (event) => {
-                  if (
-                    event.target instanceof Element &&
-                    event.target.closest('[data-popover-keep-open="true"]')
-                  ) {
+                  if (event.target instanceof Element && event.target.closest('[data-popover-keep-open="true"]')) {
                     return;
                   }
 
@@ -288,7 +271,7 @@ export function Popover({
                 fill: "var(--color-popover)",
                 stroke: "var(--color-border)",
                 strokeWidth: 1,
-                strokeLinejoin: "round",
+                strokeLinejoin: "round"
               }}
             />
           )}

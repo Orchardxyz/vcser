@@ -1,32 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
 import classNames from "classnames";
 import { ArrowLeftRight, CheckCheck, CircleOff, Package } from "lucide-react";
-import {
-  EditorIdentity,
-  EDITOR_IDENTITY_MODE,
-} from "../../components/editor/EditorIdentity";
-import {
-  Button,
-  BUTTON_SIZE,
-  BUTTON_VARIANT,
-} from "../../components/ui/Button";
+import { EditorIdentity, EDITOR_IDENTITY_MODE } from "../../components/editor/EditorIdentity";
+import { Button, BUTTON_SIZE, BUTTON_VARIANT } from "../../components/ui/Button";
 import { Badge, BADGE_VARIANT } from "../../components/ui/Badge";
 import { Popover } from "../../components/ui/Popover";
 import { SegmentedTabs } from "../../components/ui/SegmentedTabs";
 import { Skeleton } from "../../components/ui/Skeleton";
 import { invoke } from "../../ipc";
 import { useAppStore } from "../../store";
-import {
-  EXTENSION_VIEW_MODE,
-  type ExtensionDiffResult,
-  type ExtensionPresence,
-  type ExtensionViewMode,
-  type ResolvedEditor,
-} from "../../types";
+import { EXTENSION_VIEW_MODE, type ExtensionDiffResult, type ExtensionPresence, type ExtensionViewMode, type ResolvedEditor } from "../../types";
 
 const EXTENSION_VIEW_MODE_ITEMS = [
   { value: EXTENSION_VIEW_MODE.BY_EXTENSION, label: "By Extension" },
-  { value: EXTENSION_VIEW_MODE.BY_EDITOR, label: "By Editor" },
+  { value: EXTENSION_VIEW_MODE.BY_EDITOR, label: "By Editor" }
 ] as const;
 
 function displayName(id: string): string {
@@ -48,13 +35,7 @@ function formatVersion(version: string | null | undefined): string {
   return version ?? "Unknown";
 }
 
-function ExtensionIcon({
-  extensionId,
-  iconDataUrl,
-}: {
-  extensionId: string;
-  iconDataUrl?: string;
-}) {
+function ExtensionIcon({ extensionId, iconDataUrl }: { extensionId: string; iconDataUrl?: string }) {
   const [imageFailed, setImageFailed] = useState(false);
 
   useEffect(() => {
@@ -79,23 +60,11 @@ function ExtensionIcon({
   );
 }
 
-function EditorPresenceBadge({
-  name,
-  editorByName,
-}: {
-  name: string;
-  editorByName: Map<string, ResolvedEditor>;
-}) {
+function EditorPresenceBadge({ name, editorByName }: { name: string; editorByName: Map<string, ResolvedEditor> }) {
   const editor = editorByName.get(name);
 
   if (editor) {
-    return (
-      <EditorIdentity
-        editor={editor}
-        mode={EDITOR_IDENTITY_MODE.ICON}
-        className="h-5.5 w-5.5 rounded-md"
-      />
-    );
+    return <EditorIdentity editor={editor} mode={EDITOR_IDENTITY_MODE.ICON} className="h-5.5 w-5.5 rounded-md" />;
   }
 
   return (
@@ -109,15 +78,7 @@ function EditorPresenceBadge({
   );
 }
 
-function EditorVersionPill({
-  name,
-  version,
-  editorByName,
-}: {
-  name: string;
-  version: string | null;
-  editorByName: Map<string, ResolvedEditor>;
-}) {
+function EditorVersionPill({ name, version, editorByName }: { name: string; version: string | null; editorByName: Map<string, ResolvedEditor> }) {
   return (
     <div className="relative inline-flex pr-7 pt-1">
       <EditorPresenceBadge name={name} editorByName={editorByName} />
@@ -128,13 +89,7 @@ function EditorVersionPill({
   );
 }
 
-function VersionMismatchIndicator({
-  entry,
-  editorNames,
-}: {
-  entry: ExtensionPresence;
-  editorNames: string[];
-}) {
+function VersionMismatchIndicator({ entry, editorNames }: { entry: ExtensionPresence; editorNames: string[] }) {
   if (!entry.hasVersionMismatch) {
     return null;
   }
@@ -151,27 +106,18 @@ function VersionMismatchIndicator({
       panelClassName="min-w-[200px]"
       content={
         <div className="space-y-2">
-          <div className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
-            Installed versions
-          </div>
+          <div className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Installed versions</div>
           <div className="space-y-1">
             {installedVersions.map((name) => (
-              <div
-                key={name}
-                className="rounded-md bg-slate-50 px-2 py-1 text-sm text-slate-700"
-              >
-                <span className="font-medium">{name}:</span>{" "}
-                {formatVersion(entry.versions[name])}
+              <div key={name} className="rounded-md bg-slate-50 px-2 py-1 text-sm text-slate-700">
+                <span className="font-medium">{name}:</span> {formatVersion(entry.versions[name])}
               </div>
             ))}
           </div>
         </div>
       }
     >
-      <Badge
-        variant={BADGE_VARIANT.INFO}
-        leadingIcon={<ArrowLeftRight size={12} />}
-      >
+      <Badge variant={BADGE_VARIANT.INFO} leadingIcon={<ArrowLeftRight size={12} />}>
         Version mismatch
       </Badge>
     </Popover>
@@ -183,15 +129,9 @@ function ExtensionTableSkeleton() {
     <table className="w-full text-sm">
       <thead>
         <tr className="border-b border-slate-100 bg-slate-50">
-          <th className="w-1/3 px-4 py-3 text-left text-xs font-medium text-slate-500">
-            Extension
-          </th>
-          <th className="px-4 py-3 text-left text-xs font-medium text-slate-500">
-            Installed In
-          </th>
-          <th className="px-4 py-3 text-left text-xs font-medium text-slate-500">
-            Not Installed In
-          </th>
+          <th className="w-1/3 px-4 py-3 text-left text-xs font-medium text-slate-500">Extension</th>
+          <th className="px-4 py-3 text-left text-xs font-medium text-slate-500">Installed In</th>
+          <th className="px-4 py-3 text-left text-xs font-medium text-slate-500">Not Installed In</th>
         </tr>
       </thead>
       <tbody className="divide-y divide-slate-100">
@@ -231,10 +171,7 @@ function EditorGridSkeleton() {
   return (
     <div className="grid grid-cols-1 gap-4 p-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
       {[1, 2, 3].map((index) => (
-        <div
-          key={index}
-          className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
-        >
+        <div key={index} className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
           <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
             <div className="flex items-center gap-3">
               <Skeleton className="h-9 w-9 rounded-lg" />
@@ -264,7 +201,7 @@ function EditorGridSkeleton() {
 function ExtensionsByExtensionView({
   rows,
   editorNames,
-  editorByName,
+  editorByName
 }: {
   rows: ExtensionPresence[];
   editorNames: string[];
@@ -274,15 +211,9 @@ function ExtensionsByExtensionView({
     <table className="w-full table-fixed text-sm">
       <thead>
         <tr className="border-b border-slate-100 bg-slate-50">
-          <th className="w-[42%] px-4 py-3 text-left text-xs font-medium text-slate-500">
-            Extension
-          </th>
-          <th className="w-[29%] px-4 py-3 text-left text-xs font-medium text-slate-500">
-            Installed In
-          </th>
-          <th className="w-[29%] px-4 py-3 text-left text-xs font-medium text-slate-500">
-            Not Installed In
-          </th>
+          <th className="w-[42%] px-4 py-3 text-left text-xs font-medium text-slate-500">Extension</th>
+          <th className="w-[29%] px-4 py-3 text-left text-xs font-medium text-slate-500">Installed In</th>
+          <th className="w-[29%] px-4 py-3 text-left text-xs font-medium text-slate-500">Not Installed In</th>
         </tr>
       </thead>
       <tbody className="divide-y divide-slate-100">
@@ -291,9 +222,7 @@ function ExtensionsByExtensionView({
             <td colSpan={3} className="px-4 py-12">
               <div className="flex flex-col items-center justify-center gap-3 text-center text-slate-500">
                 <CheckCheck size={24} className="text-emerald-500" />
-                <p className="text-sm">
-                  No extensions available for this view.
-                </p>
+                <p className="text-sm">No extensions available for this view.</p>
               </div>
             </td>
           </tr>
@@ -315,25 +244,14 @@ function ExtensionsByExtensionView({
             }
 
             return (
-              <tr
-                key={entry.extensionId}
-                className="transition-all duration-200 hover:bg-slate-50/60"
-              >
+              <tr key={entry.extensionId} className="transition-all duration-200 hover:bg-slate-50/60">
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
-                    <ExtensionIcon
-                      extensionId={entry.extensionId}
-                      iconDataUrl={entry.iconDataUrl}
-                    />
+                    <ExtensionIcon extensionId={entry.extensionId} iconDataUrl={entry.iconDataUrl} />
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <span className="truncate font-medium text-slate-800">
-                          {displayName(entry.extensionId)}
-                        </span>
-                        <VersionMismatchIndicator
-                          entry={entry}
-                          editorNames={editorNames}
-                        />
+                        <span className="truncate font-medium text-slate-800">{displayName(entry.extensionId)}</span>
+                        <VersionMismatchIndicator entry={entry} editorNames={editorNames} />
                         {disabledIn.length > 0 && (
                           <Popover
                             trigger="click"
@@ -344,15 +262,10 @@ function ExtensionsByExtensionView({
                             panelClassName="min-w-[180px]"
                             content={
                               <div className="space-y-2">
-                                <div className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
-                                  Disabled in
-                                </div>
+                                <div className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Disabled in</div>
                                 <div className="space-y-1">
                                   {disabledIn.map((name) => (
-                                    <div
-                                      key={name}
-                                      className="rounded-md bg-slate-50 px-2 py-1 text-sm text-slate-700"
-                                    >
+                                    <div key={name} className="rounded-md bg-slate-50 px-2 py-1 text-sm text-slate-700">
                                       {name}
                                     </div>
                                   ))}
@@ -371,10 +284,7 @@ function ExtensionsByExtensionView({
                           </Popover>
                         )}
                       </div>
-                      <span
-                        className="block truncate font-mono text-xs text-slate-400"
-                        title={entry.extensionId}
-                      >
+                      <span className="block truncate font-mono text-xs text-slate-400" title={entry.extensionId}>
                         {shortenExtensionId(entry.extensionId)}
                       </span>
                     </div>
@@ -383,12 +293,7 @@ function ExtensionsByExtensionView({
                 <td className="px-4 py-3">
                   <div className="flex flex-wrap items-start gap-x-3 gap-y-2">
                     {installed.map((name) => (
-                      <EditorVersionPill
-                        key={name}
-                        name={name}
-                        version={entry.versions[name]}
-                        editorByName={editorByName}
-                      />
+                      <EditorVersionPill key={name} name={name} version={entry.versions[name]} editorByName={editorByName} />
                     ))}
                   </div>
                 </td>
@@ -404,11 +309,7 @@ function ExtensionsByExtensionView({
                   ) : (
                     <div className="flex flex-wrap items-center gap-2">
                       {missing.map((name) => (
-                        <EditorPresenceBadge
-                          key={name}
-                          name={name}
-                          editorByName={editorByName}
-                        />
+                        <EditorPresenceBadge key={name} name={name} editorByName={editorByName} />
                       ))}
                     </div>
                   )}
@@ -425,7 +326,7 @@ function ExtensionsByExtensionView({
 function ExtensionsByEditorView({
   editorNames,
   rows,
-  editorByName,
+  editorByName
 }: {
   editorNames: string[];
   rows: ExtensionPresence[];
@@ -438,18 +339,11 @@ function ExtensionsByEditorView({
         const installed = rows.filter((entry) => entry.presence[editorName]);
 
         return (
-          <section
-            key={editorName}
-            className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
-          >
+          <section key={editorName} className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
             <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
               <div className="flex min-w-0 items-center gap-3">
                 {editor ? (
-                  <EditorIdentity
-                    editor={editor}
-                    mode={EDITOR_IDENTITY_MODE.ICON}
-                    className="h-9 w-9 rounded-lg"
-                  />
+                  <EditorIdentity editor={editor} mode={EDITOR_IDENTITY_MODE.ICON} className="h-9 w-9 rounded-lg" />
                 ) : (
                   <span
                     className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-sm font-semibold text-slate-600"
@@ -460,12 +354,9 @@ function ExtensionsByEditorView({
                   </span>
                 )}
                 <div className="min-w-0">
-                  <h3 className="truncate text-sm font-semibold text-slate-900">
-                    {editor?.displayName ?? editorName}
-                  </h3>
+                  <h3 className="truncate text-sm font-semibold text-slate-900">{editor?.displayName ?? editorName}</h3>
                   <p className="text-xs text-slate-500">
-                    {installed.length}{" "}
-                    {installed.length === 1 ? "extension" : "extensions"}
+                    {installed.length} {installed.length === 1 ? "extension" : "extensions"}
                   </p>
                 </div>
               </div>
@@ -489,45 +380,26 @@ function ExtensionsByEditorView({
                           ? "border border-slate-100 bg-white opacity-60"
                           : entry.hasVersionMismatch
                             ? "border border-sky-200 bg-sky-50/40"
-                            : "border border-slate-200 bg-slate-50/50",
+                            : "border border-slate-200 bg-slate-50/50"
                       )}
                     >
                       <div className={classNames({ "opacity-50": isDisabled })}>
-                        <ExtensionIcon
-                          extensionId={entry.extensionId}
-                          iconDataUrl={entry.iconDataUrl}
-                        />
+                        <ExtensionIcon extensionId={entry.extensionId} iconDataUrl={entry.iconDataUrl} />
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5">
-                          <span
-                            className={classNames(
-                              "block truncate text-sm font-medium",
-                              isDisabled ? "text-slate-400" : "text-slate-800",
-                            )}
-                          >
+                          <span className={classNames("block truncate text-sm font-medium", isDisabled ? "text-slate-400" : "text-slate-800")}>
                             {displayName(entry.extensionId)}
                           </span>
-                          <VersionMismatchIndicator
-                            entry={entry}
-                            editorNames={editorNames}
-                          />
+                          <VersionMismatchIndicator entry={entry} editorNames={editorNames} />
                         </div>
                         <span
-                          className={classNames(
-                            "block truncate font-mono text-xs",
-                            isDisabled ? "text-slate-300" : "text-slate-400",
-                          )}
+                          className={classNames("block truncate font-mono text-xs", isDisabled ? "text-slate-300" : "text-slate-400")}
                           title={entry.extensionId}
                         >
                           {shortenExtensionId(entry.extensionId)}
                         </span>
-                        <span
-                          className={classNames(
-                            "mt-1 block text-[11px] font-medium",
-                            isDisabled ? "text-slate-300" : "text-slate-500",
-                          )}
-                        >
+                        <span className={classNames("mt-1 block text-[11px] font-medium", isDisabled ? "text-slate-300" : "text-slate-500")}>
                           Version {formatVersion(entry.versions[editorName])}
                         </span>
                       </div>
@@ -545,12 +417,8 @@ function ExtensionsByEditorView({
 
 export function ExtensionsTab() {
   const editors = useAppStore((s) => s.editors);
-  const [diffResult, setDiffResult] = useState<ExtensionDiffResult | null>(
-    null,
-  );
-  const [viewMode, setViewMode] = useState<ExtensionViewMode>(
-    EXTENSION_VIEW_MODE.BY_EXTENSION,
-  );
+  const [diffResult, setDiffResult] = useState<ExtensionDiffResult | null>(null);
+  const [viewMode, setViewMode] = useState<ExtensionViewMode>(EXTENSION_VIEW_MODE.BY_EXTENSION);
 
   useEffect(() => {
     invoke<ExtensionDiffResult>("compute_extension_diff").then(setDiffResult);
@@ -569,12 +437,7 @@ export function ExtensionsTab() {
 
   const toolbar = (
     <div className="border-b border-slate-100 px-4 py-3">
-      <SegmentedTabs
-        items={[...EXTENSION_VIEW_MODE_ITEMS]}
-        value={viewMode}
-        onChange={setViewMode}
-        className="w-full sm:w-fit"
-      />
+      <SegmentedTabs items={[...EXTENSION_VIEW_MODE_ITEMS]} value={viewMode} onChange={setViewMode} className="w-full sm:w-fit" />
     </div>
   );
 
@@ -582,11 +445,7 @@ export function ExtensionsTab() {
     return (
       <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
         {toolbar}
-        {viewMode === EXTENSION_VIEW_MODE.BY_EXTENSION ? (
-          <ExtensionTableSkeleton />
-        ) : (
-          <EditorGridSkeleton />
-        )}
+        {viewMode === EXTENSION_VIEW_MODE.BY_EXTENSION ? <ExtensionTableSkeleton /> : <EditorGridSkeleton />}
       </div>
     );
   }
@@ -595,9 +454,7 @@ export function ExtensionsTab() {
     return (
       <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-16 shadow-sm">
         <Package size={32} className="text-slate-300" />
-        <p className="text-sm text-slate-500">
-          No extensions found. Make sure at least one editor is detected.
-        </p>
+        <p className="text-sm text-slate-500">No extensions found. Make sure at least one editor is detected.</p>
       </div>
     );
   }
@@ -606,17 +463,9 @@ export function ExtensionsTab() {
     <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
       {toolbar}
       {viewMode === EXTENSION_VIEW_MODE.BY_EXTENSION ? (
-        <ExtensionsByExtensionView
-          rows={rows}
-          editorNames={diffResult.editorNames}
-          editorByName={editorByName}
-        />
+        <ExtensionsByExtensionView rows={rows} editorNames={diffResult.editorNames} editorByName={editorByName} />
       ) : (
-        <ExtensionsByEditorView
-          editorNames={diffResult.editorNames}
-          rows={rows}
-          editorByName={editorByName}
-        />
+        <ExtensionsByEditorView editorNames={diffResult.editorNames} rows={rows} editorByName={editorByName} />
       )}
     </div>
   );

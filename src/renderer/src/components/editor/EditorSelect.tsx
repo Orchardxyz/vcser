@@ -9,32 +9,15 @@ interface EditorSelectProps {
   className?: string;
 }
 
-export function EditorSelect({
-  editors,
-  value,
-  onChange,
-  className,
-}: EditorSelectProps) {
+export function EditorSelect({ editors, value, onChange, className }: EditorSelectProps) {
   return (
     <Select<ResolvedEditor>
       options={editors}
       value={value}
       onChange={(editor) => onChange(editor.slug)}
       getOptionValue={(editor) => editor.slug}
-      renderValue={(editor) => (
-        <EditorIdentity
-          editor={editor}
-          mode={EDITOR_IDENTITY_MODE.COMPACT}
-          className="min-w-0 flex-1"
-        />
-      )}
-      renderOption={(editor) => (
-        <EditorIdentity
-          editor={editor}
-          mode={EDITOR_IDENTITY_MODE.COMPACT}
-          className="min-w-0 flex-1"
-        />
-      )}
+      renderValue={(editor) => <EditorIdentity editor={editor} mode={EDITOR_IDENTITY_MODE.COMPACT} className="min-w-0 flex-1" />}
+      renderOption={(editor) => <EditorIdentity editor={editor} mode={EDITOR_IDENTITY_MODE.COMPACT} className="min-w-0 flex-1" />}
       ariaLabel="Editors"
       className={className}
       triggerClassName="min-w-50"

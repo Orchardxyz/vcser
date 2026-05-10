@@ -1,10 +1,9 @@
 export const APP_ICON_STATUS = {
   READY: "ready",
-  FALLBACK: "fallback",
+  FALLBACK: "fallback"
 } as const;
 
-export type AppIconStatus =
-  (typeof APP_ICON_STATUS)[keyof typeof APP_ICON_STATUS];
+export type AppIconStatus = (typeof APP_ICON_STATUS)[keyof typeof APP_ICON_STATUS];
 
 export interface ResolvedEditor {
   name: string;
@@ -46,15 +45,14 @@ export interface ExtensionDiffResult {
 
 export const EXTENSION_VIEW_MODE = {
   BY_EXTENSION: "by_extension",
-  BY_EDITOR: "by_editor",
+  BY_EDITOR: "by_editor"
 } as const;
 
-export type ExtensionViewMode =
-  (typeof EXTENSION_VIEW_MODE)[keyof typeof EXTENSION_VIEW_MODE];
+export type ExtensionViewMode = (typeof EXTENSION_VIEW_MODE)[keyof typeof EXTENSION_VIEW_MODE];
 
 export const SETTINGS_MODE = {
   SAFE: "safe",
-  EXACT: "exact",
+  EXACT: "exact"
 } as const;
 
 export type SettingsMode = (typeof SETTINGS_MODE)[keyof typeof SETTINGS_MODE];
@@ -62,7 +60,7 @@ export type SettingsMode = (typeof SETTINGS_MODE)[keyof typeof SETTINGS_MODE];
 export const THEME_MODE = {
   LIGHT: "light",
   DARK: "dark",
-  SYSTEM: "system",
+  SYSTEM: "system"
 } as const;
 
 export type ThemeMode = (typeof THEME_MODE)[keyof typeof THEME_MODE];
@@ -70,7 +68,7 @@ export type ThemeMode = (typeof THEME_MODE)[keyof typeof THEME_MODE];
 export const CHANGE_TYPE = {
   ADD: "add",
   UPDATE: "update",
-  DELETE: "delete",
+  DELETE: "delete"
 } as const;
 
 export type ChangeType = (typeof CHANGE_TYPE)[keyof typeof CHANGE_TYPE];
@@ -94,11 +92,10 @@ export interface SettingsDiffResult {
 export const SYNC_ACTION_TYPE = {
   INSTALL: "install",
   UNINSTALL: "uninstall",
-  SETTINGS: "settings",
+  SETTINGS: "settings"
 } as const;
 
-export type SyncActionType =
-  (typeof SYNC_ACTION_TYPE)[keyof typeof SYNC_ACTION_TYPE];
+export type SyncActionType = (typeof SYNC_ACTION_TYPE)[keyof typeof SYNC_ACTION_TYPE];
 
 export interface SyncActionInput {
   actionType: SyncActionType;
@@ -128,11 +125,10 @@ export interface ActionItem {
 
 export const EXTENSION_SETTINGS_GROUP_KIND = {
   NAMESPACE: "namespace",
-  VERSION_ONLY: "version_only",
+  VERSION_ONLY: "version_only"
 } as const;
 
-export type ExtensionSettingsGroupKind =
-  (typeof EXTENSION_SETTINGS_GROUP_KIND)[keyof typeof EXTENSION_SETTINGS_GROUP_KIND];
+export type ExtensionSettingsGroupKind = (typeof EXTENSION_SETTINGS_GROUP_KIND)[keyof typeof EXTENSION_SETTINGS_GROUP_KIND];
 
 export interface ExtensionSettingsGroup {
   kind: ExtensionSettingsGroupKind;

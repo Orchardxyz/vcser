@@ -1,16 +1,10 @@
 import { execFileSync } from "node:child_process";
-import {
-  accessSync,
-  constants,
-  existsSync,
-  mkdtempSync,
-  readFileSync,
-  rmSync,
-} from "node:fs";
+import { accessSync, constants, existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
 import { extname, join } from "node:path";
 import type { EditorRegistryEntry } from "./registry";
-import { type DetectedEditor, APP_ICON_STATUS, AppIconStatus } from "./detect";
+import type { AppIconStatus } from "./detect";
+import { type DetectedEditor, APP_ICON_STATUS } from "./detect";
 
 interface MacOSAppInfo {
   CFBundleIconFile?: string;
@@ -44,10 +38,7 @@ function resolveAppPaths(): string[] {
   return paths;
 }
 
-function findAppBundle(
-  entry: EditorRegistryEntry,
-  searchPaths: string[],
-): string | null {
+function findAppBundle(entry: EditorRegistryEntry, searchPaths: string[]): string | null {
   for (const base of searchPaths) {
     const candidate = join(base, entry.macOSBundleName);
     try {
@@ -62,38 +53,24 @@ function findAppBundle(
 
 function readAppInfo(appPath: string): MacOSAppInfo {
   const plistPath = join(appPath, "Contents", "Info.plist");
-  const output = execFileSync(
-    "plutil",
-    ["-convert", "json", "-o", "-", plistPath],
-    {
-      encoding: "utf8",
-    },
-  );
+  const output = execFileSync("plutil", ["-convert", "json", "-o", "-", plistPath], {
+    encoding: "utf8"
+  });
 
   return JSON.parse(output) as MacOSAppInfo;
 }
 
 function collectIconNames(info: MacOSAppInfo): string[] {
-  const primaryIcons =
-    info.CFBundleIcons?.CFBundlePrimaryIcon?.CFBundleIconFiles ?? [];
+  const primaryIcons = info.CFBundleIcons?.CFBundlePrimaryIcon?.CFBundleIconFiles ?? [];
 
   return Array.from(
-    new Set(
-      [info.CFBundleIconFile, info.CFBundleIconName, ...primaryIcons].filter(
-        (value): value is string => Boolean(value && value.trim()),
-      ),
-    ),
+    new Set([info.CFBundleIconFile, info.CFBundleIconName, ...primaryIcons].filter((value): value is string => Boolean(value && value.trim())))
   );
 }
 
-function resolveResourceIconPath(
-  resourcesDir: string,
-  iconName: string,
-): string | null {
+function resolveResourceIconPath(resourcesDir: string, iconName: string): string | null {
   const normalized = iconName.trim();
-  const candidates = normalized.includes(".")
-    ? [normalized]
-    : [`${normalized}.icns`, `${normalized}.png`, normalized];
+  const candidates = normalized.includes(".") ? [normalized] : [`${normalized}.icns`, `${normalized}.png`, normalized];
 
   for (const candidate of candidates) {
     const candidatePath = join(resourcesDir, candidate);
@@ -125,13 +102,9 @@ function convertIcnsToPngDataUrl(iconPath: string): string | null {
   const tempPngPath = join(tempDir, "icon.png");
 
   try {
-    execFileSync(
-      "sips",
-      ["-s", "format", "png", iconPath, "--out", tempPngPath],
-      {
-        stdio: "ignore",
-      },
-    );
+    execFileSync("sips", ["-s", "format", "png", iconPath, "--out", tempPngPath], {
+      stdio: "ignore"
+    });
 
     if (!existsSync(tempPngPath)) {
       return null;
@@ -184,9 +157,7 @@ async function extractIcon(appPath: string): Promise<{
   }
 }
 
-export async function detectMacOSEditors(
-  entries: EditorRegistryEntry[],
-): Promise<DetectedEditor[]> {
+export async function detectMacOSEditors(entries: EditorRegistryEntry[]): Promise<DetectedEditor[]> {
   const searchPaths = resolveAppPaths();
   const results: DetectedEditor[] = [];
 
@@ -197,19 +168,13 @@ export async function detectMacOSEditors(
     const icon = await extractIcon(appPath);
 
     const template = entry.extensionsPath.mac.replace("{slug}", entry.slug);
-    const extensionsPath = template.startsWith("~/")
-      ? join(homedir(), template.slice(2))
-      : template;
+    const extensionsPath = template.startsWith("~/") ? join(homedir(), template.slice(2)) : template;
 
     const settingsTemplate = entry.settingsPath.mac;
-    const settingsPath = settingsTemplate.startsWith("~/")
-      ? join(homedir(), settingsTemplate.slice(2))
-      : settingsTemplate;
+    const settingsPath = settingsTemplate.startsWith("~/") ? join(homedir(), settingsTemplate.slice(2)) : settingsTemplate;
 
     const stateDbTemplate = entry.stateDbPath.mac;
-    const stateDbPath = stateDbTemplate.startsWith("~/")
-      ? join(homedir(), stateDbTemplate.slice(2))
-      : stateDbTemplate;
+    const stateDbPath = stateDbTemplate.startsWith("~/") ? join(homedir(), stateDbTemplate.slice(2)) : stateDbTemplate;
 
     results.push({
       name: entry.displayName,
@@ -222,7 +187,7 @@ export async function detectMacOSEditors(
       settingsPath,
       stateDbPath,
       iconPayload: icon.iconPayload,
-      iconStatus: icon.iconStatus,
+      iconStatus: icon.iconStatus
     });
   }
 

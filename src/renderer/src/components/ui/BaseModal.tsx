@@ -1,4 +1,5 @@
-import { ReactNode, useId, useRef } from "react";
+import type { ReactNode } from "react";
+import { useId, useRef } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { useClickAway, useKey, useLockBodyScroll } from "react-use";
@@ -12,13 +13,7 @@ interface BaseModalProps {
   footer?: ReactNode;
 }
 
-export function BaseModal({
-  open,
-  title,
-  onClose,
-  children,
-  footer,
-}: BaseModalProps) {
+export function BaseModal({ open, title, onClose, children, footer }: BaseModalProps) {
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement | null>(null);
 
@@ -32,7 +27,7 @@ export function BaseModal({
       }
     },
     {},
-    [open, onClose],
+    [open, onClose]
   );
 
   useClickAway(dialogRef, () => {
@@ -56,30 +51,20 @@ export function BaseModal({
           className="w-full max-w-2xl rounded-2xl border border-slate-200 bg-white shadow-xl"
         >
           <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-            <h3
-              id={titleId}
-              className="text-xl font-semibold leading-7 text-slate-950"
-            >
+            <h3 id={titleId} className="text-xl font-semibold leading-7 text-slate-950">
               {title}
             </h3>
-            <Button
-              variant={BUTTON_VARIANT.GHOST}
-              size={BUTTON_SIZE.ICON_SM}
-              onClick={onClose}
-              aria-label="Close"
-            >
+            <Button variant={BUTTON_VARIANT.GHOST} size={BUTTON_SIZE.ICON_SM} onClick={onClose} aria-label="Close">
               <X size={15} />
             </Button>
           </div>
 
           <div className="px-5 py-4">{children}</div>
 
-          {footer && (
-            <div className="border-t border-slate-200 px-5 py-4">{footer}</div>
-          )}
+          {footer && <div className="border-t border-slate-200 px-5 py-4">{footer}</div>}
         </div>
       </div>
     </div>,
-    document.body,
+    document.body
   );
 }

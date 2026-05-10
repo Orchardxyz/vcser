@@ -1,15 +1,5 @@
-import type {
-  ExtensionDiffResult,
-  ResolvedEditor,
-  SettingsDiffByExtensionResult,
-  SettingsDiffResult,
-  SyncResult,
-} from "./types";
-import {
-  APP_ICON_STATUS,
-  CHANGE_TYPE,
-  EXTENSION_SETTINGS_GROUP_KIND,
-} from "./types";
+import type { ExtensionDiffResult, ResolvedEditor, SettingsDiffByExtensionResult, SettingsDiffResult, SyncResult } from "./types";
+import { APP_ICON_STATUS, CHANGE_TYPE, EXTENSION_SETTINGS_GROUP_KIND } from "./types";
 
 type InvokePayload = Record<string, unknown> | undefined;
 
@@ -18,11 +8,10 @@ const SUPPORTED_COMMAND = {
   COMPUTE_EXTENSION_DIFF: "compute_extension_diff",
   COMPUTE_SETTINGS_DIFF: "compute_settings_diff",
   COMPUTE_SETTINGS_DIFF_BY_EXTENSION: "compute_settings_diff_by_extension",
-  EXECUTE_SYNC: "execute_sync",
+  EXECUTE_SYNC: "execute_sync"
 } as const;
 
-type SupportedCommand =
-  (typeof SUPPORTED_COMMAND)[keyof typeof SUPPORTED_COMMAND];
+type SupportedCommand = (typeof SUPPORTED_COMMAND)[keyof typeof SUPPORTED_COMMAND];
 
 const demoEditors: ResolvedEditor[] = [
   {
@@ -36,7 +25,7 @@ const demoEditors: ResolvedEditor[] = [
     cliAvailable: true,
     extensionsExist: true,
     settingsExist: true,
-    iconStatus: APP_ICON_STATUS.FALLBACK,
+    iconStatus: APP_ICON_STATUS.FALLBACK
   },
   {
     name: "Windsurf",
@@ -49,7 +38,7 @@ const demoEditors: ResolvedEditor[] = [
     cliAvailable: true,
     extensionsExist: true,
     settingsExist: true,
-    iconStatus: APP_ICON_STATUS.FALLBACK,
+    iconStatus: APP_ICON_STATUS.FALLBACK
   },
   {
     name: "VS Code",
@@ -58,13 +47,12 @@ const demoEditors: ResolvedEditor[] = [
     cli: "code",
     badgeColor: "sky",
     extensionsPath: "/Users/demo/.vscode/extensions",
-    settingsPath:
-      "/Users/demo/Library/Application Support/Code/User/settings.json",
+    settingsPath: "/Users/demo/Library/Application Support/Code/User/settings.json",
     cliAvailable: true,
     extensionsExist: true,
     settingsExist: true,
-    iconStatus: APP_ICON_STATUS.FALLBACK,
-  },
+    iconStatus: APP_ICON_STATUS.FALLBACK
+  }
 ];
 
 const defaultResponses: Record<SupportedCommand, unknown> = {
@@ -79,16 +67,16 @@ const defaultResponses: Record<SupportedCommand, unknown> = {
         versions: {
           Cursor: "0.14.26",
           Windsurf: "0.14.26",
-          "VS Code": "0.14.25",
+          "VS Code": "0.14.25"
         },
-        hasVersionMismatch: true,
+        hasVersionMismatch: true
       },
       {
         extensionId: "dbaeumer.vscode-eslint",
         presence: { Cursor: true, Windsurf: false, "VS Code": true },
         disabled: { Cursor: true, Windsurf: false, "VS Code": false },
         versions: { Cursor: "3.0.10", Windsurf: null, "VS Code": "3.0.10" },
-        hasVersionMismatch: false,
+        hasVersionMismatch: false
       },
       {
         extensionId: "github.copilot-chat",
@@ -97,17 +85,17 @@ const defaultResponses: Record<SupportedCommand, unknown> = {
         versions: {
           Cursor: "0.27.2025050801",
           Windsurf: null,
-          "VS Code": null,
+          "VS Code": null
         },
-        hasVersionMismatch: false,
+        hasVersionMismatch: false
       },
       {
         extensionId: "ms-python.python",
         presence: { Cursor: false, Windsurf: true, "VS Code": true },
         disabled: { Cursor: false, Windsurf: false, "VS Code": false },
         versions: { Cursor: null, Windsurf: "2026.4.1", "VS Code": "2026.4.1" },
-        hasVersionMismatch: false,
-      },
+        hasVersionMismatch: false
+      }
     ],
     onlyDiffs: [
       {
@@ -117,16 +105,16 @@ const defaultResponses: Record<SupportedCommand, unknown> = {
         versions: {
           Cursor: "0.14.26",
           Windsurf: "0.14.26",
-          "VS Code": "0.14.25",
+          "VS Code": "0.14.25"
         },
-        hasVersionMismatch: true,
+        hasVersionMismatch: true
       },
       {
         extensionId: "dbaeumer.vscode-eslint",
         presence: { Cursor: true, Windsurf: false, "VS Code": true },
         disabled: { Cursor: true, Windsurf: false, "VS Code": false },
         versions: { Cursor: "3.0.10", Windsurf: null, "VS Code": "3.0.10" },
-        hasVersionMismatch: false,
+        hasVersionMismatch: false
       },
       {
         extensionId: "github.copilot-chat",
@@ -135,18 +123,18 @@ const defaultResponses: Record<SupportedCommand, unknown> = {
         versions: {
           Cursor: "0.27.2025050801",
           Windsurf: null,
-          "VS Code": null,
+          "VS Code": null
         },
-        hasVersionMismatch: false,
+        hasVersionMismatch: false
       },
       {
         extensionId: "ms-python.python",
         presence: { Cursor: false, Windsurf: true, "VS Code": true },
         disabled: { Cursor: false, Windsurf: false, "VS Code": false },
         versions: { Cursor: null, Windsurf: "2026.4.1", "VS Code": "2026.4.1" },
-        hasVersionMismatch: false,
-      },
-    ],
+        hasVersionMismatch: false
+      }
+    ]
   } as ExtensionDiffResult,
   [SUPPORTED_COMMAND.COMPUTE_SETTINGS_DIFF]: [
     {
@@ -157,19 +145,19 @@ const defaultResponses: Record<SupportedCommand, unknown> = {
           key: "editor.formatOnSave",
           changeType: CHANGE_TYPE.UPDATE,
           sourceValue: true,
-          targetValue: false,
+          targetValue: false
         },
         {
           key: "editor.tabSize",
           changeType: CHANGE_TYPE.UPDATE,
           sourceValue: 2,
-          targetValue: 4,
-        },
+          targetValue: 4
+        }
       ],
       addCount: 0,
       updateCount: 2,
-      deleteCount: 0,
-    },
+      deleteCount: 0
+    }
   ] as SettingsDiffResult[],
   [SUPPORTED_COMMAND.COMPUTE_SETTINGS_DIFF_BY_EXTENSION]: {
     leftName: "Cursor",
@@ -190,11 +178,11 @@ const defaultResponses: Record<SupportedCommand, unknown> = {
             key: "eslint.validate",
             changeType: CHANGE_TYPE.UPDATE,
             sourceValue: ["javascript", "typescript"],
-            targetValue: ["javascript"],
-          },
+            targetValue: ["javascript"]
+          }
         ],
         identicalCount: 1,
-        totalCount: 2,
+        totalCount: 2
       },
       {
         kind: EXTENSION_SETTINGS_GROUP_KIND.NAMESPACE,
@@ -208,17 +196,14 @@ const defaultResponses: Record<SupportedCommand, unknown> = {
         hasVersionMismatch: false,
         diffs: [],
         identicalCount: 2,
-        totalCount: 2,
-      },
-    ],
+        totalCount: 2
+      }
+    ]
   } as SettingsDiffByExtensionResult,
-  [SUPPORTED_COMMAND.EXECUTE_SYNC]: [] as SyncResult[],
+  [SUPPORTED_COMMAND.EXECUTE_SYNC]: [] as SyncResult[]
 };
 
-export async function invoke<T>(
-  command: string,
-  payload?: InvokePayload,
-): Promise<T> {
+export async function invoke<T>(command: string, payload?: InvokePayload): Promise<T> {
   if (window.electronAPI?.invoke) {
     try {
       return (await window.electronAPI.invoke(command, payload ?? {})) as T;

@@ -1,11 +1,5 @@
-import {
-  ReactNode,
-  useCallback,
-  useEffect,
-  useId,
-  useRef,
-  useState,
-} from "react";
+import type { ReactNode } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import classNames from "classnames";
 import { Check, ChevronDown } from "lucide-react";
@@ -24,32 +18,21 @@ type PanelPosition = {
   placement: "top" | "bottom";
 };
 
-function getPanelPosition(
-  triggerRect: DOMRect,
-  minPanelWidth: number,
-): PanelPosition {
+function getPanelPosition(triggerRect: DOMRect, minPanelWidth: number): PanelPosition {
   const width = Math.max(triggerRect.width, minPanelWidth);
-  const left = Math.min(
-    Math.max(VIEWPORT_PADDING, triggerRect.left),
-    window.innerWidth - width - VIEWPORT_PADDING,
-  );
+  const left = Math.min(Math.max(VIEWPORT_PADDING, triggerRect.left), window.innerWidth - width - VIEWPORT_PADDING);
 
-  const spaceBelow =
-    window.innerHeight - triggerRect.bottom - PANEL_GAP - VIEWPORT_PADDING;
+  const spaceBelow = window.innerHeight - triggerRect.bottom - PANEL_GAP - VIEWPORT_PADDING;
   const spaceAbove = triggerRect.top - PANEL_GAP - VIEWPORT_PADDING;
-  const placement =
-    spaceBelow < 220 && spaceAbove > spaceBelow ? "top" : "bottom";
+  const placement = spaceBelow < 220 && spaceAbove > spaceBelow ? "top" : "bottom";
   const availableHeight = placement === "bottom" ? spaceBelow : spaceAbove;
 
   return {
-    top:
-      placement === "bottom"
-        ? triggerRect.bottom + PANEL_GAP
-        : triggerRect.top - PANEL_GAP,
+    top: placement === "bottom" ? triggerRect.bottom + PANEL_GAP : triggerRect.top - PANEL_GAP,
     left,
     width,
     maxHeight: Math.max(120, Math.min(PANEL_MAX_HEIGHT, availableHeight)),
-    placement,
+    placement
   };
 }
 
@@ -84,12 +67,10 @@ export function Select<T>({
   optionClassName,
   selectedOptionClassName,
   placeholder,
-  minPanelWidth = PANEL_MIN_WIDTH,
+  minPanelWidth = PANEL_MIN_WIDTH
 }: SelectProps<T>) {
   const [open, setOpen] = useState(false);
-  const [panelPosition, setPanelPosition] = useState<PanelPosition | null>(
-    null,
-  );
+  const [panelPosition, setPanelPosition] = useState<PanelPosition | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -97,20 +78,14 @@ export function Select<T>({
   const windowTarget = typeof window === "undefined" ? null : window;
   const documentTarget = typeof document === "undefined" ? null : document;
 
-  const selectedOption =
-    options.find((option) => getOptionValue(option) === value) ?? options[0];
+  const selectedOption = options.find((option) => getOptionValue(option) === value) ?? options[0];
 
   const updatePanelPosition = useCallback(() => {
     if (!triggerRef.current || !windowTarget) {
       return;
     }
 
-    setPanelPosition(
-      getPanelPosition(
-        triggerRef.current.getBoundingClientRect(),
-        minPanelWidth,
-      ),
-    );
+    setPanelPosition(getPanelPosition(triggerRef.current.getBoundingClientRect(), minPanelWidth));
   }, [minPanelWidth, windowTarget]);
 
   const handleSelect = useCallback(
@@ -118,7 +93,7 @@ export function Select<T>({
       onChange(option);
       setOpen(false);
     },
-    [onChange],
+    [onChange]
   );
 
   const toggleOpen = useCallback(() => {
@@ -146,22 +121,19 @@ export function Select<T>({
         return;
       }
 
-      if (
-        rootRef.current?.contains(target) ||
-        panelRef.current?.contains(target)
-      ) {
+      if (rootRef.current?.contains(target) || panelRef.current?.contains(target)) {
         return;
       }
 
       setOpen(false);
     },
-    [open],
+    [open]
   );
 
   useEvent("mousedown", open ? handlePointerDown : undefined, documentTarget);
   useEvent("resize", open ? updatePanelPosition : undefined, windowTarget);
   useEvent("scroll", open ? updatePanelPosition : undefined, windowTarget, {
-    capture: true,
+    capture: true
   });
 
   useKey(
@@ -175,7 +147,7 @@ export function Select<T>({
       triggerRef.current?.focus();
     },
     {},
-    [open],
+    [open]
   );
 
   return (
@@ -189,19 +161,11 @@ export function Select<T>({
         aria-controls={open ? listboxId : undefined}
         className={classNames(
           "inline-flex h-10 w-full min-w-0 items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 text-left text-sm text-slate-700 shadow-xs outline-none transition-[border-color,box-shadow] duration-200 hover:border-slate-300 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
-          triggerClassName,
+          triggerClassName
         )}
       >
-        <div className="min-w-0 flex-1 truncate">
-          {selectedOption ? renderValue(selectedOption) : placeholder}
-        </div>
-        <ChevronDown
-          size={14}
-          className={classNames(
-            "shrink-0 text-slate-400 transition-transform duration-200",
-            open && "rotate-180",
-          )}
-        />
+        <div className="min-w-0 flex-1 truncate">{selectedOption ? renderValue(selectedOption) : placeholder}</div>
+        <ChevronDown size={14} className={classNames("shrink-0 text-slate-400 transition-transform duration-200", open && "rotate-180")} />
       </button>
 
       {open && panelPosition && documentTarget
@@ -214,20 +178,15 @@ export function Select<T>({
               className={classNames(
                 "fixed z-50 overflow-hidden rounded-xl border border-slate-200 bg-white p-1 shadow-lg",
                 "transition-[opacity,transform] duration-150 ease-out",
-                panelPosition.placement === "top"
-                  ? "origin-bottom"
-                  : "origin-top",
-                panelClassName,
+                panelPosition.placement === "top" ? "origin-bottom" : "origin-top",
+                panelClassName
               )}
               style={{
                 top: panelPosition.top,
                 left: panelPosition.left,
                 width: panelPosition.width,
                 maxHeight: panelPosition.maxHeight,
-                transform:
-                  panelPosition.placement === "top"
-                    ? "translateY(-100%)"
-                    : undefined,
+                transform: panelPosition.placement === "top" ? "translateY(-100%)" : undefined
               }}
             >
               <div className="max-h-full overflow-y-auto">
@@ -244,31 +203,19 @@ export function Select<T>({
                       onClick={() => handleSelect(option)}
                       className={classNames(
                         "flex w-full items-center justify-between gap-3 rounded-lg px-2.5 py-2 text-left text-sm outline-none transition-colors",
-                        isSelected
-                          ? "bg-slate-100 text-slate-950"
-                          : "text-slate-700 hover:bg-slate-50 focus-visible:bg-slate-50",
+                        isSelected ? "bg-slate-100 text-slate-950" : "text-slate-700 hover:bg-slate-50 focus-visible:bg-slate-50",
                         optionClassName,
-                        isSelected && selectedOptionClassName,
+                        isSelected && selectedOptionClassName
                       )}
                     >
-                      <div className="min-w-0 flex-1">
-                        {renderOption
-                          ? renderOption(option)
-                          : renderValue(option)}
-                      </div>
-                      <Check
-                        size={16}
-                        className={classNames(
-                          "shrink-0",
-                          isSelected ? "text-slate-700" : "text-transparent",
-                        )}
-                      />
+                      <div className="min-w-0 flex-1">{renderOption ? renderOption(option) : renderValue(option)}</div>
+                      <Check size={16} className={classNames("shrink-0", isSelected ? "text-slate-700" : "text-transparent")} />
                     </button>
                   );
                 })}
               </div>
             </div>,
-            document.body,
+            document.body
           )
         : null}
     </div>

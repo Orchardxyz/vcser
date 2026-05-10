@@ -4,29 +4,20 @@ import type { ChangeType, SettingsKeyDiff } from "../../renderer/src/types";
 import { CHANGE_TYPE } from "../../renderer/src/types";
 
 function formatParseErrors(errors: ParseError[]): string {
-  return errors
-    .map(
-      (error) =>
-        `${printParseErrorCode(error.error)} at offset ${error.offset}`,
-    )
-    .join("; ");
+  return errors.map((error) => `${printParseErrorCode(error.error)} at offset ${error.offset}`).join("; ");
 }
 
-export function readSettingsJson(
-  settingsPath: string,
-): Record<string, unknown> {
+export function readSettingsJson(settingsPath: string): Record<string, unknown> {
   try {
     const raw = readFileSync(settingsPath, "utf-8");
     const errors: ParseError[] = [];
     const parsed: unknown = parse(raw, errors, {
       allowTrailingComma: true,
-      disallowComments: false,
+      disallowComments: false
     });
 
     if (errors.length > 0) {
-      console.warn(
-        `[vcser] Failed to parse settings file: ${settingsPath} (${formatParseErrors(errors)})`,
-      );
+      console.warn(`[vcser] Failed to parse settings file: ${settingsPath} (${formatParseErrors(errors)})`);
       return {};
     }
 
@@ -36,9 +27,7 @@ export function readSettingsJson(
     return {};
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.warn(
-      `[vcser] Failed to parse settings file: ${settingsPath} (${message})`,
-    );
+    console.warn(`[vcser] Failed to parse settings file: ${settingsPath} (${message})`);
     return {};
   }
 }
@@ -49,10 +38,7 @@ function changeType(leftHas: boolean, rightHas: boolean): ChangeType {
   return CHANGE_TYPE.UPDATE;
 }
 
-export function diffSettings(
-  left: Record<string, unknown>,
-  right: Record<string, unknown>,
-): SettingsKeyDiff[] {
+export function diffSettings(left: Record<string, unknown>, right: Record<string, unknown>): SettingsKeyDiff[] {
   const allKeys = new Set([...Object.keys(left), ...Object.keys(right)]);
   const diffs: SettingsKeyDiff[] = [];
 
@@ -65,7 +51,7 @@ export function diffSettings(
         key,
         changeType: changeType(hasLeft, hasRight),
         sourceValue: hasLeft ? left[key] : undefined,
-        targetValue: hasRight ? right[key] : undefined,
+        targetValue: hasRight ? right[key] : undefined
       });
       continue;
     }
@@ -78,7 +64,7 @@ export function diffSettings(
         key,
         changeType: CHANGE_TYPE.UPDATE,
         sourceValue: left[key],
-        targetValue: right[key],
+        targetValue: right[key]
       });
     }
   }
@@ -99,7 +85,7 @@ export interface NamespaceStats {
 export function groupSettingsByNamespace(
   left: Record<string, unknown>,
   right: Record<string, unknown>,
-  diffs: SettingsKeyDiff[],
+  diffs: SettingsKeyDiff[]
 ): Map<string, NamespaceStats> {
   const allKeys = new Set([...Object.keys(left), ...Object.keys(right)]);
   const diffKeys = new Set(diffs.map((d) => d.key));

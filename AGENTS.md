@@ -70,7 +70,7 @@ DESIGN.md                Authoritative UI design/styling reference
 ```ts
 export const FOO = {
   A: "a",
-  B: "b",
+  B: "b"
 } as const;
 
 export type Foo = (typeof FOO)[keyof typeof FOO];

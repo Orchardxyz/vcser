@@ -16,7 +16,7 @@ export const diffViewerStyles = {
       wordAddedBackground: "#86efac",
       wordRemovedBackground: "#fda4af",
       codeFoldBackground: "#f8fafc",
-      codeFoldContentColor: "#94a3b8",
+      codeFoldContentColor: "#94a3b8"
     },
     dark: {
       diffViewerBackground: "#1e293b",
@@ -34,18 +34,17 @@ export const diffViewerStyles = {
       wordAddedBackground: "rgba(74, 222, 128, 0.3)",
       wordRemovedBackground: "rgba(251, 113, 133, 0.3)",
       codeFoldBackground: "#0f172a",
-      codeFoldContentColor: "#475569",
-    },
+      codeFoldContentColor: "#475569"
+    }
   },
   diffContainer: {
     fontFamily: "var(--font-mono, 'Menlo', 'Consolas', monospace)",
     fontSize: "12px",
-    minWidth: 0,
+    minWidth: 0
   },
   titleBlock: {
-    paddingLeft: "78px", // align with code content: 50px gutter + 28px marker
-  },
+    paddingLeft: "78px" // align with code content: 50px gutter + 28px marker
+  }
 } as const;
 
-export const diffHeaderClass =
-  "text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500";
+export const diffHeaderClass = "text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500";

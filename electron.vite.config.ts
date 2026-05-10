@@ -3,10 +3,7 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
 type ElectronViteConfig = Parameters<typeof defineConfig>[0];
-type StaticElectronViteConfig = Exclude<
-  Awaited<ElectronViteConfig>,
-  (...args: never[]) => unknown
->;
+type StaticElectronViteConfig = Exclude<Awaited<ElectronViteConfig>, (...args: never[]) => unknown>;
 type PreloadConfig = NonNullable<StaticElectronViteConfig["preload"]>;
 
 const preload = {
@@ -14,19 +11,19 @@ const preload = {
   build: {
     rollupOptions: {
       output: {
-        format: "cjs",
-      },
-    },
-  },
+        format: "cjs"
+      }
+    }
+  }
 } as unknown as PreloadConfig;
 
 export default defineConfig({
   main: {
-    clearScreen: false,
+    clearScreen: false
   },
   preload,
   renderer: {
     clearScreen: false,
-    plugins: [react(), tailwindcss()],
-  },
+    plugins: [react(), tailwindcss()]
+  }
 });

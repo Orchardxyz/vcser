@@ -10,9 +10,9 @@ type PrismaGlobal = typeof globalThis & {
 
 // The generated Prisma client is CJS; Electron's main process is ESM, so we use createRequire to bridge.
 const _req = createRequire(join(process.cwd(), "placeholder.js"));
-const { PrismaClient: PrismaClientCtor } = _req(
-  join(process.cwd(), "src/generated/prisma"),
-) as { PrismaClient: new (opts: { adapter: unknown }) => PrismaClient };
+const { PrismaClient: PrismaClientCtor } = _req(join(process.cwd(), "src/generated/prisma")) as {
+  PrismaClient: new (opts: { adapter: unknown }) => PrismaClient;
+};
 
 const prismaGlobal = globalThis as PrismaGlobal;
 
@@ -24,15 +24,12 @@ export function getPrismaClient(): PrismaClient | undefined {
   if (!prismaGlobal.prisma) {
     try {
       const adapter = new PrismaBetterSqlite3({
-        url: process.env.DATABASE_URL || "file:./prisma/dev.db",
+        url: process.env.DATABASE_URL || "file:./prisma/dev.db"
       });
       prismaGlobal.prisma = new PrismaClientCtor({ adapter });
     } catch (error) {
       prismaGlobal.prismaUnavailable = true;
-      console.warn(
-        "Prisma cache unavailable; falling back to uncached namespace resolution.",
-        error,
-      );
+      console.warn("Prisma cache unavailable; falling back to uncached namespace resolution.", error);
       return undefined;
     }
   }

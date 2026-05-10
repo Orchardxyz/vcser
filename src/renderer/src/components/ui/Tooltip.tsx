@@ -1,17 +1,17 @@
 import * as PopoverPrimitive from "@radix-ui/react-popover";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
-import { cloneElement, ReactElement, ReactNode, useState } from "react";
+import type { ReactElement, ReactNode } from "react";
+import { cloneElement, useState } from "react";
 import classNames from "classnames";
 
 const TOOLTIP_PLACEMENT = {
   TOP: "top",
   BOTTOM: "bottom",
   LEFT: "left",
-  RIGHT: "right",
+  RIGHT: "right"
 } as const;
 
-type TooltipPlacement =
-  (typeof TOOLTIP_PLACEMENT)[keyof typeof TOOLTIP_PLACEMENT];
+type TooltipPlacement = (typeof TOOLTIP_PLACEMENT)[keyof typeof TOOLTIP_PLACEMENT];
 
 type TooltipTriggerProps = {
   onClick?: (e: React.MouseEvent<HTMLElement>) => void;
@@ -66,7 +66,7 @@ const TOOLTIP_CONTENT_CLASS_NAME = classNames(
   "data-[side=top]:data-[state=closed]:translate-y-1",
   "data-[side=bottom]:data-[state=closed]:-translate-y-1",
   "data-[side=left]:data-[state=closed]:translate-x-1",
-  "data-[side=right]:data-[state=closed]:-translate-x-1",
+  "data-[side=right]:data-[state=closed]:-translate-x-1"
 );
 
 export function Tooltip({
@@ -76,7 +76,7 @@ export function Tooltip({
   placement = TOOLTIP_PLACEMENT.TOP,
   delay = 400,
   disabled = false,
-  maxWidth = 240,
+  maxWidth = 240
 }: TooltipProps) {
   const [clickOpen, setClickOpen] = useState(false);
 
@@ -96,7 +96,7 @@ export function Tooltip({
               e.stopPropagation();
               clickChildProps.onClick?.(e);
               setClickOpen((previous) => !previous);
-            },
+            }
           })}
         </PopoverPrimitive.Anchor>
         <PopoverPrimitive.Portal>
@@ -112,11 +112,7 @@ export function Tooltip({
             onOpenAutoFocus={(event) => event.preventDefault()}
           >
             {content}
-            <PopoverPrimitive.Arrow
-              width={10}
-              height={5}
-              style={{ fill: "var(--color-foreground)" }}
-            />
+            <PopoverPrimitive.Arrow width={10} height={5} style={{ fill: "var(--color-foreground)" }} />
           </PopoverPrimitive.Content>
         </PopoverPrimitive.Portal>
       </PopoverPrimitive.Root>
@@ -138,11 +134,7 @@ export function Tooltip({
             style={{ maxWidth }}
           >
             {content}
-            <TooltipPrimitive.Arrow
-              width={10}
-              height={5}
-              style={{ fill: "var(--color-foreground)" }}
-            />
+            <TooltipPrimitive.Arrow width={10} height={5} style={{ fill: "var(--color-foreground)" }} />
           </TooltipPrimitive.Content>
         </TooltipPrimitive.Portal>
       </TooltipPrimitive.Root>

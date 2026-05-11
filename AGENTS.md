@@ -68,13 +68,17 @@ DESIGN.md                Authoritative UI design/styling reference
 - Use the Const Enum Pattern instead:
 
 ```ts
+import type { ValueOf } from "type-fest";
+
 export const FOO = {
   A: "a",
   B: "b"
 } as const;
 
-export type Foo = (typeof FOO)[keyof typeof FOO];
+export type Foo = ValueOf<typeof FOO>;
 ```
+
+- For more complex TypeScript type gymnastics, use `type-fest` to handle them.
 
 - Put new shared constant groups in `src/renderer/src/types.ts` unless they are truly component-local.
 

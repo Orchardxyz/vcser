@@ -1,12 +1,48 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowLeftRight, CheckCheck, FileJson } from "lucide-react";
+import type { ValueOf } from "type-fest";
 import { EditorSelect } from "../../components/editor/EditorSelect";
 import { Button, BUTTON_SIZE, BUTTON_VARIANT } from "../../components/ui/Button";
+import { SegmentedTabs } from "../../components/ui/SegmentedTabs";
 import { invoke } from "../../ipc";
 import { useAppStore } from "../../store";
 import type { ResolvedEditor, SettingsDiffByExtensionResult } from "../../types";
 import { ExtensionGroupRow } from "./components/ExtensionGroupRow";
 import { SkeletonRow } from "./components/ExtensionSkeletons";
+
+const TAB = {
+  VERSION_MATCH: "versionMatch",
+  VERSION_MISMATCH: "versionMismatch"
+} as const;
+
+type TabType = ValueOf<typeof TAB>;
+
+const TAB_ITEMS: { value: TabType; label: string }[] = [
+  { value: TAB.VERSION_MATCH, label: "Version Match" },
+  { value: TAB.VERSION_MISMATCH, label: "Version Mismatch" }
+];
+
+function TabEmptyState({ tab, leftName, rightName }: { tab: TabType; leftName: string; rightName: string }) {
+  if (tab === TAB.VERSION_MISMATCH) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-3 px-4 py-16 text-center">
+        <CheckCheck size={32} className="text-emerald-400" />
+        <p className="text-sm text-slate-500">
+          No version mismatches found between {leftName} and {rightName}.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center gap-3 px-4 py-16 text-center">
+      <ArrowLeftRight size={32} className="text-sky-400" />
+      <p className="text-sm text-slate-500">
+        All groups have version mismatches between {leftName} and {rightName}.
+      </p>
+    </div>
+  );
+}
 
 export function ConfigFilesTab() {
   const editors = useAppStore((s) => s.editors);
@@ -14,7 +50,9 @@ export function ConfigFilesTab() {
   const [rightSlug, setRightSlug] = useState<string>("");
   const [diffResult, setDiffResult] = useState<SettingsDiffByExtensionResult | null>(null);
   const [loading, setLoading] = useState(false);
-  const [selectedNamespaces, setSelectedNamespaces] = useState<Set<string>>(new Set());
+  const [activeTab, setActiveTab] = useState<TabType>(TAB.VERSION_MATCH);
+  const [mismatchSelectedNamespaces, setMismatchSelectedNamespaces] = useState<Set<string>>(new Set());
+  const [matchSelectedNamespaces, setMatchSelectedNamespaces] = useState<Set<string>>(new Set());
 
   const editorSlugs = useMemo(() => editors.map((e) => e.slug), [editors]);
   const editorBySlug = useMemo(() => {
@@ -40,7 +78,8 @@ export function ConfigFilesTab() {
   useEffect(() => {
     if (!leftName || !rightName || leftName === rightName) return;
     setLoading(true);
-    setSelectedNamespaces(new Set());
+    setMismatchSelectedNamespaces(new Set());
+    setMatchSelectedNamespaces(new Set());
     invoke<SettingsDiffByExtensionResult>("compute_settings_diff_by_extension", {
       leftEditor: leftName,
       rightEditor: rightName
@@ -51,30 +90,66 @@ export function ConfigFilesTab() {
       .finally(() => setLoading(false));
   }, [leftName, rightName]);
 
-  const groups = diffResult?.groups ?? [];
-  const allNamespaces = groups.map((g) => g.namespace);
-  const allSelected = allNamespaces.length > 0 && allNamespaces.every((n) => selectedNamespaces.has(n));
-  const someSelected = !allSelected && allNamespaces.some((n) => selectedNamespaces.has(n));
+  const groups = useMemo(() => diffResult?.groups ?? [], [diffResult?.groups]);
+
+  const mismatchGroups = useMemo(() => groups.filter((g) => g.hasVersionMismatch), [groups]);
+  const matchGroups = useMemo(() => groups.filter((g) => !g.hasVersionMismatch), [groups]);
+
+  const activeGroups = activeTab === TAB.VERSION_MISMATCH ? mismatchGroups : matchGroups;
+  const activeSelectedNamespaces = activeTab === TAB.VERSION_MISMATCH ? mismatchSelectedNamespaces : matchSelectedNamespaces;
+
+  const activeAllNamespaces = activeGroups.map((g) => g.namespace);
+  const activeAllSelected = activeAllNamespaces.length > 0 && activeAllNamespaces.every((n) => activeSelectedNamespaces.has(n));
+  const activeSomeSelected = !activeAllSelected && activeAllNamespaces.some((n) => activeSelectedNamespaces.has(n));
+
+  const mergedSelectedNamespaces = useMemo(() => {
+    const merged = new Set(mismatchSelectedNamespaces);
+    for (const ns of matchSelectedNamespaces) merged.add(ns);
+    return merged;
+  }, [mismatchSelectedNamespaces, matchSelectedNamespaces]);
 
   const toggleAll = useCallback(() => {
-    if (allSelected) {
-      setSelectedNamespaces(new Set());
+    const setter = activeTab === TAB.VERSION_MISMATCH ? setMismatchSelectedNamespaces : setMatchSelectedNamespaces;
+    if (activeAllSelected) {
+      setter(new Set());
     } else {
-      setSelectedNamespaces(new Set(allNamespaces));
+      setter(new Set(activeAllNamespaces));
     }
-  }, [allSelected, allNamespaces]);
+  }, [activeAllSelected, activeAllNamespaces, activeTab]);
 
-  const toggleNamespace = useCallback((namespace: string, checked: boolean) => {
-    setSelectedNamespaces((prev) => {
-      const next = new Set(prev);
-      if (checked) next.add(namespace);
-      else next.delete(namespace);
-      return next;
-    });
-  }, []);
+  const toggleNamespace = useCallback(
+    (namespace: string, checked: boolean) => {
+      const setter = activeTab === TAB.VERSION_MISMATCH ? setMismatchSelectedNamespaces : setMatchSelectedNamespaces;
+      setter((prev) => {
+        const next = new Set(prev);
+        if (checked) next.add(namespace);
+        else next.delete(namespace);
+        return next;
+      });
+    },
+    [activeTab]
+  );
 
-  const selectedGroups = groups.filter((g) => selectedNamespaces.has(g.namespace));
+  const selectedGroups = groups.filter((g) => mergedSelectedNamespaces.has(g.namespace));
   const canOverride = selectedGroups.length > 0;
+
+  const activeSelectedCount = activeSelectedNamespaces.size;
+  const mergedSelectedCount = mergedSelectedNamespaces.size;
+
+  let selectionText: string;
+  if (activeSelectedCount > 0) {
+    selectionText = `${activeSelectedCount} of ${activeGroups.length} selected`;
+    if (mergedSelectedCount > activeSelectedCount) {
+      selectionText += ` (${mergedSelectedCount} total)`;
+    }
+  } else {
+    selectionText = `${activeGroups.length} namespace${activeGroups.length === 1 ? "" : "s"}`;
+  }
+
+  const activeHasDiffs = activeGroups.some((g) => g.diffs.length > 0);
+  const activeDiffCount = activeGroups.reduce((acc, g) => acc + g.diffs.length, 0);
+  const activeGroupsWithDiffs = activeGroups.filter((g) => g.diffs.length > 0).length;
+  const isMismatchTab = activeTab === TAB.VERSION_MISMATCH;
 
   const headerBar = (
     <div className="flex items-center gap-3 border-b border-slate-100 px-4 py-3">
@@ -137,68 +212,70 @@ export function ConfigFilesTab() {
     );
   }
 
-  const hasDiffs = groups.some((g) => g.diffs.length > 0);
-  const diffCount = groups.reduce((acc, g) => acc + g.diffs.length, 0);
-  const versionMismatchCount = groups.filter((group) => group.hasVersionMismatch).length;
-
   return (
     <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
       {headerBar}
 
-      <div className="flex items-center gap-3 border-b border-slate-100 bg-slate-50/50 px-4 py-2">
-        <label className="flex cursor-pointer items-center gap-2">
-          <input
-            type="checkbox"
-            checked={allSelected}
-            ref={(el) => {
-              if (el) el.indeterminate = someSelected;
-            }}
-            onChange={toggleAll}
-            className="h-4 w-4 cursor-pointer accent-primary"
-            aria-label="Select all extension groups"
-          />
-          <span className="text-xs text-slate-500">
-            {selectedGroups.length > 0
-              ? `${selectedGroups.length} of ${groups.length} selected`
-              : `${groups.length} namespace${groups.length === 1 ? "" : "s"}`}
-          </span>
-        </label>
-
-        {hasDiffs && (
-          <span className="ml-auto text-xs text-slate-400">
-            {diffCount} total {diffCount === 1 ? "diff" : "diffs"} across {groups.filter((g) => g.diffs.length > 0).length} groups
-            {versionMismatchCount > 0 ? `, ${versionMismatchCount} version mismatch${versionMismatchCount === 1 ? "" : "es"}` : ""}
-          </span>
-        )}
-
-        {!hasDiffs && versionMismatchCount > 0 && (
-          <span className="ml-auto flex items-center gap-1 text-xs text-sky-700">
-            <ArrowLeftRight size={12} />
-            Config values match, but {versionMismatchCount} extension version
-            {versionMismatchCount === 1 ? "" : "s"} differ
-          </span>
-        )}
-
-        {!hasDiffs && versionMismatchCount === 0 && (
-          <span className="ml-auto flex items-center gap-1 text-xs text-emerald-600">
-            <CheckCheck size={12} />
-            All settings identical
-          </span>
-        )}
+      <div className="flex items-center border-b border-slate-100 px-4 py-3">
+        <SegmentedTabs items={TAB_ITEMS} value={activeTab} onChange={setActiveTab} />
       </div>
 
-      <div className="divide-y divide-slate-100">
-        {groups.map((group) => (
-          <ExtensionGroupRow
-            key={`${group.kind}:${group.extensionId ?? group.namespace}`}
-            group={group}
-            leftName={leftName}
-            rightName={rightName}
-            checked={selectedNamespaces.has(group.namespace)}
-            onCheckedChange={(checked) => toggleNamespace(group.namespace, checked)}
-          />
-        ))}
-      </div>
+      {activeGroups.length === 0 ? (
+        <TabEmptyState tab={activeTab} leftName={leftName} rightName={rightName} />
+      ) : (
+        <>
+          <div className="flex items-center gap-3 border-b border-slate-100 bg-slate-50/50 px-4 py-2">
+            <label className="flex cursor-pointer items-center gap-2">
+              <input
+                type="checkbox"
+                checked={activeAllSelected}
+                ref={(el) => {
+                  if (el) el.indeterminate = activeSomeSelected;
+                }}
+                onChange={toggleAll}
+                className="h-4 w-4 cursor-pointer accent-primary"
+                aria-label="Select all extension groups in current tab"
+              />
+              <span className="text-xs text-slate-500">{selectionText}</span>
+            </label>
+
+            {activeHasDiffs && (
+              <span className="ml-auto text-xs text-slate-400">
+                {activeDiffCount} total {activeDiffCount === 1 ? "diff" : "diffs"} across {activeGroupsWithDiffs} groups
+                {isMismatchTab ? `, ${activeGroups.length} version mismatch${activeGroups.length === 1 ? "" : "es"}` : ""}
+              </span>
+            )}
+
+            {!activeHasDiffs && isMismatchTab && (
+              <span className="ml-auto flex items-center gap-1 text-xs text-sky-700">
+                <ArrowLeftRight size={12} />
+                Config values match, but {activeGroups.length} extension version
+                {activeGroups.length === 1 ? "" : "s"} differ
+              </span>
+            )}
+
+            {!activeHasDiffs && !isMismatchTab && (
+              <span className="ml-auto flex items-center gap-1 text-xs text-emerald-600">
+                <CheckCheck size={12} />
+                All settings identical
+              </span>
+            )}
+          </div>
+
+          <div className="divide-y divide-slate-100">
+            {activeGroups.map((group) => (
+              <ExtensionGroupRow
+                key={`${group.kind}:${group.extensionId ?? group.namespace}`}
+                group={group}
+                leftName={leftName}
+                rightName={rightName}
+                checked={activeSelectedNamespaces.has(group.namespace)}
+                onCheckedChange={(checked) => toggleNamespace(group.namespace, checked)}
+              />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }

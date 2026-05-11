@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowLeftRight } from "lucide-react";
+import { ArrowLeftRight, CircleOff } from "lucide-react";
 import { EditorIdentity, EDITOR_IDENTITY_MODE } from "../../../components/editor/EditorIdentity";
 import { Badge, BADGE_VARIANT } from "../../../components/ui/Badge";
 import { Popover } from "../../../components/ui/Popover";
@@ -86,7 +86,15 @@ export function EditorVersionPill({
   );
 }
 
-export function VersionMismatchIndicator({ entry, editorNames }: { entry: ExtensionPresence; editorNames: string[] }) {
+export function VersionMismatchIndicator({
+  entry,
+  editorNames,
+  ribbon = false
+}: {
+  entry: ExtensionPresence;
+  editorNames: string[];
+  ribbon?: boolean;
+}) {
   if (!entry.hasVersionMismatch) {
     return null;
   }
@@ -113,9 +121,60 @@ export function VersionMismatchIndicator({ entry, editorNames }: { entry: Extens
         </div>
       }
     >
-      <Badge variant={BADGE_VARIANT.INFO} leadingIcon={<ArrowLeftRight size={12} />}>
-        Version mismatch
-      </Badge>
+      {ribbon ? (
+        <Badge.Ribbon
+          variant={BADGE_VARIANT.INFO}
+          role="button"
+          tabIndex={0}
+          aria-label="Show version mismatch details"
+          title="Version mismatch"
+          className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/50"
+        >
+          <ArrowLeftRight size={12} aria-hidden="true" />
+        </Badge.Ribbon>
+      ) : (
+        <Badge variant={BADGE_VARIANT.INFO} leadingIcon={<ArrowLeftRight size={12} />}>
+          Version mismatch
+        </Badge>
+      )}
+    </Popover>
+  );
+}
+
+export function DisabledIndicator({ disabledIn }: { disabledIn: string[] }) {
+  if (disabledIn.length === 0) {
+    return null;
+  }
+
+  return (
+    <Popover
+      trigger="click"
+      placement="bottom"
+      align="start"
+      sideOffset={10}
+      panelClassName="min-w-[180px]"
+      content={
+        <div className="space-y-2">
+          <div className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Disabled in</div>
+          <div className="space-y-1">
+            {disabledIn.map((name) => (
+              <div key={name} className="rounded-md bg-slate-50 px-2 py-1 text-sm text-slate-700">
+                {name}
+              </div>
+            ))}
+          </div>
+        </div>
+      }
+    >
+      <button
+        type="button"
+        className="inline-flex rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/50"
+        aria-label="Show disabled editors"
+      >
+        <Badge variant={BADGE_VARIANT.WARNING} leadingIcon={<CircleOff size={12} aria-hidden="true" />}>
+          Disabled
+        </Badge>
+      </button>
     </Popover>
   );
 }

@@ -1,7 +1,5 @@
 import classNames from "classnames";
-import { CheckCheck, CircleOff } from "lucide-react";
-import { Button, BUTTON_SIZE, BUTTON_VARIANT } from "../../../components/ui/Button";
-import { Popover } from "../../../components/ui/Popover";
+import { CheckCheck } from "lucide-react";
 import { EDITOR_IDENTITY_MODE, EditorIdentity } from "../../../components/editor/EditorIdentity";
 import type { ExtensionPresence, ResolvedEditor } from "../../../types";
 import {
@@ -11,7 +9,8 @@ import {
   ExtensionIcon,
   EditorPresenceBadge,
   EditorVersionPill,
-  VersionMismatchIndicator
+  VersionMismatchIndicator,
+  DisabledIndicator
 } from "./ExtensionHelpers";
 
 export function ExtensionsByExtensionView({
@@ -68,36 +67,7 @@ export function ExtensionsByExtensionView({
                       <div className="flex items-center gap-1.5">
                         <span className="truncate font-medium text-slate-800">{displayName(entry.extensionId)}</span>
                         <VersionMismatchIndicator entry={entry} editorNames={editorNames} />
-                        {disabledIn.length > 0 && (
-                          <Popover
-                            trigger="click"
-                            placement="bottom"
-                            align="start"
-                            sideOffset={10}
-                            panelClassName="min-w-[180px]"
-                            content={
-                              <div className="space-y-2">
-                                <div className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Disabled in</div>
-                                <div className="space-y-1">
-                                  {disabledIn.map((name) => (
-                                    <div key={name} className="rounded-md bg-slate-50 px-2 py-1 text-sm text-slate-700">
-                                      {name}
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            }
-                          >
-                            <Button
-                              variant={BUTTON_VARIANT.GHOST}
-                              size={BUTTON_SIZE.ICON_XS}
-                              className="text-amber-600 hover:bg-transparent hover:text-amber-700 active:bg-transparent"
-                              aria-label={`Show disabled editors for ${entry.extensionId}`}
-                            >
-                              <CircleOff size={14} strokeWidth={1.9} />
-                            </Button>
-                          </Popover>
-                        )}
+                        <DisabledIndicator disabledIn={disabledIn} />
                       </div>
                       <span className="block truncate font-mono text-xs text-slate-400" title={entry.extensionId}>
                         {shortenExtensionId(entry.extensionId)}
@@ -190,7 +160,7 @@ export function ExtensionsByEditorView({
                     <div
                       key={`${editorName}-${entry.extensionId}`}
                       className={classNames(
-                        "flex items-center gap-3 rounded-lg px-3 py-2.5",
+                        "relative flex items-center gap-3 rounded-lg px-3 py-2.5",
                         isDisabled
                           ? "border border-slate-100 bg-white opacity-60"
                           : entry.hasVersionMismatch
@@ -206,7 +176,7 @@ export function ExtensionsByEditorView({
                           <span className={classNames("block truncate text-sm font-medium", isDisabled ? "text-slate-400" : "text-slate-800")}>
                             {displayName(entry.extensionId)}
                           </span>
-                          <VersionMismatchIndicator entry={entry} editorNames={editorNames} />
+                          <VersionMismatchIndicator entry={entry} editorNames={editorNames} ribbon />
                         </div>
                         <span
                           className={classNames("block truncate font-mono text-xs", isDisabled ? "text-slate-300" : "text-slate-400")}

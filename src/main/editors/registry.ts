@@ -1,3 +1,5 @@
+import type { ReadonlyDeep } from "type-fest";
+
 export interface EditorRegistryEntry {
   slug: string;
   displayName: string;
@@ -33,7 +35,7 @@ export interface EditorRegistryEntry {
   };
 }
 
-export const SUPPORTED_EDITORS: EditorRegistryEntry[] = [
+export const SUPPORTED_EDITORS: ReadonlyDeep<EditorRegistryEntry[]> = [
   {
     slug: "vscode",
     displayName: "VSCode",

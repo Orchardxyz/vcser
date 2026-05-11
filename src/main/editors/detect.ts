@@ -1,3 +1,4 @@
+import type { ValueOf } from "type-fest";
 import { detectMacOSEditors } from "./detect.macos";
 import { detectWindowsEditors } from "./detect.windows";
 import { SUPPORTED_EDITORS } from "./registry";
@@ -7,7 +8,7 @@ export const APP_ICON_STATUS = {
   FALLBACK: "fallback"
 } as const;
 
-export type AppIconStatus = (typeof APP_ICON_STATUS)[keyof typeof APP_ICON_STATUS];
+export type AppIconStatus = ValueOf<typeof APP_ICON_STATUS>;
 
 export interface DetectedEditor {
   name: string;

@@ -1,9 +1,11 @@
+import type { JsonValue, Simplify, ValueOf } from "type-fest";
+
 export const APP_ICON_STATUS = {
   READY: "ready",
   FALLBACK: "fallback"
 } as const;
 
-export type AppIconStatus = (typeof APP_ICON_STATUS)[keyof typeof APP_ICON_STATUS];
+export type AppIconStatus = ValueOf<typeof APP_ICON_STATUS>;
 
 export interface ResolvedEditor {
   name: string;
@@ -48,14 +50,14 @@ export const EXTENSION_VIEW_MODE = {
   BY_EDITOR: "by_editor"
 } as const;
 
-export type ExtensionViewMode = (typeof EXTENSION_VIEW_MODE)[keyof typeof EXTENSION_VIEW_MODE];
+export type ExtensionViewMode = ValueOf<typeof EXTENSION_VIEW_MODE>;
 
 export const SETTINGS_MODE = {
   SAFE: "safe",
   EXACT: "exact"
 } as const;
 
-export type SettingsMode = (typeof SETTINGS_MODE)[keyof typeof SETTINGS_MODE];
+export type SettingsMode = ValueOf<typeof SETTINGS_MODE>;
 
 export const THEME_MODE = {
   LIGHT: "light",
@@ -63,7 +65,7 @@ export const THEME_MODE = {
   SYSTEM: "system"
 } as const;
 
-export type ThemeMode = (typeof THEME_MODE)[keyof typeof THEME_MODE];
+export type ThemeMode = ValueOf<typeof THEME_MODE>;
 
 export const CHANGE_TYPE = {
   ADD: "add",
@@ -71,13 +73,13 @@ export const CHANGE_TYPE = {
   DELETE: "delete"
 } as const;
 
-export type ChangeType = (typeof CHANGE_TYPE)[keyof typeof CHANGE_TYPE];
+export type ChangeType = ValueOf<typeof CHANGE_TYPE>;
 
 export interface SettingsKeyDiff {
   key: string;
   changeType: ChangeType;
-  sourceValue?: unknown;
-  targetValue?: unknown;
+  sourceValue?: JsonValue;
+  targetValue?: JsonValue;
 }
 
 export interface SettingsDiffResult {
@@ -95,7 +97,7 @@ export const SYNC_ACTION_TYPE = {
   SETTINGS: "settings"
 } as const;
 
-export type SyncActionType = (typeof SYNC_ACTION_TYPE)[keyof typeof SYNC_ACTION_TYPE];
+export type SyncActionType = ValueOf<typeof SYNC_ACTION_TYPE>;
 
 export interface SyncActionInput {
   actionType: SyncActionType;
@@ -113,22 +115,14 @@ export interface SyncResult {
   backupPath?: string;
 }
 
-export interface ActionItem {
-  id: string;
-  label: string;
-  actionType: SyncActionType;
-  extensionId?: string;
-  sourceEditor?: string;
-  targetEditor: string;
-  diffs?: SettingsKeyDiff[];
-}
+export type ActionItem = Simplify<SyncActionInput & { id: string; label: string }>;
 
 export const EXTENSION_SETTINGS_GROUP_KIND = {
   NAMESPACE: "namespace",
   VERSION_ONLY: "version_only"
 } as const;
 
-export type ExtensionSettingsGroupKind = (typeof EXTENSION_SETTINGS_GROUP_KIND)[keyof typeof EXTENSION_SETTINGS_GROUP_KIND];
+export type ExtensionSettingsGroupKind = ValueOf<typeof EXTENSION_SETTINGS_GROUP_KIND>;
 
 export interface ExtensionSettingsGroup {
   kind: ExtensionSettingsGroupKind;

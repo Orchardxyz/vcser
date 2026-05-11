@@ -1,5 +1,6 @@
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
 import classNames from "classnames";
+import type { ValueOf } from "type-fest";
 
 export const BUTTON_VARIANT = {
   PRIMARY: "primary",
@@ -7,7 +8,7 @@ export const BUTTON_VARIANT = {
   GHOST: "ghost"
 } as const;
 
-export type ButtonVariant = (typeof BUTTON_VARIANT)[keyof typeof BUTTON_VARIANT];
+export type ButtonVariant = ValueOf<typeof BUTTON_VARIANT>;
 
 export const BUTTON_SIZE = {
   SM: "sm",
@@ -17,7 +18,7 @@ export const BUTTON_SIZE = {
   ICON_XS: "icon_xs"
 } as const;
 
-export type ButtonSize = (typeof BUTTON_SIZE)[keyof typeof BUTTON_SIZE];
+export type ButtonSize = ValueOf<typeof BUTTON_SIZE>;
 
 const variantClassName: Record<ButtonVariant, string> = {
   [BUTTON_VARIANT.PRIMARY]:

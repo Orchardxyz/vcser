@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { parse, printParseErrorCode, type ParseError } from "jsonc-parser";
+import type { JsonObject } from "type-fest";
 import type { ChangeType, SettingsKeyDiff } from "../../renderer/src/types";
 import { CHANGE_TYPE } from "../../renderer/src/types";
 
@@ -7,7 +8,7 @@ function formatParseErrors(errors: ParseError[]): string {
   return errors.map((error) => `${printParseErrorCode(error.error)} at offset ${error.offset}`).join("; ");
 }
 
-export function readSettingsJson(settingsPath: string): Record<string, unknown> {
+export function readSettingsJson(settingsPath: string): JsonObject {
   try {
     const raw = readFileSync(settingsPath, "utf-8");
     const errors: ParseError[] = [];
@@ -22,7 +23,7 @@ export function readSettingsJson(settingsPath: string): Record<string, unknown> 
     }
 
     if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
-      return parsed as Record<string, unknown>;
+      return parsed as JsonObject;
     }
     return {};
   } catch (error) {
@@ -38,7 +39,7 @@ function changeType(leftHas: boolean, rightHas: boolean): ChangeType {
   return CHANGE_TYPE.UPDATE;
 }
 
-export function diffSettings(left: Record<string, unknown>, right: Record<string, unknown>): SettingsKeyDiff[] {
+export function diffSettings(left: JsonObject, right: JsonObject): SettingsKeyDiff[] {
   const allKeys = new Set([...Object.keys(left), ...Object.keys(right)]);
   const diffs: SettingsKeyDiff[] = [];
 
@@ -82,11 +83,7 @@ export interface NamespaceStats {
   totalCount: number;
 }
 
-export function groupSettingsByNamespace(
-  left: Record<string, unknown>,
-  right: Record<string, unknown>,
-  diffs: SettingsKeyDiff[]
-): Map<string, NamespaceStats> {
+export function groupSettingsByNamespace(left: JsonObject, right: JsonObject, diffs: SettingsKeyDiff[]): Map<string, NamespaceStats> {
   const allKeys = new Set([...Object.keys(left), ...Object.keys(right)]);
   const diffKeys = new Set(diffs.map((d) => d.key));
   const diffByKey = new Map(diffs.map((d) => [d.key, d]));

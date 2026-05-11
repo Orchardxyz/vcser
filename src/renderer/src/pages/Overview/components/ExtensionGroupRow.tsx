@@ -46,7 +46,6 @@ export function VersionMismatchIndicator({ group, leftName, rightName }: { group
       placement="top"
       align="center"
       sideOffset={8}
-      showArrow
       panelClassName="min-w-[180px]"
       content={
         <div className="space-y-1.5 text-sm text-slate-700">
@@ -79,7 +78,6 @@ export function MissingExtensionIndicator({ group, leftName, rightName }: { grou
       placement="top"
       align="center"
       sideOffset={8}
-      showArrow
       panelClassName="min-w-[160px]"
       content={
         <div className="space-y-1.5">

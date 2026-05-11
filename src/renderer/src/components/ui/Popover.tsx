@@ -74,12 +74,6 @@ interface PopoverProps {
    */
   closeOnSelect?: boolean;
 
-  /**
-   * Show a small arrow/caret pointing to the trigger.
-   * @default false
-   */
-  showArrow?: boolean;
-
   /** Optional width constraint for the panel. */
   maxWidth?: number | string;
 
@@ -107,7 +101,6 @@ export function Popover({
   closeOnOutsideClick = true,
   closeOnEscape = true,
   closeOnSelect = false,
-  showArrow = false,
   maxWidth,
   panelClassName
 }: PopoverProps) {
@@ -263,18 +256,6 @@ export function Popover({
           }
         >
           {content}
-          {showArrow && (
-            <PopoverPrimitive.Arrow
-              width={16}
-              height={8}
-              style={{
-                fill: "var(--color-popover)",
-                stroke: "var(--color-border)",
-                strokeWidth: 1,
-                strokeLinejoin: "round"
-              }}
-            />
-          )}
         </PopoverPrimitive.Content>
       </PopoverPrimitive.Portal>
     </PopoverPrimitive.Root>

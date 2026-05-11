@@ -99,7 +99,6 @@ export function VersionMismatchIndicator({ entry, editorNames }: { entry: Extens
       placement="bottom"
       align="start"
       sideOffset={10}
-      showArrow
       panelClassName="min-w-[200px]"
       content={
         <div className="space-y-2">

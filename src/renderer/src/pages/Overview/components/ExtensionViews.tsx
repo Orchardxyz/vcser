@@ -74,7 +74,6 @@ export function ExtensionsByExtensionView({
                             placement="bottom"
                             align="start"
                             sideOffset={10}
-                            showArrow
                             panelClassName="min-w-[180px]"
                             content={
                               <div className="space-y-2">

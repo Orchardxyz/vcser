@@ -157,7 +157,7 @@ async function extractIcon(appPath: string): Promise<{
   }
 }
 
-export async function detectMacOSEditors(entries: EditorRegistryEntry[]): Promise<DetectedEditor[]> {
+export async function detectMacOSEditors(entries: readonly EditorRegistryEntry[]): Promise<DetectedEditor[]> {
   const searchPaths = resolveAppPaths();
   const results: DetectedEditor[] = [];
 

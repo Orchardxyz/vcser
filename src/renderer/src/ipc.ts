@@ -1,7 +1,8 @@
+import type { JsonObject, ValueOf } from "type-fest";
 import type { ExtensionDiffResult, ResolvedEditor, SettingsDiffByExtensionResult, SettingsDiffResult, SyncResult } from "./types";
 import { APP_ICON_STATUS, CHANGE_TYPE, EXTENSION_SETTINGS_GROUP_KIND } from "./types";
 
-type InvokePayload = Record<string, unknown> | undefined;
+type InvokePayload = JsonObject | undefined;
 
 const SUPPORTED_COMMAND = {
   DETECT_EDITORS: "detect_editors",
@@ -11,7 +12,7 @@ const SUPPORTED_COMMAND = {
   EXECUTE_SYNC: "execute_sync"
 } as const;
 
-type SupportedCommand = (typeof SUPPORTED_COMMAND)[keyof typeof SUPPORTED_COMMAND];
+type SupportedCommand = ValueOf<typeof SUPPORTED_COMMAND>;
 
 const demoEditors: ResolvedEditor[] = [
   {

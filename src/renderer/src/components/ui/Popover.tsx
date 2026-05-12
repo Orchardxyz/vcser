@@ -1,5 +1,6 @@
 import * as PopoverPrimitive from "@radix-ui/react-popover";
 import type { ReactElement, ReactNode } from "react";
+import type { ValueOf } from "type-fest";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import classNames from "classnames";
 
@@ -10,7 +11,7 @@ const POPOVER_PLACEMENT = {
   RIGHT: "right"
 } as const;
 
-type PopoverPlacement = (typeof POPOVER_PLACEMENT)[keyof typeof POPOVER_PLACEMENT];
+type PopoverPlacement = ValueOf<typeof POPOVER_PLACEMENT>;
 
 const POPOVER_ALIGN = {
   START: "start",
@@ -18,7 +19,7 @@ const POPOVER_ALIGN = {
   END: "end"
 } as const;
 
-type PopoverAlign = (typeof POPOVER_ALIGN)[keyof typeof POPOVER_ALIGN];
+type PopoverAlign = ValueOf<typeof POPOVER_ALIGN>;
 
 interface PopoverProps {
   /** Interactive content rendered inside the floating panel. */

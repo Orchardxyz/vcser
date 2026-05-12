@@ -1,6 +1,7 @@
 import * as PopoverPrimitive from "@radix-ui/react-popover";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import type { ReactElement, ReactNode } from "react";
+import type { ValueOf } from "type-fest";
 import { cloneElement, useState } from "react";
 import classNames from "classnames";
 
@@ -11,7 +12,7 @@ const TOOLTIP_PLACEMENT = {
   RIGHT: "right"
 } as const;
 
-type TooltipPlacement = (typeof TOOLTIP_PLACEMENT)[keyof typeof TOOLTIP_PLACEMENT];
+type TooltipPlacement = ValueOf<typeof TOOLTIP_PLACEMENT>;
 
 type TooltipTriggerProps = {
   onClick?: (e: React.MouseEvent<HTMLElement>) => void;

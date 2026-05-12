@@ -1,5 +1,6 @@
 import { useEffect, useState, type ElementType } from "react";
 import { LayoutDashboard, MonitorCog, Settings } from "lucide-react";
+import type { ValueOf } from "type-fest";
 import logoSvg from "../../../../assets/logo.svg";
 import { invoke } from "../../ipc";
 import { useAppStore } from "../../store";
@@ -12,7 +13,7 @@ export const PAGE = {
   SETTINGS: "settings"
 } as const;
 
-export type Page = (typeof PAGE)[keyof typeof PAGE];
+export type Page = ValueOf<typeof PAGE>;
 
 interface SidebarProps {
   activePage: Page;

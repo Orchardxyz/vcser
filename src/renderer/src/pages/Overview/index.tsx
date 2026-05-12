@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { ValueOf } from "type-fest";
 import { SegmentedTabs } from "../../components/ui/SegmentedTabs";
 import { ConfigFilesTab } from "./ConfigFilesTab";
 import { ExtensionsTab } from "./ExtensionsTab";
@@ -8,7 +9,7 @@ const TAB = {
   CONFIG_FILES: "configFiles"
 } as const;
 
-type Tab = (typeof TAB)[keyof typeof TAB];
+type Tab = ValueOf<typeof TAB>;
 
 const OVERVIEW_TAB_ITEMS = [
   { value: TAB.EXTENSIONS, label: "Extensions" },

@@ -1,4 +1,5 @@
 import { Box } from "lucide-react";
+import type { ValueOf } from "type-fest";
 import type { ResolvedEditor } from "../../types";
 import { APP_ICON_STATUS } from "../../types";
 
@@ -9,7 +10,7 @@ export const EDITOR_IDENTITY_MODE = {
   ICON: "icon"
 } as const;
 
-export type EditorIdentityMode = (typeof EDITOR_IDENTITY_MODE)[keyof typeof EDITOR_IDENTITY_MODE];
+export type EditorIdentityMode = ValueOf<typeof EDITOR_IDENTITY_MODE>;
 
 interface EditorIdentityProps {
   editor: ResolvedEditor;

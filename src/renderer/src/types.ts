@@ -30,6 +30,12 @@ export interface CustomEditorInput {
   cli: string;
 }
 
+export interface MachineIdentity {
+  displayName: string;
+  hostname: string;
+  platformLabel: string;
+}
+
 export interface ExtensionPresence {
   extensionId: string;
   iconDataUrl?: string;

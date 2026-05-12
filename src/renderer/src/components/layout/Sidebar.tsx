@@ -1,6 +1,10 @@
-import type { ElementType } from "react";
+import { useEffect, useState, type ElementType } from "react";
 import { LayoutDashboard, MonitorCog, Settings } from "lucide-react";
 import logoSvg from "../../../../assets/logo.svg";
+import { invoke } from "../../ipc";
+import { useAppStore } from "../../store";
+import type { MachineIdentity } from "../../types";
+import { Tooltip } from "../ui/Tooltip";
 
 export const PAGE = {
   OVERVIEW: "overview",
@@ -21,7 +25,41 @@ const navItems: { page: Page; label: string; icon: ElementType }[] = [
   { page: PAGE.SETTINGS, label: "Settings", icon: Settings }
 ];
 
+const FALLBACK_MACHINE_IDENTITY: MachineIdentity = {
+  displayName: "This device",
+  hostname: "",
+  platformLabel: "macOS"
+};
+
 export function Sidebar({ activePage, onNavigate }: SidebarProps) {
+  const [machineIdentity, setMachineIdentity] = useState<MachineIdentity>(FALLBACK_MACHINE_IDENTITY);
+  const editorCount = useAppStore((s) => s.editors.length);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void invoke<MachineIdentity>("get_machine_identity")
+      .then((value) => {
+        if (!cancelled) {
+          setMachineIdentity({
+            displayName: value?.displayName?.trim() || FALLBACK_MACHINE_IDENTITY.displayName,
+            hostname: value?.hostname?.trim() || "",
+            platformLabel: value?.platformLabel?.trim() || FALLBACK_MACHINE_IDENTITY.platformLabel
+          });
+        }
+      })
+      .catch(() => undefined);
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const displayName = machineIdentity.displayName || FALLBACK_MACHINE_IDENTITY.displayName;
+  const hostnameLabel = machineIdentity.hostname;
+  const avatarLabel = displayName.charAt(0).toUpperCase() || "?";
+  const editorCountLabel = `${editorCount} editor${editorCount === 1 ? "" : "s"} · ${machineIdentity.platformLabel}`;
+
   return (
     <aside className="flex h-screen w-56 shrink-0 flex-col border-r border-slate-200 bg-slate-50 text-slate-600">
       <div className="flex items-center gap-3 border-b border-slate-200 px-4 py-5">
@@ -53,11 +91,13 @@ export function Sidebar({ activePage, onNavigate }: SidebarProps) {
 
       <div className="flex items-center gap-3 border-t border-slate-200 px-4 py-4">
         <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold text-slate-700 select-none">
-          M
+          {avatarLabel}
         </div>
         <div className="min-w-0">
-          <p className="truncate text-xs font-medium text-slate-700">My MacBook Pro</p>
-          <p className="text-xs text-slate-500">3 editors connected</p>
+          <Tooltip content={hostnameLabel || displayName} disabled={!hostnameLabel}>
+            <p className="truncate text-xs font-medium text-slate-700">{displayName}</p>
+          </Tooltip>
+          <p className="text-xs text-slate-500">{editorCountLabel}</p>
         </div>
       </div>
     </aside>

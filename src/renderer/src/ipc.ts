@@ -1,10 +1,11 @@
 import type { JsonObject, ValueOf } from "type-fest";
-import type { ExtensionDiffResult, ResolvedEditor, SettingsDiffByExtensionResult, SettingsDiffResult, SyncResult } from "./types";
+import type { ExtensionDiffResult, MachineIdentity, ResolvedEditor, SettingsDiffByExtensionResult, SettingsDiffResult, SyncResult } from "./types";
 import { APP_ICON_STATUS, CHANGE_TYPE, EXTENSION_SETTINGS_GROUP_KIND } from "./types";
 
 type InvokePayload = JsonObject | undefined;
 
 const SUPPORTED_COMMAND = {
+  GET_MACHINE_IDENTITY: "get_machine_identity",
   DETECT_EDITORS: "detect_editors",
   COMPUTE_EXTENSION_DIFF: "compute_extension_diff",
   COMPUTE_SETTINGS_DIFF: "compute_settings_diff",
@@ -56,7 +57,14 @@ const demoEditors: ResolvedEditor[] = [
   }
 ];
 
+const demoMachineIdentity: MachineIdentity = {
+  displayName: "My MacBook",
+  hostname: "my-macbook.local",
+  platformLabel: "macOS"
+};
+
 const defaultResponses: Record<SupportedCommand, unknown> = {
+  [SUPPORTED_COMMAND.GET_MACHINE_IDENTITY]: demoMachineIdentity,
   [SUPPORTED_COMMAND.DETECT_EDITORS]: demoEditors,
   [SUPPORTED_COMMAND.COMPUTE_EXTENSION_DIFF]: {
     editorNames: ["Cursor", "Windsurf", "VS Code"],

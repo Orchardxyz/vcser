@@ -1,4 +1,6 @@
+import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
+import { hostname } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { app, BrowserWindow, ipcMain, nativeImage, screen, type NativeImage } from "electron";
@@ -7,7 +9,7 @@ import { detectEditors } from "./editors/detect";
 import { resolveNamespacesToExtensions } from "./editors/configNamespace";
 import { computeExtensionDiff, listInstalledExtensions } from "./editors/extensions";
 import { readSettingsJson, diffSettings, groupSettingsByNamespace } from "./editors/settings";
-import type { ExtensionSettingsGroup, SettingsDiffByExtensionResult } from "../renderer/src/types";
+import type { ExtensionSettingsGroup, MachineIdentity, SettingsDiffByExtensionResult } from "../renderer/src/types";
 import { EXTENSION_SETTINGS_GROUP_KIND } from "../renderer/src/types";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -43,6 +45,37 @@ function loadAppIcon(): NativeImage | null {
     if (!icon.isEmpty()) return icon;
   }
   return null;
+}
+
+function readCommandOutput(file: string, args: string[]): string {
+  try {
+    return execFileSync(file, args, { encoding: "utf8" }).trim();
+  } catch {
+    return "";
+  }
+}
+
+function resolvePlatformLabel(): string {
+  if (process.platform === "darwin") {
+    return "macOS";
+  }
+
+  if (process.platform === "win32") {
+    return "Windows";
+  }
+
+  return "Linux";
+}
+
+function resolveMachineIdentity(): MachineIdentity {
+  const systemHostname = hostname().trim();
+  const displayName = process.platform === "darwin" ? readCommandOutput("scutil", ["--get", "ComputerName"]) || systemHostname : systemHostname;
+
+  return {
+    displayName,
+    hostname: systemHostname,
+    platformLabel: resolvePlatformLabel()
+  };
 }
 
 function createMainWindow(appIcon: NativeImage | null) {
@@ -85,6 +118,10 @@ app.whenReady().then(() => {
   if (process.platform === "darwin" && appIcon) {
     app.dock.setIcon(appIcon);
   }
+
+  ipcMain.handle("get_machine_identity", () => {
+    return resolveMachineIdentity();
+  });
 
   ipcMain.handle("detect_editors", async () => {
     return detectEditors();

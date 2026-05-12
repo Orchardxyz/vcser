@@ -1,7 +1,7 @@
 import { create } from "zustand";
-import type { ResolvedEditor, ThemeMode } from "../types";
-import { invoke } from "../ipc";
-import { THEME_MODE } from "../types";
+import type { ResolvedEditor, ThemeMode } from "@/types";
+import { invoke } from "@/ipc";
+import { THEME_MODE } from "@/types";
 
 const THEME_MODE_STORAGE_KEY = "vcser.theme-mode";
 

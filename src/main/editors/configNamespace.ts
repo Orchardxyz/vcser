@@ -1,6 +1,6 @@
 import { readdir, readFile } from "node:fs/promises";
 import { join, resolve, sep } from "node:path";
-import type { PrismaClient } from "../../generated/prisma";
+import type { PrismaClient } from "@generated/prisma";
 import { namespaceOf } from "./settings";
 import { mimeTypeForPath } from "./utils";
 

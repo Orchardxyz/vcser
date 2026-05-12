@@ -38,4 +38,4 @@ export {
   type ExtensionSettingsGroupKind,
   type ExtensionSettingsGroup,
   type SettingsDiffByExtensionResult
-} from "../../shared/types";
+} from "@shared/types";

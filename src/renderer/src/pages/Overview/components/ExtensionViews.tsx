@@ -1,7 +1,7 @@
 import classNames from "classnames";
 import { CheckCheck } from "lucide-react";
-import { EDITOR_IDENTITY_MODE, EditorIdentity } from "../../../components/editor/EditorIdentity";
-import type { ExtensionPresence, ResolvedEditor } from "../../../types";
+import { EDITOR_IDENTITY_MODE, EditorIdentity } from "@/components/editor/EditorIdentity";
+import type { ExtensionPresence, ResolvedEditor } from "@/types";
 import {
   displayName,
   shortenExtensionId,

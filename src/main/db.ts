@@ -1,7 +1,7 @@
 import { createRequire } from "node:module";
 import { join } from "node:path";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
-import type { PrismaClient } from "../generated/prisma";
+import type { PrismaClient } from "@generated/prisma";
 
 type PrismaGlobal = typeof globalThis & {
   prisma?: PrismaClient;

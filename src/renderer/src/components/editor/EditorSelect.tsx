@@ -1,6 +1,6 @@
-import type { ResolvedEditor } from "../../types";
+import type { ResolvedEditor } from "@/types";
 import { EditorIdentity, EDITOR_IDENTITY_MODE } from "./EditorIdentity";
-import { Select } from "../ui/Select";
+import { Select } from "@/components/ui/Select";
 
 interface EditorSelectProps {
   editors: ResolvedEditor[];

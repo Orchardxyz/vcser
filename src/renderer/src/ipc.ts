@@ -1,7 +1,7 @@
 import type { JsonObject } from "type-fest";
 import type { ExtensionDiffResult, MachineIdentity, ResolvedEditor, SettingsDiffByExtensionResult, SettingsDiffResult, SyncResult } from "./types";
 import { APP_ICON_STATUS, CHANGE_TYPE, EXTENSION_SETTINGS_GROUP_KIND } from "./types";
-import { SUPPORTED_COMMAND, type SupportedCommand } from "../../shared/ipc";
+import { SUPPORTED_COMMAND, type SupportedCommand } from "@shared/ipc";
 
 type InvokePayload = JsonObject | undefined;
 

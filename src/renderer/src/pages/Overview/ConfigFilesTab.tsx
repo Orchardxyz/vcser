@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowLeftRight, CheckCheck, FileJson } from "lucide-react";
 import type { ValueOf } from "type-fest";
-import { EditorSelect } from "../../components/editor/EditorSelect";
-import { Button, BUTTON_SIZE, BUTTON_VARIANT } from "../../components/ui/Button";
-import { SegmentedTabs } from "../../components/ui/SegmentedTabs";
-import { invoke } from "../../ipc";
-import { useAppStore } from "../../store";
-import type { ResolvedEditor, SettingsDiffByExtensionResult } from "../../types";
+import { EditorSelect } from "@/components/editor/EditorSelect";
+import { Button, BUTTON_SIZE, BUTTON_VARIANT } from "@/components/ui/Button";
+import { SegmentedTabs } from "@/components/ui/SegmentedTabs";
+import { invoke } from "@/ipc";
+import { useAppStore } from "@/store";
+import type { ResolvedEditor, SettingsDiffByExtensionResult } from "@/types";
 import { ExtensionGroupRow } from "./components/ExtensionGroupRow";
 import { SkeletonRow } from "./components/ExtensionSkeletons";
 

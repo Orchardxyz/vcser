@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import classNames from "classnames";
 import { AlertCircle, ArrowLeftRight, CheckCheck, ChevronDown, ChevronRight } from "lucide-react";
-import { Badge, BADGE_VARIANT } from "../../../components/ui/Badge";
-import { Popover } from "../../../components/ui/Popover";
+import { Badge, BADGE_VARIANT } from "@/components/ui/Badge";
+import { Popover } from "@/components/ui/Popover";
 
-import { EXTENSION_SETTINGS_GROUP_KIND, type ExtensionSettingsGroup } from "../../../types";
+import { EXTENSION_SETTINGS_GROUP_KIND, type ExtensionSettingsGroup } from "@/types";
 import { DiffTable, DiffBadge } from "./DiffComponents";
 
 export function groupPrimaryLabel(group: ExtensionSettingsGroup): string {

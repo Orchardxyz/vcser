@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { Package } from "lucide-react";
-import { SegmentedTabs } from "../../components/ui/SegmentedTabs";
-import { invoke } from "../../ipc";
-import { useAppStore } from "../../store";
-import { EXTENSION_VIEW_MODE, type ExtensionDiffResult, type ExtensionViewMode, type ResolvedEditor } from "../../types";
+import { SegmentedTabs } from "@/components/ui/SegmentedTabs";
+import { invoke } from "@/ipc";
+import { useAppStore } from "@/store";
+import { EXTENSION_VIEW_MODE, type ExtensionDiffResult, type ExtensionViewMode, type ResolvedEditor } from "@/types";
 import { ExtensionsByExtensionView, ExtensionsByEditorView } from "./components/ExtensionViews";
 import { ExtensionTableSkeleton, EditorGridSkeleton } from "./components/ExtensionSkeletons";
 

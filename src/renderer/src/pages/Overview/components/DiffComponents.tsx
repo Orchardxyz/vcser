@@ -1,10 +1,10 @@
 import classNames from "classnames";
 import { CheckCheck } from "lucide-react";
 import ReactDiffViewer from "react-diff-viewer-continued";
-import { diffHeaderClass, diffViewerStyles } from "../../../lib/diff-constants";
-import type { SettingsKeyDiff } from "../../../types";
-import { formatDiffValue } from "../../../utils";
-import { Badge, BADGE_VARIANT } from "../../../components/ui/Badge";
+import { diffHeaderClass, diffViewerStyles } from "@/lib/diff-constants";
+import type { SettingsKeyDiff } from "@/types";
+import { formatDiffValue } from "@/utils";
+import { Badge, BADGE_VARIANT } from "@/components/ui/Badge";
 
 export function DiffHtml({ diff, leftName, rightName }: { diff: SettingsKeyDiff; leftName: string; rightName: string }) {
   const isDark = document.documentElement.dataset.theme === "dark";

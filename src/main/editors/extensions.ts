@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import { join, resolve, sep } from "node:path";
 import type { Schema } from "type-fest";
-import type { ExtensionDiffResult, ExtensionPresence } from "../../shared/types";
+import type { ExtensionDiffResult, ExtensionPresence } from "@shared/types";
 import { mimeTypeForPath } from "./utils";
 
 interface EditorWithExtensions {

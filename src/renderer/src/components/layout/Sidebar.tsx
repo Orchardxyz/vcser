@@ -1,11 +1,11 @@
 import { useEffect, useState, type ElementType } from "react";
 import { LayoutDashboard, MonitorCog, Settings } from "lucide-react";
 import type { ValueOf } from "type-fest";
-import logoSvg from "../../../../assets/logo.svg";
-import { invoke } from "../../ipc";
-import { useAppStore } from "../../store";
-import type { MachineIdentity } from "../../types";
-import { Tooltip } from "../ui/Tooltip";
+import logoSvg from "@assets/logo.svg";
+import { invoke } from "@/ipc";
+import { useAppStore } from "@/store";
+import type { MachineIdentity } from "@/types";
+import { Tooltip } from "@/components/ui/Tooltip";
 
 export const PAGE = {
   OVERVIEW: "overview",

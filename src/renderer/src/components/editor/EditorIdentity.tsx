@@ -1,7 +1,7 @@
 import { Box } from "lucide-react";
 import type { ValueOf } from "type-fest";
-import type { ResolvedEditor } from "../../types";
-import { APP_ICON_STATUS } from "../../types";
+import type { ResolvedEditor } from "@/types";
+import { APP_ICON_STATUS } from "@/types";
 
 export const EDITOR_IDENTITY_MODE = {
   CARD: "card",

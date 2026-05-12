@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { ValueOf } from "type-fest";
-import { SegmentedTabs } from "../../components/ui/SegmentedTabs";
+import { SegmentedTabs } from "@/components/ui/SegmentedTabs";
 import { ConfigFilesTab } from "./ConfigFilesTab";
 import { ExtensionsTab } from "./ExtensionsTab";
 

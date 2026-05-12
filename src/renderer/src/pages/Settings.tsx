@@ -1,5 +1,5 @@
-import { useAppStore } from "../store";
-import { THEME_MODE, type ThemeMode } from "../types";
+import { useAppStore } from "@/store";
+import { THEME_MODE, type ThemeMode } from "@/types";
 
 interface SectionCardProps {
   title: string;

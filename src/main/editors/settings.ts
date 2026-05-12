@@ -1,8 +1,8 @@
 import { readFileSync } from "node:fs";
 import { parse, printParseErrorCode, type ParseError } from "jsonc-parser";
 import type { JsonObject } from "type-fest";
-import type { ChangeType, SettingsKeyDiff } from "../../shared/types";
-import { CHANGE_TYPE } from "../../shared/types";
+import type { ChangeType, SettingsKeyDiff } from "@shared/types";
+import { CHANGE_TYPE } from "@shared/types";
 
 function formatParseErrors(errors: ParseError[]): string {
   return errors.map((error) => `${printParseErrorCode(error.error)} at offset ${error.offset}`).join("; ");

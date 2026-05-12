@@ -9,9 +9,9 @@ import { detectEditors } from "./editors/detect";
 import { resolveNamespacesToExtensions } from "./editors/configNamespace";
 import { computeExtensionDiff, listInstalledExtensions } from "./editors/extensions";
 import { readSettingsJson, diffSettings, groupSettingsByNamespace } from "./editors/settings";
-import type { ExtensionSettingsGroup, MachineIdentity, SettingsDiffByExtensionResult } from "../shared/types";
-import { EXTENSION_SETTINGS_GROUP_KIND } from "../shared/types";
-import { SUPPORTED_COMMAND } from "../shared/ipc";
+import type { ExtensionSettingsGroup, MachineIdentity, SettingsDiffByExtensionResult } from "@shared/types";
+import { EXTENSION_SETTINGS_GROUP_KIND } from "@shared/types";
+import { SUPPORTED_COMMAND } from "@shared/ipc";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 

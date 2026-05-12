@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { ArrowLeftRight, CircleOff } from "lucide-react";
-import { EditorIdentity, EDITOR_IDENTITY_MODE } from "../../../components/editor/EditorIdentity";
-import { Badge, BADGE_VARIANT } from "../../../components/ui/Badge";
-import { Popover } from "../../../components/ui/Popover";
-import type { ExtensionPresence, ResolvedEditor } from "../../../types";
+import { EditorIdentity, EDITOR_IDENTITY_MODE } from "@/components/editor/EditorIdentity";
+import { Badge, BADGE_VARIANT } from "@/components/ui/Badge";
+import { Popover } from "@/components/ui/Popover";
+import type { ExtensionPresence, ResolvedEditor } from "@/types";
 
 export function displayName(id: string): string {
   const local = id.split(".")[1] ?? id;

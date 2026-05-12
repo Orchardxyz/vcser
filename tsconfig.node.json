@@ -11,7 +11,11 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "noEmit": true,
-    "types": ["node", "electron"]
+    "types": ["node", "electron"],
+    "paths": {
+      "@shared/*": ["./src/shared/*"],
+      "@generated/*": ["./src/generated/*"]
+    }
   },
   "include": ["electron.vite.config.ts", "src/main/**/*.ts", "src/preload/**/*.ts", "src/shared/**/*.ts"]
 }

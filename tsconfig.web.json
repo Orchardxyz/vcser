@@ -14,5 +14,5 @@
     "noEmit": true,
     "types": ["vite/client"]
   },
-  "include": ["uno.config.ts", "src/renderer/src/**/*.ts", "src/renderer/src/**/*.tsx"]
+  "include": ["uno.config.ts", "src/shared/**/*.ts", "src/renderer/src/**/*.ts", "src/renderer/src/**/*.tsx"]
 }

@@ -1,19 +1,9 @@
-import type { JsonObject, ValueOf } from "type-fest";
+import type { JsonObject } from "type-fest";
 import type { ExtensionDiffResult, MachineIdentity, ResolvedEditor, SettingsDiffByExtensionResult, SettingsDiffResult, SyncResult } from "./types";
 import { APP_ICON_STATUS, CHANGE_TYPE, EXTENSION_SETTINGS_GROUP_KIND } from "./types";
+import { SUPPORTED_COMMAND, type SupportedCommand } from "../../shared/ipc";
 
 type InvokePayload = JsonObject | undefined;
-
-const SUPPORTED_COMMAND = {
-  GET_MACHINE_IDENTITY: "get_machine_identity",
-  DETECT_EDITORS: "detect_editors",
-  COMPUTE_EXTENSION_DIFF: "compute_extension_diff",
-  COMPUTE_SETTINGS_DIFF: "compute_settings_diff",
-  COMPUTE_SETTINGS_DIFF_BY_EXTENSION: "compute_settings_diff_by_extension",
-  EXECUTE_SYNC: "execute_sync"
-} as const;
-
-type SupportedCommand = ValueOf<typeof SUPPORTED_COMMAND>;
 
 const demoEditors: ResolvedEditor[] = [
   {

@@ -9,8 +9,9 @@ import { detectEditors } from "./editors/detect";
 import { resolveNamespacesToExtensions } from "./editors/configNamespace";
 import { computeExtensionDiff, listInstalledExtensions } from "./editors/extensions";
 import { readSettingsJson, diffSettings, groupSettingsByNamespace } from "./editors/settings";
-import type { ExtensionSettingsGroup, MachineIdentity, SettingsDiffByExtensionResult } from "../renderer/src/types";
-import { EXTENSION_SETTINGS_GROUP_KIND } from "../renderer/src/types";
+import type { ExtensionSettingsGroup, MachineIdentity, SettingsDiffByExtensionResult } from "../shared/types";
+import { EXTENSION_SETTINGS_GROUP_KIND } from "../shared/types";
+import { SUPPORTED_COMMAND } from "../shared/ipc";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -119,15 +120,15 @@ app.whenReady().then(() => {
     app.dock.setIcon(appIcon);
   }
 
-  ipcMain.handle("get_machine_identity", () => {
+  ipcMain.handle(SUPPORTED_COMMAND.GET_MACHINE_IDENTITY, () => {
     return resolveMachineIdentity();
   });
 
-  ipcMain.handle("detect_editors", async () => {
+  ipcMain.handle(SUPPORTED_COMMAND.DETECT_EDITORS, async () => {
     return detectEditors();
   });
 
-  ipcMain.handle("compute_extension_diff", async () => {
+  ipcMain.handle(SUPPORTED_COMMAND.COMPUTE_EXTENSION_DIFF, async () => {
     const detected = await detectEditors();
     return await computeExtensionDiff(
       detected.map((e) => ({
@@ -138,7 +139,7 @@ app.whenReady().then(() => {
     );
   });
 
-  ipcMain.handle("compute_settings_diff_by_extension", async (_event, payload: { leftEditor: string; rightEditor: string }) => {
+  ipcMain.handle(SUPPORTED_COMMAND.COMPUTE_SETTINGS_DIFF_BY_EXTENSION, async (_event, payload: { leftEditor: string; rightEditor: string }) => {
     const prisma = getPrismaClient();
     const detected = await detectEditors();
 

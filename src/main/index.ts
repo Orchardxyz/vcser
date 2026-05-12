@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { app, BrowserWindow, ipcMain, nativeImage, type NativeImage } from "electron";
+import { app, BrowserWindow, ipcMain, nativeImage, screen, type NativeImage } from "electron";
 import { getPrismaClient } from "./db";
 import { detectEditors } from "./editors/detect";
 import { resolveNamespacesToExtensions } from "./editors/configNamespace";
@@ -46,9 +46,11 @@ function loadAppIcon(): NativeImage | null {
 }
 
 function createMainWindow(appIcon: NativeImage | null) {
+  const { width: screenWidth, height: screenHeight } = screen.getPrimaryDisplay().workAreaSize;
+
   mainWindow = new BrowserWindow({
-    width: 1440,
-    height: 960,
+    width: Math.round(screenWidth * 0.8),
+    height: Math.round(screenHeight * 0.8),
     minWidth: 1100,
     minHeight: 760,
     show: false,

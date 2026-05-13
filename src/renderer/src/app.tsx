@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMedia } from "react-use";
 import { PAGE, Sidebar, type Page } from "./components/layout/Sidebar";
+import { ToastViewport } from "./components/ui/Toast";
 import { Overview } from "./pages/Overview";
 import { Editors } from "./pages/Editors";
 import { Settings } from "./pages/Settings";
@@ -45,7 +46,7 @@ export default function App() {
         {activePage === PAGE.EDITORS && <Editors />}
         {activePage === PAGE.SETTINGS && <Settings />}
       </main>
-      <div id="app-portal-root" />
+      <ToastViewport theme={resolvedTheme === THEME_MODE.DARK ? "dark" : "light"} />
     </div>
   );
 }

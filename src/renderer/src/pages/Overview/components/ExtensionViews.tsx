@@ -1,10 +1,10 @@
 import { useCallback, useMemo, useState } from "react";
 import { invoke } from "@/ipc";
+import { toast } from "@/store/toast";
 import type { ExtensionPresence, ResolvedEditor, SyncActionInput, SyncResult } from "@/types";
 import { SYNC_ACTION_TYPE } from "@/types";
 import { displayName } from "./ExtensionHelpers";
 import { ExtensionSyncTable } from "./ExtensionSyncTable";
-import { type SyncFeedback, SyncFeedbackBanner } from "./ExtensionSyncStatus";
 import { ExtensionSyncToolbar } from "./ExtensionSyncToolbar";
 import { SyncExtensionModal } from "./SyncExtensionModal";
 
@@ -27,7 +27,6 @@ export function ExtensionsByExtensionView({
   const [syncModalOpen, setSyncModalOpen] = useState(false);
   const [syncingId, setSyncingId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [feedback, setFeedback] = useState<SyncFeedback | null>(null);
 
   const sourceEditor = useMemo(() => editors.find((e) => e.slug === sourceSlug), [editors, sourceSlug]);
   const targetEditor = useMemo(() => editors.find((e) => e.slug === targetSlug), [editors, targetSlug]);
@@ -83,7 +82,6 @@ export function ExtensionsByExtensionView({
       if (slug === targetSlug) setTargetSlug("");
       setSourceSlug(slug);
       setSelectedIds(new Set());
-      setFeedback(null);
     },
     [targetSlug]
   );
@@ -93,7 +91,6 @@ export function ExtensionsByExtensionView({
       if (slug === sourceSlug) setSourceSlug("");
       setTargetSlug(slug);
       setSelectedIds(new Set());
-      setFeedback(null);
     },
     [sourceSlug]
   );
@@ -130,7 +127,6 @@ export function ExtensionsByExtensionView({
     setSourceSlug("");
     setTargetSlug("");
     setSelectedIds(new Set());
-    setFeedback(null);
     setSyncModalOpen(false);
   }, []);
 
@@ -141,7 +137,6 @@ export function ExtensionsByExtensionView({
       }
 
       setSyncingId(entry.extensionId);
-      setFeedback(null);
 
       const actions: SyncActionInput[] = [
         {
@@ -158,11 +153,7 @@ export function ExtensionsByExtensionView({
         const result = results[0];
 
         if (!result?.success) {
-          setFeedback({
-            tone: "error",
-            title: `Could not sync ${displayName(entry.extensionId)}`,
-            detail: result?.error ?? "The target editor did not return a sync result."
-          });
+          toast.error(`Could not sync ${displayName(entry.extensionId)}`, result?.error ?? "The target editor did not return a sync result.");
           return;
         }
 
@@ -171,18 +162,10 @@ export function ExtensionsByExtensionView({
           next.delete(entry.extensionId);
           return next;
         });
-        setFeedback({
-          tone: "success",
-          title: `Synced ${displayName(entry.extensionId)}`,
-          detail: `${sourceEditor.displayName} → ${targetEditor.displayName}`
-        });
+        toast.success(`Synced ${displayName(entry.extensionId)}`, `${sourceEditor.displayName} → ${targetEditor.displayName}`);
         await onRefresh();
       } catch (error) {
-        setFeedback({
-          tone: "error",
-          title: `Could not sync ${displayName(entry.extensionId)}`,
-          detail: error instanceof Error ? error.message : String(error)
-        });
+        toast.error(`Could not sync ${displayName(entry.extensionId)}`, error instanceof Error ? error.message : String(error));
       } finally {
         setSyncingId(null);
       }
@@ -225,12 +208,6 @@ export function ExtensionsByExtensionView({
         onOpenBulkSync={() => setSyncModalOpen(true)}
       />
 
-      {feedback ? (
-        <div className="px-4 pt-4">
-          <SyncFeedbackBanner feedback={feedback} />
-        </div>
-      ) : null}
-
       <ExtensionSyncTable
         rows={pairRows}
         editorNames={editorNames}
@@ -264,14 +241,18 @@ export function ExtensionsByExtensionView({
             setSelectedIds(new Set());
             const successCount = results.filter((result) => result.success).length;
             const failureCount = results.length - successCount;
-            setFeedback({
-              tone: failureCount === 0 ? "success" : "error",
-              title: failureCount === 0 ? "Batch sync completed" : "Batch sync completed with issues",
-              detail:
-                failureCount === 0
-                  ? `${successCount} extension${successCount === 1 ? "" : "s"} synced to ${targetEditor.displayName}.`
-                  : `${successCount} succeeded, ${failureCount} failed. Review the result details in the modal output.`
-            });
+            const title = failureCount === 0 ? "Batch sync completed" : "Batch sync completed with issues";
+            const description =
+              failureCount === 0
+                ? `${successCount} extension${successCount === 1 ? "" : "s"} synced to ${targetEditor.displayName}.`
+                : `${successCount} succeeded, ${failureCount} failed. Review the result details in the modal output.`;
+
+            if (failureCount === 0) {
+              toast.success(title, description);
+            } else {
+              toast.error(title, description);
+            }
+
             void onRefresh();
           }}
         />

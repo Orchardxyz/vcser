@@ -8,8 +8,10 @@ import { getPrismaClient } from "./db";
 import { detectEditors } from "./editors/detect";
 import { resolveNamespacesToExtensions } from "./editors/configNamespace";
 import { computeExtensionDiff, listInstalledExtensions } from "./editors/extensions";
+import { syncExtensionLocal } from "./editors/extensionSync";
 import { readSettingsJson, diffSettings, groupSettingsByNamespace } from "./editors/settings";
 import type { ExtensionSettingsGroup, MachineIdentity, SettingsDiffByExtensionResult } from "@shared/types";
+import type { SyncActionInput, SyncResult } from "@shared/types";
 import { EXTENSION_SETTINGS_GROUP_KIND } from "@shared/types";
 import { SUPPORTED_COMMAND } from "@shared/ipc";
 
@@ -241,6 +243,71 @@ app.whenReady().then(() => {
       groups: [...groups, ...versionOnlyGroups]
     };
     return result;
+  });
+
+  ipcMain.handle(SUPPORTED_COMMAND.EXECUTE_SYNC, async (_event, payload: { actions: SyncActionInput[] }) => {
+    const detected = await detectEditors();
+    const editorsByName = new Map(detected.map((e) => [e.name, e]));
+
+    const results: SyncResult[] = [];
+
+    for (const action of payload.actions) {
+      if (action.actionType !== "install") {
+        results.push({
+          action: action.actionType,
+          editor: action.targetEditor,
+          extensionId: action.extensionId,
+          sourceEditor: action.sourceEditor,
+          targetEditor: action.targetEditor,
+          success: false,
+          error: `Unsupported sync action: ${action.actionType}`
+        });
+        continue;
+      }
+
+      if (!action.extensionId || !action.sourceEditor) {
+        results.push({
+          action: action.actionType,
+          editor: action.targetEditor,
+          extensionId: action.extensionId,
+          sourceEditor: action.sourceEditor,
+          targetEditor: action.targetEditor,
+          success: false,
+          error: "Missing extensionId or source editor"
+        });
+        continue;
+      }
+
+      const sourceEditor = editorsByName.get(action.sourceEditor);
+      const targetEditor = editorsByName.get(action.targetEditor);
+
+      if (!sourceEditor || !targetEditor) {
+        results.push({
+          action: action.actionType,
+          editor: action.targetEditor,
+          extensionId: action.extensionId,
+          sourceEditor: action.sourceEditor,
+          targetEditor: action.targetEditor,
+          success: false,
+          error: "Source or target editor is no longer available"
+        });
+        continue;
+      }
+
+      const result = await syncExtensionLocal({
+        extensionId: action.extensionId,
+        sourceEditorName: sourceEditor.name,
+        sourceExtensionsPath: sourceEditor.extensionsPath,
+        targetExtensionsPath: targetEditor.extensionsPath,
+        targetEditorName: targetEditor.name,
+        targetCli: targetEditor.cli,
+        targetCliAvailable: Boolean(targetEditor.cli)
+      });
+
+      results.push(result);
+    }
+
+    return results;
   });
 
   createMainWindow(appIcon);

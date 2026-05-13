@@ -1,6 +1,7 @@
-import { readdir, readFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { join, resolve, sep } from "node:path";
 import type { PrismaClient } from "@generated/prisma";
+import { findExtensionDir } from "./extensionFs";
 import { namespaceOf } from "./settings";
 import { mimeTypeForPath } from "./utils";
 
@@ -18,17 +19,6 @@ interface ExtensionPackageContrib {
 
 function isExtensionPackage(value: unknown): value is ExtensionPackageContrib {
   return !!value && typeof value === "object";
-}
-
-async function findExtensionDir(extensionsPath: string, extensionId: string): Promise<string | undefined> {
-  try {
-    const prefix = `${extensionId.toLowerCase()}-`;
-    const entries = await readdir(extensionsPath, { withFileTypes: true });
-    const match = entries.find((entry) => entry.isDirectory() && entry.name.toLowerCase().startsWith(prefix));
-    return match ? join(extensionsPath, match.name) : undefined;
-  } catch {
-    return undefined;
-  }
 }
 
 function extractConfigNamespaces(pkg: ExtensionPackageContrib): string[] {

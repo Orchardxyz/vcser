@@ -1,201 +1,281 @@
-import classNames from "classnames";
-import { CheckCheck } from "lucide-react";
-import { EDITOR_IDENTITY_MODE, EditorIdentity } from "@/components/editor/EditorIdentity";
-import type { ExtensionPresence, ResolvedEditor } from "@/types";
-import {
-  displayName,
-  shortenExtensionId,
-  formatVersion,
-  ExtensionIcon,
-  EditorPresenceBadge,
-  EditorVersionPill,
-  VersionMismatchIndicator,
-  DisabledIndicator
-} from "./ExtensionHelpers";
+import { useCallback, useMemo, useState } from "react";
+import { invoke } from "@/ipc";
+import type { ExtensionPresence, ResolvedEditor, SyncActionInput, SyncResult } from "@/types";
+import { SYNC_ACTION_TYPE } from "@/types";
+import { displayName } from "./ExtensionHelpers";
+import { ExtensionSyncTable } from "./ExtensionSyncTable";
+import { type SyncFeedback, SyncFeedbackBanner } from "./ExtensionSyncStatus";
+import { ExtensionSyncToolbar } from "./ExtensionSyncToolbar";
+import { SyncExtensionModal } from "./SyncExtensionModal";
 
 export function ExtensionsByExtensionView({
   rows,
   editorNames,
-  editorByName
+  editorByName,
+  editors,
+  onRefresh
 }: {
   rows: ExtensionPresence[];
   editorNames: string[];
   editorByName: Map<string, ResolvedEditor>;
+  editors: ResolvedEditor[];
+  onRefresh: () => Promise<void>;
 }) {
-  return (
-    <table className="w-full table-fixed text-sm">
-      <thead>
-        <tr className="border-b border-slate-100 bg-slate-50">
-          <th className="w-[42%] px-4 py-3 text-left text-xs font-medium text-slate-500">Extension</th>
-          <th className="w-[29%] px-4 py-3 text-left text-xs font-medium text-slate-500">Installed In</th>
-          <th className="w-[29%] px-4 py-3 text-left text-xs font-medium text-slate-500">Not Installed In</th>
-        </tr>
-      </thead>
-      <tbody className="divide-y divide-slate-100">
-        {rows.length === 0 ? (
-          <tr>
-            <td colSpan={3} className="px-4 py-12">
-              <div className="flex flex-col items-center justify-center gap-3 text-center text-slate-500">
-                <CheckCheck size={24} className="text-emerald-500" />
-                <p className="text-sm">No extensions available for this view.</p>
-              </div>
-            </td>
-          </tr>
-        ) : (
-          rows.map((entry) => {
-            const installed: string[] = [];
-            const missing: string[] = [];
-            const disabledIn: string[] = [];
+  const [sourceSlug, setSourceSlug] = useState<string>("");
+  const [targetSlug, setTargetSlug] = useState<string>("");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [syncModalOpen, setSyncModalOpen] = useState(false);
+  const [syncingId, setSyncingId] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [feedback, setFeedback] = useState<SyncFeedback | null>(null);
 
-            for (const name of editorNames) {
-              if (entry.presence[name]) {
-                installed.push(name);
-                if (entry.disabled[name]) {
-                  disabledIn.push(name);
-                }
-              } else {
-                missing.push(name);
-              }
-            }
+  const sourceEditor = useMemo(() => editors.find((e) => e.slug === sourceSlug), [editors, sourceSlug]);
+  const targetEditor = useMemo(() => editors.find((e) => e.slug === targetSlug), [editors, targetSlug]);
 
-            return (
-              <tr key={entry.extensionId} className="transition-all duration-200 hover:bg-slate-50/60">
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <ExtensionIcon extensionId={entry.extensionId} iconDataUrl={entry.iconDataUrl} />
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <span className="truncate font-medium text-slate-800">{displayName(entry.extensionId)}</span>
-                        <VersionMismatchIndicator entry={entry} editorNames={editorNames} />
-                        <DisabledIndicator disabledIn={disabledIn} />
-                      </div>
-                      <span className="block truncate font-mono text-xs text-slate-400" title={entry.extensionId}>
-                        {shortenExtensionId(entry.extensionId)}
-                      </span>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex flex-wrap items-start gap-x-3 gap-y-2">
-                    {installed.map((name) => (
-                      <EditorVersionPill key={name} name={name} version={entry.versions[name]} editorByName={editorByName} />
-                    ))}
-                  </div>
-                </td>
-                <td className="px-4 py-3">
-                  {missing.length === 0 ? (
-                    <span
-                      className="inline-flex h-5.5 w-5.5 items-center justify-center text-emerald-600"
-                      title="Installed in all editors"
-                      aria-label="Installed in all editors"
-                    >
-                      <CheckCheck size={14} strokeWidth={1.9} />
-                    </span>
-                  ) : (
-                    <div className="flex flex-wrap items-center gap-2">
-                      {missing.map((name) => (
-                        <EditorPresenceBadge key={name} name={name} editorByName={editorByName} />
-                      ))}
-                    </div>
-                  )}
-                </td>
-              </tr>
-            );
-          })
-        )}
-      </tbody>
-    </table>
+  const sourceName = sourceEditor?.name;
+  const targetName = targetEditor?.name;
+  const hasPair = !!sourceEditor && !!targetEditor;
+  const sourceOptions = useMemo(
+    () => editors.filter((editor) => editor.slug === sourceSlug || editor.slug !== targetSlug),
+    [editors, sourceSlug, targetSlug]
   );
-}
+  const targetOptions = useMemo(
+    () => editors.filter((editor) => editor.slug === targetSlug || editor.slug !== sourceSlug),
+    [editors, sourceSlug, targetSlug]
+  );
 
-export function ExtensionsByEditorView({
-  editorNames,
-  rows,
-  editorByName
-}: {
-  editorNames: string[];
-  rows: ExtensionPresence[];
-  editorByName: Map<string, ResolvedEditor>;
-}) {
+  const pairRows = useMemo(() => {
+    if (!sourceName || !targetName) {
+      return rows;
+    }
+
+    return [...rows]
+      .filter((row) => row.presence[sourceName] === true || row.presence[targetName] === true)
+      .sort((left, right) => {
+        const leftRank =
+          left.presence[sourceName] === true && left.presence[targetName] === false
+            ? 0
+            : left.presence[sourceName] === true && left.presence[targetName] === true
+              ? 1
+              : 2;
+        const rightRank =
+          right.presence[sourceName] === true && right.presence[targetName] === false
+            ? 0
+            : right.presence[sourceName] === true && right.presence[targetName] === true
+              ? 1
+              : 2;
+
+        if (leftRank !== rightRank) {
+          return leftRank - rightRank;
+        }
+
+        return left.extensionId.localeCompare(right.extensionId);
+      });
+  }, [rows, sourceName, targetName]);
+
+  const eligibleRows = useMemo(() => {
+    if (!sourceName || !targetName) return [];
+    return pairRows.filter((row) => row.presence[sourceName] === true && row.presence[targetName] === false);
+  }, [pairRows, sourceName, targetName]);
+
+  const handleSourceChange = useCallback(
+    (slug: string) => {
+      if (slug === targetSlug) setTargetSlug("");
+      setSourceSlug(slug);
+      setSelectedIds(new Set());
+      setFeedback(null);
+    },
+    [targetSlug]
+  );
+
+  const handleTargetChange = useCallback(
+    (slug: string) => {
+      if (slug === sourceSlug) setSourceSlug("");
+      setTargetSlug(slug);
+      setSelectedIds(new Set());
+      setFeedback(null);
+    },
+    [sourceSlug]
+  );
+
+  const toggleSelect = useCallback((id: string, checked: boolean) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  }, []);
+
+  const toggleAll = useCallback(() => {
+    setSelectedIds((prev) => {
+      if (prev.size === eligibleRows.length) return new Set();
+      return new Set(eligibleRows.map((r) => r.extensionId));
+    });
+  }, [eligibleRows]);
+
+  const selectedExtensions = useMemo(() => eligibleRows.filter((r) => selectedIds.has(r.extensionId)), [eligibleRows, selectedIds]);
+  const selectedCount = selectedExtensions.length;
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await onRefresh();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [onRefresh]);
+
+  const handleResetPair = useCallback(() => {
+    setSourceSlug("");
+    setTargetSlug("");
+    setSelectedIds(new Set());
+    setFeedback(null);
+    setSyncModalOpen(false);
+  }, []);
+
+  const handleSyncSingle = useCallback(
+    async (entry: ExtensionPresence) => {
+      if (!sourceName || !targetName || !sourceEditor || !targetEditor) {
+        return;
+      }
+
+      setSyncingId(entry.extensionId);
+      setFeedback(null);
+
+      const actions: SyncActionInput[] = [
+        {
+          actionType: SYNC_ACTION_TYPE.INSTALL,
+          extensionId: entry.extensionId,
+          sourceEditor: sourceName,
+          targetEditor: targetName
+        }
+      ];
+
+      try {
+        // @ts-expect-error SyncActionInput is JSON-compatible; type-fest JsonObject index-signature is overly strict
+        const results = await invoke<SyncResult[]>("execute_sync", { actions });
+        const result = results[0];
+
+        if (!result?.success) {
+          setFeedback({
+            tone: "error",
+            title: `Could not sync ${displayName(entry.extensionId)}`,
+            detail: result?.error ?? "The target editor did not return a sync result."
+          });
+          return;
+        }
+
+        setSelectedIds((prev) => {
+          const next = new Set(prev);
+          next.delete(entry.extensionId);
+          return next;
+        });
+        setFeedback({
+          tone: "success",
+          title: `Synced ${displayName(entry.extensionId)}`,
+          detail: `${sourceEditor.displayName} → ${targetEditor.displayName}`
+        });
+        await onRefresh();
+      } catch (error) {
+        setFeedback({
+          tone: "error",
+          title: `Could not sync ${displayName(entry.extensionId)}`,
+          detail: error instanceof Error ? error.message : String(error)
+        });
+      } finally {
+        setSyncingId(null);
+      }
+    },
+    [onRefresh, sourceEditor, sourceName, targetEditor, targetName]
+  );
+
+  const allSelected = eligibleRows.length > 0 && selectedCount === eligibleRows.length;
+  const someSelected = selectedCount > 0 && !allSelected;
+  const syncTooltipLabel = !hasPair
+    ? "Choose editors to sync"
+    : selectedCount > 0
+      ? `Sync ${selectedCount} selected`
+      : eligibleRows.length > 0
+        ? "Select extensions to sync"
+        : "No extensions to sync";
+  const refreshTooltipLabel = refreshing ? "Refreshing extension diff" : "Refresh extension diff";
+
   return (
-    <div className="grid grid-cols-1 gap-4 p-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-      {editorNames.map((editorName) => {
-        const editor = editorByName.get(editorName);
-        const installed = rows.filter((entry) => entry.presence[editorName]);
+    <div>
+      <ExtensionSyncToolbar
+        sourceOptions={sourceOptions}
+        targetOptions={targetOptions}
+        sourceSlug={sourceSlug}
+        targetSlug={targetSlug}
+        hasPair={hasPair}
+        refreshing={refreshing}
+        visibleCount={pairRows.length}
+        eligibleCount={eligibleRows.length}
+        selectedCount={selectedCount}
+        refreshTooltipLabel={refreshTooltipLabel}
+        resetTooltipLabel="Reset selected editors"
+        syncTooltipLabel={syncTooltipLabel}
+        onSourceChange={handleSourceChange}
+        onTargetChange={handleTargetChange}
+        onRefresh={() => {
+          void handleRefresh();
+        }}
+        onReset={handleResetPair}
+        onOpenBulkSync={() => setSyncModalOpen(true)}
+      />
 
-        return (
-          <section key={editorName} className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
-              <div className="flex min-w-0 items-center gap-3">
-                {editor ? (
-                  <EditorIdentity editor={editor} mode={EDITOR_IDENTITY_MODE.ICON} className="h-9 w-9 rounded-lg" />
-                ) : (
-                  <span
-                    className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-sm font-semibold text-slate-600"
-                    aria-label={editorName}
-                    title={editorName}
-                  >
-                    {editorName[0]}
-                  </span>
-                )}
-                <div className="min-w-0">
-                  <h3 className="truncate text-sm font-semibold text-slate-900">{editor?.displayName ?? editorName}</h3>
-                  <p className="text-xs text-slate-500">
-                    {installed.length} {installed.length === 1 ? "extension" : "extensions"}
-                  </p>
-                </div>
-              </div>
-            </div>
+      {feedback ? (
+        <div className="px-4 pt-4">
+          <SyncFeedbackBanner feedback={feedback} />
+        </div>
+      ) : null}
 
-            <div className="mt-4 max-h-90 space-y-3 overflow-y-auto pr-1">
-              {installed.length === 0 ? (
-                <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-3 py-6 text-center text-sm text-slate-500">
-                  No extensions detected.
-                </div>
-              ) : (
-                installed.map((entry) => {
-                  const isDisabled = entry.disabled[editorName];
+      <ExtensionSyncTable
+        rows={pairRows}
+        editorNames={editorNames}
+        editorByName={editorByName}
+        hasPair={hasPair}
+        sourceEditor={sourceEditor}
+        targetEditor={targetEditor}
+        sourceName={sourceName}
+        targetName={targetName}
+        eligibleCount={eligibleRows.length}
+        allSelected={allSelected}
+        someSelected={someSelected}
+        selectedIds={selectedIds}
+        syncingId={syncingId}
+        onToggleAll={toggleAll}
+        onToggleSelect={toggleSelect}
+        onSyncSingle={(entry) => {
+          void handleSyncSingle(entry);
+        }}
+      />
 
-                  return (
-                    <div
-                      key={`${editorName}-${entry.extensionId}`}
-                      className={classNames(
-                        "relative flex items-center gap-3 rounded-lg px-3 py-2.5",
-                        isDisabled
-                          ? "border border-slate-100 bg-white opacity-60"
-                          : entry.hasVersionMismatch
-                            ? "border border-sky-200 bg-sky-50/40"
-                            : "border border-slate-200 bg-slate-50/50"
-                      )}
-                    >
-                      <div className={classNames({ "opacity-50": isDisabled })}>
-                        <ExtensionIcon extensionId={entry.extensionId} iconDataUrl={entry.iconDataUrl} />
-                      </div>
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <span className={classNames("block truncate text-sm font-medium", isDisabled ? "text-slate-400" : "text-slate-800")}>
-                            {displayName(entry.extensionId)}
-                          </span>
-                          <VersionMismatchIndicator entry={entry} editorNames={editorNames} ribbon />
-                        </div>
-                        <span
-                          className={classNames("block truncate font-mono text-xs", isDisabled ? "text-slate-300" : "text-slate-400")}
-                          title={entry.extensionId}
-                        >
-                          {shortenExtensionId(entry.extensionId)}
-                        </span>
-                        <span className={classNames("mt-1 block text-[11px] font-medium", isDisabled ? "text-slate-300" : "text-slate-500")}>
-                          Version {formatVersion(entry.versions[editorName])}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </section>
-        );
-      })}
+      {sourceEditor && targetEditor && (
+        <SyncExtensionModal
+          open={syncModalOpen}
+          sourceEditor={sourceEditor}
+          targetEditor={targetEditor}
+          extensions={selectedExtensions}
+          onClose={() => setSyncModalOpen(false)}
+          onComplete={(results) => {
+            setSyncModalOpen(false);
+            setSelectedIds(new Set());
+            const successCount = results.filter((result) => result.success).length;
+            const failureCount = results.length - successCount;
+            setFeedback({
+              tone: failureCount === 0 ? "success" : "error",
+              title: failureCount === 0 ? "Batch sync completed" : "Batch sync completed with issues",
+              detail:
+                failureCount === 0
+                  ? `${successCount} extension${successCount === 1 ? "" : "s"} synced to ${targetEditor.displayName}.`
+                  : `${successCount} succeeded, ${failureCount} failed. Review the result details in the modal output.`
+            });
+            void onRefresh();
+          }}
+        />
+      )}
     </div>
   );
 }

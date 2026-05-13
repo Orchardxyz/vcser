@@ -102,6 +102,9 @@ export interface SyncResult {
   action: string;
   editor: string;
   success: boolean;
+  extensionId?: string;
+  sourceEditor?: string;
+  targetEditor?: string;
   error?: string;
   backupPath?: string;
 }

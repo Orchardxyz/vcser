@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Package } from "lucide-react";
 import { SegmentedTabs } from "@/components/ui/SegmentedTabs";
 import { invoke } from "@/ipc";
 import { useAppStore } from "@/store";
 import { EXTENSION_VIEW_MODE, type ExtensionDiffResult, type ExtensionViewMode, type ResolvedEditor } from "@/types";
-import { ExtensionsByExtensionView, ExtensionsByEditorView } from "./components/ExtensionViews";
+import { ExtensionsByExtensionView } from "./components/ExtensionViews";
+import { ExtensionsByEditorView } from "./components/ExtensionsByEditorView";
 import { ExtensionTableSkeleton, EditorGridSkeleton } from "./components/ExtensionSkeletons";
 
 const EXTENSION_VIEW_MODE_ITEMS = [
@@ -17,9 +18,14 @@ export function ExtensionsTab() {
   const [diffResult, setDiffResult] = useState<ExtensionDiffResult | null>(null);
   const [viewMode, setViewMode] = useState<ExtensionViewMode>(EXTENSION_VIEW_MODE.BY_EXTENSION);
 
-  useEffect(() => {
-    invoke<ExtensionDiffResult>("compute_extension_diff").then(setDiffResult);
+  const fetchDiff = useCallback(async () => {
+    const nextDiffResult = await invoke<ExtensionDiffResult>("compute_extension_diff");
+    setDiffResult(nextDiffResult);
   }, []);
+
+  useEffect(() => {
+    void fetchDiff();
+  }, [fetchDiff]);
 
   const editorByName = useMemo(() => {
     const map = new Map<string, ResolvedEditor>();
@@ -31,10 +37,15 @@ export function ExtensionsTab() {
   }, [editors]);
 
   const rows = diffResult?.all ?? [];
+  const totalCount = diffResult?.all.length ?? 0;
 
   const toolbar = (
     <div className="border-b border-slate-100 px-4 py-3">
-      <SegmentedTabs items={[...EXTENSION_VIEW_MODE_ITEMS]} value={viewMode} onChange={setViewMode} className="w-full sm:w-fit" />
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <SegmentedTabs items={[...EXTENSION_VIEW_MODE_ITEMS]} value={viewMode} onChange={setViewMode} className="w-full sm:w-fit" />
+
+        <span className="text-xs text-slate-500">Showing {totalCount} extensions</span>
+      </div>
     </div>
   );
 
@@ -60,7 +71,13 @@ export function ExtensionsTab() {
     <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
       {toolbar}
       {viewMode === EXTENSION_VIEW_MODE.BY_EXTENSION ? (
-        <ExtensionsByExtensionView rows={rows} editorNames={diffResult.editorNames} editorByName={editorByName} />
+        <ExtensionsByExtensionView
+          rows={rows}
+          editorNames={diffResult.editorNames}
+          editorByName={editorByName}
+          editors={editors}
+          onRefresh={fetchDiff}
+        />
       ) : (
         <ExtensionsByEditorView editorNames={diffResult.editorNames} rows={rows} editorByName={editorByName} />
       )}

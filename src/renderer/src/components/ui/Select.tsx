@@ -78,7 +78,7 @@ export function Select<T>({
   const windowTarget = typeof window === "undefined" ? null : window;
   const documentTarget = typeof document === "undefined" ? null : document;
 
-  const selectedOption = options.find((option) => getOptionValue(option) === value) ?? options[0];
+  const selectedOption = value ? options.find((option) => getOptionValue(option) === value) : undefined;
 
   const updatePanelPosition = useCallback(() => {
     if (!triggerRef.current || !windowTarget) {

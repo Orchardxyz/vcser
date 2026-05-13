@@ -1,9 +1,10 @@
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
-import { readdir, readFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { join, resolve, sep } from "node:path";
 import type { Schema } from "type-fest";
 import type { ExtensionDiffResult, ExtensionPresence } from "@shared/types";
+import { findExtensionDir } from "./extensionFs";
 import { mimeTypeForPath } from "./utils";
 
 interface EditorWithExtensions {
@@ -101,18 +102,6 @@ function readDisabledExtensionIdsFromSqliteCli(stateDbPath: string): Set<string>
     return parseDisabledExtensionIds(rawValue);
   } catch {
     return new Set();
-  }
-}
-
-async function findExtensionDir(extensionsPath: string, extensionId: string): Promise<string | undefined> {
-  try {
-    const prefix = `${extensionId.toLowerCase()}-`;
-    const entries = await readdir(extensionsPath, { withFileTypes: true });
-    const match = entries.find((entry) => entry.isDirectory() && entry.name.toLowerCase().startsWith(prefix));
-
-    return match ? join(extensionsPath, match.name) : undefined;
-  } catch {
-    return undefined;
   }
 }
 

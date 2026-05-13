@@ -5,6 +5,10 @@ import { SUPPORTED_COMMAND, type SupportedCommand } from "@shared/ipc";
 
 type InvokePayload = JsonObject | undefined;
 
+function isSyncPayload(value: InvokePayload): value is JsonObject & { actions: Array<Record<string, unknown>> } {
+  return !!value && Array.isArray(value.actions);
+}
+
 const demoEditors: ResolvedEditor[] = [
   {
     name: "Cursor",
@@ -209,6 +213,18 @@ export async function invoke<T>(command: string, payload?: InvokePayload): Promi
     } catch {
       // fall through to demo responses on error
     }
+  }
+
+  if (command === SUPPORTED_COMMAND.EXECUTE_SYNC && isSyncPayload(payload)) {
+    const results: SyncResult[] = payload.actions.map((action) => ({
+      action: typeof action.actionType === "string" ? action.actionType : "install",
+      editor: typeof action.targetEditor === "string" ? action.targetEditor : "Unknown",
+      extensionId: typeof action.extensionId === "string" ? action.extensionId : undefined,
+      sourceEditor: typeof action.sourceEditor === "string" ? action.sourceEditor : undefined,
+      targetEditor: typeof action.targetEditor === "string" ? action.targetEditor : undefined,
+      success: true
+    }));
+    return results as T;
   }
 
   if (command in defaultResponses) {

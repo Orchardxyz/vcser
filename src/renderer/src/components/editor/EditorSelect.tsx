@@ -18,6 +18,7 @@ export function EditorSelect({ editors, value, onChange, className }: EditorSele
       getOptionValue={(editor) => editor.slug}
       renderValue={(editor) => <EditorIdentity editor={editor} mode={EDITOR_IDENTITY_MODE.COMPACT} className="min-w-0 flex-1" />}
       renderOption={(editor) => <EditorIdentity editor={editor} mode={EDITOR_IDENTITY_MODE.COMPACT} className="min-w-0 flex-1" />}
+      placeholder={<span className="text-slate-400">Select an editor</span>}
       ariaLabel="Editors"
       className={className}
       triggerClassName="min-w-50"

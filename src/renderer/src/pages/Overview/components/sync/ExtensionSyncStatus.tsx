@@ -1,6 +1,6 @@
 import { CircleCheck, CircleMinus } from "lucide-react";
 import { Badge, BADGE_VARIANT } from "@/components/ui/Badge";
-import { formatVersion } from "./ExtensionHelpers";
+import { formatVersion } from "../ExtensionHelpers";
 
 export function PairStatusCell({ installed, version, disabled }: { installed: boolean; version: string | null; disabled: boolean }) {
   if (!installed) {

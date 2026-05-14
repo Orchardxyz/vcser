@@ -5,7 +5,7 @@ import { Button, BUTTON_VARIANT } from "@/components/ui/Button";
 import { invoke } from "@/ipc";
 import type { ExtensionPresence, ResolvedEditor, SyncActionInput, SyncResult } from "@/types";
 import { SYNC_ACTION_TYPE } from "@/types";
-import { displayName, shortenExtensionId, ExtensionIcon } from "./ExtensionHelpers";
+import { displayName, shortenExtensionId, ExtensionIcon } from "../ExtensionHelpers";
 
 interface SyncExtensionModalProps {
   open: boolean;

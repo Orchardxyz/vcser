@@ -11,7 +11,7 @@ import {
   ExtensionIcon,
   shortenExtensionId,
   VersionMismatchIndicator
-} from "./ExtensionHelpers";
+} from "../ExtensionHelpers";
 import { PairStatusCell } from "./ExtensionSyncStatus";
 
 interface ExtensionSyncTableProps {

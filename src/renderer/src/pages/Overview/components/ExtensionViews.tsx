@@ -4,9 +4,7 @@ import { toast } from "@/store/toast";
 import type { ExtensionPresence, ResolvedEditor, SyncActionInput, SyncResult } from "@/types";
 import { SYNC_ACTION_TYPE } from "@/types";
 import { displayName } from "./ExtensionHelpers";
-import { ExtensionSyncTable } from "./ExtensionSyncTable";
-import { ExtensionSyncToolbar } from "./ExtensionSyncToolbar";
-import { SyncExtensionModal } from "./SyncExtensionModal";
+import { ExtensionSyncTable, ExtensionSyncToolbar, SyncExtensionModal } from "./sync";
 
 export function ExtensionsByExtensionView({
   rows,

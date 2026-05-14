@@ -1,10 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useMedia } from "react-use";
-import { PAGE, Sidebar, type Page } from "./components/layout/Sidebar";
+import { Navigate, Route, Routes } from "react-router-dom";
+import { Sidebar } from "./components/layout/Sidebar";
 import { ToastViewport } from "./components/ui/Toast";
 import { Overview } from "./pages/Overview";
+import { EditorExtensions } from "./pages/EditorExtensions";
 import { Editors } from "./pages/Editors";
 import { Settings } from "./pages/Settings";
+import { APP_ROUTE } from "./routes";
 import { useAppStore } from "./store";
 import { THEME_MODE, type ThemeMode } from "./types";
 
@@ -23,7 +26,6 @@ function resolveThemeMode(themeMode: ThemeMode, prefersDark: boolean): ThemeMode
 }
 
 export default function App() {
-  const [activePage, setActivePage] = useState<Page>(PAGE.OVERVIEW);
   const loadEditors = useAppStore((s) => s.loadEditors);
   const themeMode = useAppStore((s) => s.themeMode);
   const prefersDark = useMedia(PREFERS_DARK_MEDIA_QUERY, typeof window !== "undefined" ? window.matchMedia(PREFERS_DARK_MEDIA_QUERY).matches : false);
@@ -40,11 +42,16 @@ export default function App() {
       data-theme={resolvedTheme}
       style={{ colorScheme: resolvedTheme }}
     >
-      <Sidebar activePage={activePage} onNavigate={setActivePage} />
+      <Sidebar />
       <main className="flex-1 overflow-y-auto">
-        {activePage === PAGE.OVERVIEW && <Overview />}
-        {activePage === PAGE.EDITORS && <Editors />}
-        {activePage === PAGE.SETTINGS && <Settings />}
+        <Routes>
+          <Route path={APP_ROUTE.ROOT} element={<Navigate to={APP_ROUTE.OVERVIEW} replace />} />
+          <Route path={APP_ROUTE.OVERVIEW} element={<Overview />} />
+          <Route path={APP_ROUTE.EDITORS} element={<Editors />} />
+          <Route path={`${APP_ROUTE.EDITORS}/:editorSlug/extensions`} element={<EditorExtensions />} />
+          <Route path={APP_ROUTE.SETTINGS} element={<Settings />} />
+          <Route path="*" element={<Navigate to={APP_ROUTE.OVERVIEW} replace />} />
+        </Routes>
       </main>
       <ToastViewport theme={resolvedTheme === THEME_MODE.DARK ? "dark" : "light"} />
     </div>

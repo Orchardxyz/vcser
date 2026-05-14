@@ -51,6 +51,48 @@ export interface ExtensionDiffResult {
   onlyDiffs: ExtensionPresence[];
 }
 
+export interface EditorExtensionItem {
+  extensionId: string;
+  version: string | null;
+  disabled: boolean;
+  iconDataUrl?: string;
+}
+
+export interface EditorExtensionsResult {
+  editorSlug: string;
+  editorName: string;
+  items: EditorExtensionItem[];
+}
+
+export const EDITOR_EXTENSION_ACTION = {
+  DISABLE: "disable",
+  ENABLE: "enable",
+  UNINSTALL: "uninstall"
+} as const;
+
+export type EditorExtensionAction = ValueOf<typeof EDITOR_EXTENSION_ACTION>;
+
+export interface SetEditorExtensionDisabledInput {
+  editorSlug: string;
+  extensionId: string;
+  disabled: boolean;
+}
+
+export interface UninstallEditorExtensionInput {
+  editorSlug: string;
+  extensionId: string;
+}
+
+export interface EditorExtensionMutationResult {
+  action: EditorExtensionAction;
+  editorSlug: string;
+  editorName: string;
+  extensionId: string;
+  success: boolean;
+  disabled?: boolean;
+  error?: string;
+}
+
 export const SETTINGS_MODE = {
   SAFE: "safe",
   EXACT: "exact"

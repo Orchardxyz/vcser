@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { BadgeCheck, Plus, FolderOpen, FileText, Terminal } from "lucide-react";
+import { Link } from "react-router-dom";
 import { BaseModal } from "@/components/ui/BaseModal";
 import { Button, BUTTON_VARIANT } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EditorIdentity, EDITOR_IDENTITY_MODE } from "@/components/editor/EditorIdentity";
+import { getEditorExtensionsRoute } from "@/routes";
 import { useAppStore } from "@/store";
 
 function EditorsSkeleton() {
@@ -51,7 +53,11 @@ export function Editors() {
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {editors.map((editor) => (
-            <div key={editor.slug} className="flex flex-col gap-4 rounded-lg border border-slate-200 bg-white p-5 transition-shadow hover:shadow-sm">
+            <Link
+              key={editor.slug}
+              to={getEditorExtensionsRoute(editor.slug)}
+              className="flex flex-col gap-4 rounded-lg border border-slate-200 bg-white p-5 transition-shadow outline-none hover:shadow-sm focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+            >
               <div className="flex items-start justify-between">
                 <EditorIdentity editor={editor} mode={EDITOR_IDENTITY_MODE.ICON} />
                 <span
@@ -88,13 +94,13 @@ export function Editors() {
                   </span>
                 )}
               </div>
-            </div>
+            </Link>
           ))}
 
           <button
             type="button"
             onClick={() => setAddModalOpen(true)}
-            className="flex min-h-[200px] flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-200 bg-transparent p-5 text-slate-400 transition-colors outline-none hover:border-slate-300 hover:bg-slate-50 hover:text-slate-500 focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+            className="flex min-h-50 flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-200 bg-transparent p-5 text-slate-400 transition-colors outline-none hover:border-slate-300 hover:bg-slate-50 hover:text-slate-500 focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
           >
             <Plus size={22} strokeWidth={1.5} />
             <span className="text-sm font-medium">Add Other Editor</span>

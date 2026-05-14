@@ -9,9 +9,9 @@ import { detectEditors } from "./editors/detect";
 import { resolveNamespacesToExtensions } from "./editors/configNamespace";
 import { computeExtensionDiff, listInstalledExtensions } from "./editors/extensions";
 import { syncExtensionLocal } from "./editors/extensionSync";
+import { registerEditorExtensionHandlers } from "./ipc/editorExtensions";
 import { readSettingsJson, diffSettings, groupSettingsByNamespace } from "./editors/settings";
-import type { ExtensionSettingsGroup, MachineIdentity, SettingsDiffByExtensionResult } from "@shared/types";
-import type { SyncActionInput, SyncResult } from "@shared/types";
+import type { ExtensionSettingsGroup, MachineIdentity, SettingsDiffByExtensionResult, SyncActionInput, SyncResult } from "@shared/types";
 import { EXTENSION_SETTINGS_GROUP_KIND } from "@shared/types";
 import { SUPPORTED_COMMAND } from "@shared/ipc";
 
@@ -129,6 +129,8 @@ app.whenReady().then(() => {
   ipcMain.handle(SUPPORTED_COMMAND.DETECT_EDITORS, async () => {
     return detectEditors();
   });
+
+  registerEditorExtensionHandlers();
 
   ipcMain.handle(SUPPORTED_COMMAND.COMPUTE_EXTENSION_DIFF, async () => {
     const detected = await detectEditors();

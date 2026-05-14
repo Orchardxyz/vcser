@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join, resolve, sep } from "node:path";
 import type { Schema } from "type-fest";
-import type { ExtensionDiffResult, ExtensionPresence } from "@shared/types";
+import type { EditorExtensionItem, ExtensionDiffResult, ExtensionPresence } from "@shared/types";
 import { findExtensionDir } from "./extensionFs";
 import { mimeTypeForPath } from "./utils";
 
@@ -184,6 +184,23 @@ export function listInstalledExtensionMetadata(extensionsPath: string): Installe
  */
 export function listInstalledExtensions(extensionsPath: string): string[] {
   return listInstalledExtensionMetadata(extensionsPath).map((entry) => entry.extensionId);
+}
+
+export async function listEditorExtensions(params: { extensionsPath: string; stateDbPath?: string }): Promise<EditorExtensionItem[]> {
+  const { extensionsPath, stateDbPath } = params;
+  const installed = listInstalledExtensionMetadata(extensionsPath).sort((left, right) => left.extensionId.localeCompare(right.extensionId));
+  const disabledIds = stateDbPath ? readDisabledExtensionIds(stateDbPath) : new Set<string>();
+
+  const items = await Promise.all(
+    installed.map(async (entry) => ({
+      extensionId: entry.extensionId,
+      version: entry.version,
+      disabled: disabledIds.has(entry.extensionId),
+      iconDataUrl: await getExtensionIconDataUrl(extensionsPath, entry.extensionId)
+    }))
+  );
+
+  return items;
 }
 
 /**

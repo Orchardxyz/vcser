@@ -1,24 +1,21 @@
 import { useEffect, useState, type ElementType } from "react";
 import { LayoutDashboard, MonitorCog, Settings } from "lucide-react";
 import type { ValueOf } from "type-fest";
+import { NavLink } from "react-router-dom";
 import logoSvg from "@assets/logo.svg";
 import { invoke } from "@/ipc";
+import { APP_ROUTE } from "@/routes";
 import { useAppStore } from "@/store";
 import type { MachineIdentity } from "@/types";
 import { Tooltip } from "@/components/ui/Tooltip";
 
 export const PAGE = {
-  OVERVIEW: "overview",
-  EDITORS: "editors",
-  SETTINGS: "settings"
+  OVERVIEW: APP_ROUTE.OVERVIEW,
+  EDITORS: APP_ROUTE.EDITORS,
+  SETTINGS: APP_ROUTE.SETTINGS
 } as const;
 
 export type Page = ValueOf<typeof PAGE>;
-
-interface SidebarProps {
-  activePage: Page;
-  onNavigate: (page: Page) => void;
-}
 
 const navItems: { page: Page; label: string; icon: ElementType }[] = [
   { page: PAGE.OVERVIEW, label: "Overview", icon: LayoutDashboard },
@@ -32,7 +29,7 @@ const FALLBACK_MACHINE_IDENTITY: MachineIdentity = {
   platformLabel: "macOS"
 };
 
-export function Sidebar({ activePage, onNavigate }: SidebarProps) {
+export function Sidebar() {
   const [machineIdentity, setMachineIdentity] = useState<MachineIdentity>(FALLBACK_MACHINE_IDENTITY);
   const editorCount = useAppStore((s) => s.editors.length);
 
@@ -70,22 +67,23 @@ export function Sidebar({ activePage, onNavigate }: SidebarProps) {
 
       <nav className="flex-1 px-2 py-3 space-y-0.5">
         {navItems.map(({ page, label, icon: Icon }) => {
-          const isActive = activePage === page;
           return (
-            <button
+            <NavLink
               key={page}
-              type="button"
-              onClick={() => onNavigate(page)}
-              className={[
-                "flex w-full items-center gap-3 rounded-lg border px-3 py-2 text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50",
-                isActive
-                  ? "border-slate-200 bg-white text-slate-950 shadow-xs"
-                  : "border-transparent text-slate-600 hover:bg-white hover:text-slate-900"
-              ].join(" ")}
+              to={page}
+              end={page !== PAGE.EDITORS}
+              className={({ isActive }) =>
+                [
+                  "flex w-full items-center gap-3 rounded-lg border px-3 py-2 text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50",
+                  isActive
+                    ? "border-slate-200 bg-white text-slate-950 shadow-xs"
+                    : "border-transparent text-slate-600 hover:bg-white hover:text-slate-900"
+                ].join(" ")
+              }
             >
               <Icon size={16} className="shrink-0" />
               {label}
-            </button>
+            </NavLink>
           );
         })}
       </nav>

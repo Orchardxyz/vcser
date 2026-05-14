@@ -108,6 +108,7 @@ export type Foo = ValueOf<typeof FOO>;
 - Do not restructure `electron.vite.config.ts` without a clear task requirement.
 - Do not add new UI frameworks or styling systems.
 - Do not add new dependencies unless the task clearly requires them.
+- Do not install or upgrade to a version of a dependency that was published within the last 7 days. This is a supply-chain attack prevention measure. Before adding or upgrading any package, check its publish date (e.g. `npm view <pkg> time` or `npm view <pkg>@<version> created`) and ensure the version is at least 7 days old.
 - Do not weaken Electron security settings.
 
 ## Practical Defaults For Agents

@@ -1,6 +1,7 @@
 node_modules/
 dist/
 docs/plans/*
+docs/superpowers/*
 out/
 dist-electron/
 .pnpm-store/

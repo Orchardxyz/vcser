@@ -125,9 +125,12 @@ export default tseslint.config(
 
   // Root-level config/script files (JS/MJS/CJS)
   {
-    files: ["*.js", "*.mjs", "*.cjs"],
+    files: ["*.js", "*.mjs", "*.cjs", "scripts/**/*.js", "scripts/**/*.mjs", "scripts/**/*.cjs"],
     languageOptions: {
       globals: globals.node
+    },
+    rules: {
+      "no-console": "off"
     }
   },
 

@@ -12,7 +12,7 @@
     "build": "tsc -b && electron-vite build",
     "preview": "electron-vite preview",
     "icons:generate": "bash scripts/generate-icons.sh",
-    "postinstall": "prisma generate",
+    "postinstall": "prisma generate && node scripts/ensure-electron-binary.cjs",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "lint": "eslint .",

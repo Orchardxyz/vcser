@@ -49,18 +49,13 @@ export function ExtensionsByExtensionView({
     return [...rows]
       .filter((row) => row.presence[sourceName] === true || row.presence[targetName] === true)
       .sort((left, right) => {
-        const leftRank =
-          left.presence[sourceName] === true && left.presence[targetName] === false
-            ? 0
-            : left.presence[sourceName] === true && left.presence[targetName] === true
-              ? 1
-              : 2;
-        const rightRank =
-          right.presence[sourceName] === true && right.presence[targetName] === false
-            ? 0
-            : right.presence[sourceName] === true && right.presence[targetName] === true
-              ? 1
-              : 2;
+        const getPresenceRank = (row: ExtensionPresence) => {
+          if (row.presence[sourceName] === true && row.presence[targetName] === false) return 0;
+          if (row.presence[sourceName] === true && row.presence[targetName] === true) return 1;
+          return 2;
+        };
+        const leftRank = getPresenceRank(left);
+        const rightRank = getPresenceRank(right);
 
         if (leftRank !== rightRank) {
           return leftRank - rightRank;
@@ -173,13 +168,13 @@ export function ExtensionsByExtensionView({
 
   const allSelected = eligibleRows.length > 0 && selectedCount === eligibleRows.length;
   const someSelected = selectedCount > 0 && !allSelected;
-  const syncTooltipLabel = !hasPair
-    ? "Choose editors to sync"
-    : selectedCount > 0
-      ? `Sync ${selectedCount} selected`
-      : eligibleRows.length > 0
-        ? "Select extensions to sync"
-        : "No extensions to sync";
+  function getSyncTooltipLabel() {
+    if (!hasPair) return "Choose editors to sync";
+    if (selectedCount > 0) return `Sync ${selectedCount} selected`;
+    if (eligibleRows.length > 0) return "Select extensions to sync";
+    return "No extensions to sync";
+  }
+  const syncTooltipLabel = getSyncTooltipLabel();
   const refreshTooltipLabel = refreshing ? "Refreshing extension diff" : "Refresh extension diff";
 
   return (
@@ -239,10 +234,11 @@ export function ExtensionsByExtensionView({
             setSelectedIds(new Set());
             const successCount = results.filter((result) => result.success).length;
             const failureCount = results.length - successCount;
+            const pluralS = successCount === 1 ? "" : "s";
             const title = failureCount === 0 ? "Batch sync completed" : "Batch sync completed with issues";
             const description =
               failureCount === 0
-                ? `${successCount} extension${successCount === 1 ? "" : "s"} synced to ${targetEditor.displayName}.`
+                ? `${successCount} extension${pluralS} synced to ${targetEditor.displayName}.`
                 : `${successCount} succeeded, ${failureCount} failed. Review the result details in the modal output.`;
 
             if (failureCount === 0) {

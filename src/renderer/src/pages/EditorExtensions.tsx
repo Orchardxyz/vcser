@@ -174,6 +174,109 @@ export function EditorExtensions() {
   const extensionsCountLabel = `${extensions.length} extension${extensions.length === 1 ? "" : "s"}`;
   const headerStatusLabel = loading && !extensionsResult ? "Loading current editor state..." : extensionsCountLabel;
 
+  function renderContent() {
+    if (loading && !extensionsResult) return <ExtensionsListSkeleton />;
+    if (errorMessage) {
+      return (
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 px-5 py-6 text-sm text-rose-700">
+          <p className="font-medium">Failed to load extensions.</p>
+          <p className="mt-1 text-rose-700/80">{errorMessage}</p>
+        </div>
+      );
+    }
+    if (extensions.length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-14 text-center text-slate-500">
+          <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-500 shadow-xs">
+            <Puzzle size={20} strokeWidth={1.75} />
+          </span>
+          <div>
+            <p className="text-sm font-medium text-slate-700">No extensions detected</p>
+            <p className="mt-1 text-sm text-slate-500">This editor does not currently expose any installed extensions.</p>
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div className="space-y-3">
+        {extensions.map((item) => {
+          const disableActionKey = `${item.extensionId}:${item.disabled ? "enable" : "disable"}`;
+          const uninstallActionKey = `${item.extensionId}:uninstall`;
+          const disablePending = pendingActionKey === disableActionKey;
+          const uninstallPending = pendingActionKey === uninstallActionKey;
+          const actionPending = disablePending || uninstallPending;
+
+          function getDisableIcon() {
+            if (disablePending) return <LoaderCircle size={14} className="animate-spin" />;
+            if (item.disabled) return <Power size={14} strokeWidth={1.75} />;
+            return <CircleOff size={14} strokeWidth={1.75} />;
+          }
+          const disableIcon = getDisableIcon();
+
+          return (
+            <div
+              key={item.extensionId}
+              className={classNames(
+                "flex flex-col gap-4 rounded-2xl border px-4 py-4 transition-colors md:flex-row md:items-center md:justify-between",
+                item.disabled ? "border-amber-200 bg-amber-50/60" : "border-slate-200 bg-white"
+              )}
+            >
+              <div className="flex min-w-0 items-center gap-3">
+                <ExtensionIcon extensionId={item.extensionId} iconDataUrl={item.iconDataUrl} />
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="truncate text-sm font-semibold text-slate-900">{displayName(item.extensionId)}</p>
+                    <span
+                      className={classNames(
+                        "inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium",
+                        item.disabled ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"
+                      )}
+                    >
+                      {item.disabled ? "Disabled" : "Enabled"}
+                    </span>
+                    <span className="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600">
+                      {formatVersion(item.version)}
+                    </span>
+                  </div>
+                  <p className="mt-1 truncate font-mono text-xs text-slate-400" title={item.extensionId}>
+                    {shortenExtensionId(item.extensionId, 40)}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 md:justify-end">
+                <Button
+                  variant={BUTTON_VARIANT.SECONDARY}
+                  size={BUTTON_SIZE.SM}
+                  leadingIcon={disableIcon}
+                  className={classNames(
+                    item.disabled
+                      ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 active:bg-emerald-200/70 disabled:border-emerald-100 disabled:bg-emerald-50 disabled:text-emerald-300"
+                      : "border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100 active:bg-amber-200/70 disabled:border-amber-100 disabled:bg-amber-50 disabled:text-amber-300"
+                  )}
+                  disabled={actionPending}
+                  onClick={() => void handleSetDisabled(item, !item.disabled)}
+                >
+                  {item.disabled ? "Enable" : "Disable"}
+                </Button>
+                <Button
+                  variant={BUTTON_VARIANT.GHOST}
+                  size={BUTTON_SIZE.SM}
+                  leadingIcon={uninstallPending ? <LoaderCircle size={14} className="animate-spin" /> : <Trash2 size={14} strokeWidth={1.75} />}
+                  className="text-rose-600 hover:bg-rose-50 hover:text-rose-700 active:bg-rose-100/80 disabled:text-rose-300"
+                  disabled={actionPending}
+                  onClick={() => setExtensionToRemove(item)}
+                >
+                  Uninstall
+                </Button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-8 p-8">
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
@@ -206,104 +309,7 @@ export function EditorExtensions() {
           </Button>
         </div>
 
-        <div className="mt-4">
-          {loading && !extensionsResult ? (
-            <ExtensionsListSkeleton />
-          ) : errorMessage ? (
-            <div className="rounded-2xl border border-rose-200 bg-rose-50 px-5 py-6 text-sm text-rose-700">
-              <p className="font-medium">Failed to load extensions.</p>
-              <p className="mt-1 text-rose-700/80">{errorMessage}</p>
-            </div>
-          ) : extensions.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-14 text-center text-slate-500">
-              <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-500 shadow-xs">
-                <Puzzle size={20} strokeWidth={1.75} />
-              </span>
-              <div>
-                <p className="text-sm font-medium text-slate-700">No extensions detected</p>
-                <p className="mt-1 text-sm text-slate-500">This editor does not currently expose any installed extensions.</p>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {extensions.map((item) => {
-                const disableActionKey = `${item.extensionId}:${item.disabled ? "enable" : "disable"}`;
-                const uninstallActionKey = `${item.extensionId}:uninstall`;
-                const disablePending = pendingActionKey === disableActionKey;
-                const uninstallPending = pendingActionKey === uninstallActionKey;
-                const actionPending = disablePending || uninstallPending;
-
-                return (
-                  <div
-                    key={item.extensionId}
-                    className={classNames(
-                      "flex flex-col gap-4 rounded-2xl border px-4 py-4 transition-colors md:flex-row md:items-center md:justify-between",
-                      item.disabled ? "border-amber-200 bg-amber-50/60" : "border-slate-200 bg-white"
-                    )}
-                  >
-                    <div className="flex min-w-0 items-center gap-3">
-                      <ExtensionIcon extensionId={item.extensionId} iconDataUrl={item.iconDataUrl} />
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="truncate text-sm font-semibold text-slate-900">{displayName(item.extensionId)}</p>
-                          <span
-                            className={classNames(
-                              "inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium",
-                              item.disabled ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"
-                            )}
-                          >
-                            {item.disabled ? "Disabled" : "Enabled"}
-                          </span>
-                          <span className="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600">
-                            {formatVersion(item.version)}
-                          </span>
-                        </div>
-                        <p className="mt-1 truncate font-mono text-xs text-slate-400" title={item.extensionId}>
-                          {shortenExtensionId(item.extensionId, 40)}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-2 md:justify-end">
-                      <Button
-                        variant={BUTTON_VARIANT.SECONDARY}
-                        size={BUTTON_SIZE.SM}
-                        leadingIcon={
-                          disablePending ? (
-                            <LoaderCircle size={14} className="animate-spin" />
-                          ) : item.disabled ? (
-                            <Power size={14} strokeWidth={1.75} />
-                          ) : (
-                            <CircleOff size={14} strokeWidth={1.75} />
-                          )
-                        }
-                        className={classNames(
-                          item.disabled
-                            ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 active:bg-emerald-200/70 disabled:border-emerald-100 disabled:bg-emerald-50 disabled:text-emerald-300"
-                            : "border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100 active:bg-amber-200/70 disabled:border-amber-100 disabled:bg-amber-50 disabled:text-amber-300"
-                        )}
-                        disabled={actionPending}
-                        onClick={() => void handleSetDisabled(item, !item.disabled)}
-                      >
-                        {item.disabled ? "Enable" : "Disable"}
-                      </Button>
-                      <Button
-                        variant={BUTTON_VARIANT.GHOST}
-                        size={BUTTON_SIZE.SM}
-                        leadingIcon={uninstallPending ? <LoaderCircle size={14} className="animate-spin" /> : <Trash2 size={14} strokeWidth={1.75} />}
-                        className="text-rose-600 hover:bg-rose-50 hover:text-rose-700 active:bg-rose-100/80 disabled:text-rose-300"
-                        disabled={actionPending}
-                        onClick={() => setExtensionToRemove(item)}
-                      >
-                        Uninstall
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+        <div className="mt-4">{renderContent()}</div>
       </section>
 
       <BaseModal

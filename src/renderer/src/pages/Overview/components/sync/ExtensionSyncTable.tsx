@@ -117,6 +117,54 @@ export function ExtensionSyncTable({
             const sourceDisabled = sourceName ? entry.disabled[sourceName] === true : false;
             const targetDisabled = targetName ? entry.disabled[targetName] === true : false;
 
+            function getTargetCellContent() {
+              if (hasPair && targetName) {
+                return <PairStatusCell installed={targetInstalled} version={entry.versions[targetName]} disabled={targetDisabled} />;
+              }
+              if (missing.length === 0) {
+                return (
+                  <span
+                    className="inline-flex h-5.5 w-5.5 items-center justify-center text-emerald-600"
+                    title="Installed in all editors"
+                    aria-label="Installed in all editors"
+                  >
+                    <CheckCheck size={14} strokeWidth={1.9} />
+                  </span>
+                );
+              }
+              return (
+                <div className="flex flex-wrap items-center gap-2">
+                  {missing.map((name) => (
+                    <EditorPresenceBadge key={name} name={name} editorByName={editorByName} />
+                  ))}
+                </div>
+              );
+            }
+            const targetCellContent = getTargetCellContent();
+
+            function getActionCellContent() {
+              if (isEligible) {
+                return (
+                  <Button
+                    variant={BUTTON_VARIANT.SECONDARY}
+                    size={BUTTON_SIZE.SM}
+                    leadingIcon={isThisSyncing ? <Loader2 size={14} className="animate-spin" /> : <ArrowRight size={14} />}
+                    onClick={() => onSyncSingle(entry)}
+                    disabled={isThisSyncing}
+                    title={`Copy ${displayName(entry.extensionId)} from ${sourceEditor?.displayName} to ${targetEditor?.displayName}`}
+                    aria-label={`Sync ${displayName(entry.extensionId)}`}
+                  >
+                    {isThisSyncing ? "Syncing" : "Sync"}
+                  </Button>
+                );
+              }
+              if (sourceInstalled && targetInstalled) {
+                return <Badge variant={BADGE_VARIANT.SUCCESS}>Already in target</Badge>;
+              }
+              return <Badge variant={BADGE_VARIANT.NEUTRAL}>Not in source</Badge>;
+            }
+            const actionCellContent = getActionCellContent();
+
             return (
               <tr key={entry.extensionId} className="transition-all duration-200 hover:bg-slate-50/60">
                 {hasPair ? (
@@ -157,46 +205,8 @@ export function ExtensionSyncTable({
                     </div>
                   )}
                 </td>
-                <td className="px-4 py-3">
-                  {hasPair && targetName ? (
-                    <PairStatusCell installed={targetInstalled} version={entry.versions[targetName]} disabled={targetDisabled} />
-                  ) : missing.length === 0 ? (
-                    <span
-                      className="inline-flex h-5.5 w-5.5 items-center justify-center text-emerald-600"
-                      title="Installed in all editors"
-                      aria-label="Installed in all editors"
-                    >
-                      <CheckCheck size={14} strokeWidth={1.9} />
-                    </span>
-                  ) : (
-                    <div className="flex flex-wrap items-center gap-2">
-                      {missing.map((name) => (
-                        <EditorPresenceBadge key={name} name={name} editorByName={editorByName} />
-                      ))}
-                    </div>
-                  )}
-                </td>
-                {hasPair ? (
-                  <td className="px-4 py-3">
-                    {isEligible ? (
-                      <Button
-                        variant={BUTTON_VARIANT.SECONDARY}
-                        size={BUTTON_SIZE.SM}
-                        leadingIcon={isThisSyncing ? <Loader2 size={14} className="animate-spin" /> : <ArrowRight size={14} />}
-                        onClick={() => onSyncSingle(entry)}
-                        disabled={isThisSyncing}
-                        title={`Copy ${displayName(entry.extensionId)} from ${sourceEditor?.displayName} to ${targetEditor?.displayName}`}
-                        aria-label={`Sync ${displayName(entry.extensionId)}`}
-                      >
-                        {isThisSyncing ? "Syncing" : "Sync"}
-                      </Button>
-                    ) : sourceInstalled && targetInstalled ? (
-                      <Badge variant={BADGE_VARIANT.SUCCESS}>Already in target</Badge>
-                    ) : (
-                      <Badge variant={BADGE_VARIANT.NEUTRAL}>Not in source</Badge>
-                    )}
-                  </td>
-                ) : null}
+                <td className="px-4 py-3">{targetCellContent}</td>
+                {hasPair ? <td className="px-4 py-3">{actionCellContent}</td> : null}
               </tr>
             );
           })

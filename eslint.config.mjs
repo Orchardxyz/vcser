@@ -45,6 +45,18 @@ const personalTypeScriptRules = {
     }
   ],
   "@typescript-eslint/require-await": "off",
+  "no-nested-ternary": "error",
+  "no-restricted-syntax": [
+    "error",
+    {
+      selector: "CallExpression[optional=false] > ArrowFunctionExpression.callee",
+      message: "Do not use immediately invoked function expressions (IIFEs). Extract to a named function instead."
+    },
+    {
+      selector: "CallExpression[optional=false] > FunctionExpression.callee",
+      message: "Do not use immediately invoked function expressions (IIFEs). Extract to a named function instead."
+    }
+  ],
   "no-console": [
     "error",
     {

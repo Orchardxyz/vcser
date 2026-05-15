@@ -112,7 +112,9 @@ function buildPatchedManifestEntry(params: {
   const identifier = isJsonObject(clonedBaseEntry.identifier) ? { ...clonedBaseEntry.identifier } : {};
   const metadata = isJsonObject(clonedBaseEntry.metadata) ? { ...clonedBaseEntry.metadata } : {};
   const location = isJsonObject(clonedBaseEntry.location) ? { ...clonedBaseEntry.location } : {};
-  const manifestUuid = typeof identifier.uuid === "string" ? identifier.uuid : typeof metadata.id === "string" ? metadata.id : randomUUID();
+  const uuid = typeof identifier.uuid === "string" ? identifier.uuid : null;
+  const metaId = typeof metadata.id === "string" ? metadata.id : null;
+  const manifestUuid = uuid ?? metaId ?? randomUUID();
 
   return {
     ...clonedBaseEntry,

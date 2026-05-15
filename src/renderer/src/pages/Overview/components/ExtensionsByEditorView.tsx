@@ -54,14 +54,11 @@ export function ExtensionsByEditorView({
                   return (
                     <div
                       key={`${editorName}-${entry.extensionId}`}
-                      className={classNames(
-                        "relative flex items-center gap-3 rounded-lg px-3 py-2.5",
-                        isDisabled
-                          ? "border border-slate-100 bg-white opacity-60"
-                          : entry.hasVersionMismatch
-                            ? "border border-sky-200 bg-sky-50/40"
-                            : "border border-slate-200 bg-slate-50/50"
-                      )}
+                      className={classNames("relative flex items-center gap-3 rounded-lg px-3 py-2.5", {
+                        "border border-slate-100 bg-white opacity-60": isDisabled,
+                        "border border-sky-200 bg-sky-50/40": !isDisabled && entry.hasVersionMismatch,
+                        "border border-slate-200 bg-slate-50/50": !isDisabled && !entry.hasVersionMismatch
+                      })}
                     >
                       <div className={classNames({ "opacity-50": isDisabled })}>
                         <ExtensionIcon extensionId={entry.extensionId} iconDataUrl={entry.iconDataUrl} />

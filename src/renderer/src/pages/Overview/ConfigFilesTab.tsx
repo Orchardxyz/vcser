@@ -150,6 +150,7 @@ export function ConfigFilesTab() {
   const activeDiffCount = activeGroups.reduce((acc, g) => acc + g.diffs.length, 0);
   const activeGroupsWithDiffs = activeGroups.filter((g) => g.diffs.length > 0).length;
   const isMismatchTab = activeTab === TAB.VERSION_MISMATCH;
+  const mismatchPlural = activeGroups.length === 1 ? "" : "es";
 
   const headerBar = (
     <div className="flex items-center gap-3 border-b border-slate-100 px-4 py-3">
@@ -242,7 +243,7 @@ export function ConfigFilesTab() {
             {activeHasDiffs && (
               <span className="ml-auto text-xs text-slate-400">
                 {activeDiffCount} total {activeDiffCount === 1 ? "diff" : "diffs"} across {activeGroupsWithDiffs} groups
-                {isMismatchTab ? `, ${activeGroups.length} version mismatch${activeGroups.length === 1 ? "" : "es"}` : ""}
+                {isMismatchTab ? `, ${activeGroups.length} version mismatch${mismatchPlural}` : ""}
               </span>
             )}
 

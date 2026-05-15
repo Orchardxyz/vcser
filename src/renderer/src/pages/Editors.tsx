@@ -35,6 +35,76 @@ export function Editors() {
   const inputClass =
     "rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 outline-none focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white";
 
+  function renderContent() {
+    if (editorsLoading) return <EditorsSkeleton />;
+    if (editors.length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-slate-200 py-16 text-slate-400">
+          <FolderOpen size={32} strokeWidth={1.5} />
+          <p className="text-sm font-medium">No supported editors detected</p>
+          <p className="text-xs text-slate-400">Install a supported editor to get started</p>
+        </div>
+      );
+    }
+    return (
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {editors.map((editor) => (
+          <Link
+            key={editor.slug}
+            to={getEditorExtensionsRoute(editor.slug)}
+            className="flex flex-col gap-4 rounded-lg border border-slate-200 bg-white p-5 transition-shadow outline-none hover:shadow-sm focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+          >
+            <div className="flex items-start justify-between">
+              <EditorIdentity editor={editor} mode={EDITOR_IDENTITY_MODE.ICON} />
+              <span
+                aria-label="Detected"
+                title="Detected"
+                className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-blue-100 bg-blue-50 text-blue-600"
+              >
+                <BadgeCheck size={14} strokeWidth={1.75} />
+              </span>
+            </div>
+
+            <div>
+              <p className="text-xl font-semibold leading-7 text-slate-950">{editor.displayName ?? editor.name}</p>
+              {editor.appPath && <p className="mt-0.5 text-xs text-slate-400 truncate">{editor.appPath}</p>}
+            </div>
+
+            <div className="flex flex-wrap gap-2 text-xs text-slate-500">
+              {editor.cliAvailable && (
+                <span className="inline-flex items-center gap-1 rounded bg-slate-50 px-2 py-1">
+                  <Terminal size={11} />
+                  {editor.cli}
+                </span>
+              )}
+              {editor.extensionsExist && (
+                <span className="inline-flex items-center gap-1 rounded bg-slate-50 px-2 py-1">
+                  <FileText size={11} />
+                  Extensions
+                </span>
+              )}
+              {editor.settingsExist && (
+                <span className="inline-flex items-center gap-1 rounded bg-slate-50 px-2 py-1">
+                  <FileText size={11} />
+                  Settings
+                </span>
+              )}
+            </div>
+          </Link>
+        ))}
+
+        <button
+          type="button"
+          onClick={() => setAddModalOpen(true)}
+          className="flex min-h-50 flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-200 bg-transparent p-5 text-slate-400 transition-colors outline-none hover:border-slate-300 hover:bg-slate-50 hover:text-slate-500 focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+        >
+          <Plus size={22} strokeWidth={1.5} />
+          <span className="text-sm font-medium">Add Other Editor</span>
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-8 p-8">
       <div>
@@ -42,71 +112,7 @@ export function Editors() {
         <p className="mt-1 text-sm text-slate-500">Manage editor instances installed on this device</p>
       </div>
 
-      {editorsLoading ? (
-        <EditorsSkeleton />
-      ) : editors.length === 0 ? (
-        <div className="flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-slate-200 py-16 text-slate-400">
-          <FolderOpen size={32} strokeWidth={1.5} />
-          <p className="text-sm font-medium">No supported editors detected</p>
-          <p className="text-xs text-slate-400">Install a supported editor to get started</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {editors.map((editor) => (
-            <Link
-              key={editor.slug}
-              to={getEditorExtensionsRoute(editor.slug)}
-              className="flex flex-col gap-4 rounded-lg border border-slate-200 bg-white p-5 transition-shadow outline-none hover:shadow-sm focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-            >
-              <div className="flex items-start justify-between">
-                <EditorIdentity editor={editor} mode={EDITOR_IDENTITY_MODE.ICON} />
-                <span
-                  aria-label="Detected"
-                  title="Detected"
-                  className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-blue-100 bg-blue-50 text-blue-600"
-                >
-                  <BadgeCheck size={14} strokeWidth={1.75} />
-                </span>
-              </div>
-
-              <div>
-                <p className="text-xl font-semibold leading-7 text-slate-950">{editor.displayName ?? editor.name}</p>
-                {editor.appPath && <p className="mt-0.5 text-xs text-slate-400 truncate">{editor.appPath}</p>}
-              </div>
-
-              <div className="flex flex-wrap gap-2 text-xs text-slate-500">
-                {editor.cliAvailable && (
-                  <span className="inline-flex items-center gap-1 rounded bg-slate-50 px-2 py-1">
-                    <Terminal size={11} />
-                    {editor.cli}
-                  </span>
-                )}
-                {editor.extensionsExist && (
-                  <span className="inline-flex items-center gap-1 rounded bg-slate-50 px-2 py-1">
-                    <FileText size={11} />
-                    Extensions
-                  </span>
-                )}
-                {editor.settingsExist && (
-                  <span className="inline-flex items-center gap-1 rounded bg-slate-50 px-2 py-1">
-                    <FileText size={11} />
-                    Settings
-                  </span>
-                )}
-              </div>
-            </Link>
-          ))}
-
-          <button
-            type="button"
-            onClick={() => setAddModalOpen(true)}
-            className="flex min-h-50 flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-200 bg-transparent p-5 text-slate-400 transition-colors outline-none hover:border-slate-300 hover:bg-slate-50 hover:text-slate-500 focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-          >
-            <Plus size={22} strokeWidth={1.5} />
-            <span className="text-sm font-medium">Add Other Editor</span>
-          </button>
-        </div>
-      )}
+      {renderContent()}
 
       <BaseModal
         open={addModalOpen}

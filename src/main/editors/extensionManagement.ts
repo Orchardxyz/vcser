@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { rm } from "node:fs/promises";
 import { join } from "node:path";
-import type { Schema } from "type-fest";
+import { hasStringProperty, isRecord } from "../typeGuards";
 import { findExtensionDir } from "./extensionFs";
 
 interface DisabledExtensionRow {
@@ -19,31 +19,18 @@ interface ExtensionManifestEntry {
   relativeLocation?: string;
 }
 
-type JsonObject = Record<string, unknown>;
-
 function isDisabledExtensionRow(value: unknown): value is DisabledExtensionRow {
-  return !!value && typeof value === "object" && typeof (value as DisabledExtensionRow).id === "string";
+  return hasStringProperty(value, "id");
 }
 
 function isExtensionManifestEntry(value: unknown): value is ExtensionManifestEntry {
-  if (!value || typeof value !== "object") {
+  if (!isRecord(value)) {
     return false;
   }
 
-  const entry = value as {
-    identifier?: Schema<IExtensionIdentifier, unknown>;
-    relativeLocation?: unknown;
-  };
+  const identifier = value.identifier;
 
-  return (
-    !!entry.identifier &&
-    typeof entry.identifier.id === "string" &&
-    (entry.relativeLocation === undefined || typeof entry.relativeLocation === "string")
-  );
-}
-
-function isJsonObject(value: unknown): value is JsonObject {
-  return !!value && typeof value === "object" && !Array.isArray(value);
+  return hasStringProperty(identifier, "id") && (value.relativeLocation === undefined || typeof value.relativeLocation === "string");
 }
 
 function parseDisabledExtensionRows(rawValue: string): DisabledExtensionRow[] {
@@ -105,7 +92,7 @@ function writeExtensionManifestEntries(extensionsPath: string, entries: unknown[
 }
 
 function resolveManifestDirectoryName(entry: unknown): string | undefined {
-  if (!isJsonObject(entry) || !isExtensionManifestEntry(entry)) {
+  if (!isRecord(entry) || !isExtensionManifestEntry(entry)) {
     return undefined;
   }
 

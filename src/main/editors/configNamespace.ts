@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { join, resolve, sep } from "node:path";
 import type { PrismaClient } from "@generated/prisma";
+import { isRecord } from "../typeGuards";
 import { findExtensionDir } from "./extensionFs";
 import { namespaceOf } from "./settings";
 import { mimeTypeForPath } from "./utils";
@@ -18,7 +19,7 @@ interface ExtensionPackageContrib {
 }
 
 function isExtensionPackage(value: unknown): value is ExtensionPackageContrib {
-  return !!value && typeof value === "object";
+  return isRecord(value);
 }
 
 function extractConfigNamespaces(pkg: ExtensionPackageContrib): string[] {

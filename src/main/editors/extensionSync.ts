@@ -4,8 +4,8 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { cp, readFile } from "node:fs/promises";
 import { basename, join } from "node:path";
 import { promisify } from "node:util";
-import type { Schema } from "type-fest";
 import type { SyncResult } from "@shared/types";
+import { hasStringProperty, isRecord } from "../typeGuards";
 import { findExtensionDir } from "./extensionFs";
 
 const execFilePromise = promisify(execFile);
@@ -23,27 +23,21 @@ interface ExtensionManifestEntry {
 type JsonObject = Record<string, unknown>;
 
 function isExtensionManifestEntry(value: unknown): value is ExtensionManifestEntry {
-  if (!value || typeof value !== "object") {
+  if (!isRecord(value)) {
     return false;
   }
 
-  const entry = value as {
-    identifier?: Schema<IExtensionIdentifier, unknown>;
-    version?: unknown;
-    relativeLocation?: unknown;
-  };
-  const identifier = entry.identifier;
+  const identifier = value.identifier;
 
   return (
-    !!identifier &&
-    typeof identifier.id === "string" &&
-    (entry.version === undefined || typeof entry.version === "string") &&
-    (entry.relativeLocation === undefined || typeof entry.relativeLocation === "string")
+    hasStringProperty(identifier, "id") &&
+    (value.version === undefined || typeof value.version === "string") &&
+    (value.relativeLocation === undefined || typeof value.relativeLocation === "string")
   );
 }
 
 function isJsonObject(value: unknown): value is JsonObject {
-  return !!value && typeof value === "object" && !Array.isArray(value);
+  return isRecord(value);
 }
 
 function createInstallSyncResult(params: {
@@ -83,7 +77,7 @@ function findExtensionManifestEntry(extensionsPath: string, extensionId: string)
 }
 
 function cloneJsonObject<T extends JsonObject>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
+  return structuredClone(value);
 }
 
 function resolveManifestDirName(entry: JsonObject | undefined, fallbackDirName?: string): string | undefined {
@@ -143,8 +137,8 @@ async function readExtensionVersion(sourceExtensionDir: string): Promise<string 
   try {
     const pkgRaw = await readFile(join(sourceExtensionDir, "package.json"), "utf-8");
     const pkg: unknown = JSON.parse(pkgRaw);
-    if (pkg && typeof pkg === "object" && "version" in pkg && typeof (pkg as { version: unknown }).version === "string") {
-      return (pkg as { version: string }).version;
+    if (hasStringProperty(pkg, "version")) {
+      return pkg.version;
     }
   } catch {
     return undefined;

@@ -1,6 +1,7 @@
 import { ipcMain } from "electron";
 import { SUPPORTED_COMMAND } from "@shared/ipc";
 import { EDITOR_EXTENSION_ACTION, type EditorExtensionMutationResult, type EditorExtensionsResult } from "@shared/types";
+import { hasBooleanProperty, hasStringProperty, isRecord } from "../typeGuards";
 import { detectEditors } from "../editors/detect";
 import { setEditorExtensionDisabled, uninstallEditorExtension } from "../editors/extensionManagement";
 import { listEditorExtensions } from "../editors/extensions";
@@ -19,26 +20,17 @@ interface UninstallEditorExtensionPayload extends EditorSlugPayload {
 }
 
 function isEditorSlugPayload(value: unknown): value is EditorSlugPayload {
-  return !!value && typeof value === "object" && typeof (value as EditorSlugPayload).editorSlug === "string";
+  return hasStringProperty(value, "editorSlug");
 }
 
 function isSetEditorExtensionDisabledPayload(value: unknown): value is SetEditorExtensionDisabledPayload {
   return (
-    !!value &&
-    typeof value === "object" &&
-    typeof (value as SetEditorExtensionDisabledPayload).editorSlug === "string" &&
-    typeof (value as SetEditorExtensionDisabledPayload).extensionId === "string" &&
-    typeof (value as SetEditorExtensionDisabledPayload).disabled === "boolean"
+    isRecord(value) && hasStringProperty(value, "editorSlug") && hasStringProperty(value, "extensionId") && hasBooleanProperty(value, "disabled")
   );
 }
 
 function isUninstallEditorExtensionPayload(value: unknown): value is UninstallEditorExtensionPayload {
-  return (
-    !!value &&
-    typeof value === "object" &&
-    typeof (value as UninstallEditorExtensionPayload).editorSlug === "string" &&
-    typeof (value as UninstallEditorExtensionPayload).extensionId === "string"
-  );
+  return isRecord(value) && hasStringProperty(value, "editorSlug") && hasStringProperty(value, "extensionId");
 }
 
 function createMissingEditorResult(editorSlug: string): EditorExtensionsResult {

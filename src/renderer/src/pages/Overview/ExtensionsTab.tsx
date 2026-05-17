@@ -36,6 +36,14 @@ export function ExtensionsTab() {
     return map;
   }, [editors]);
 
+  const editorBySlug = useMemo(() => {
+    const map = new Map<string, ResolvedEditor>();
+    for (const editor of editors) {
+      map.set(editor.slug, editor);
+    }
+    return map;
+  }, [editors]);
+
   const rows = diffResult?.all ?? [];
   const totalCount = diffResult?.all.length ?? 0;
 
@@ -79,7 +87,13 @@ export function ExtensionsTab() {
           onRefresh={fetchDiff}
         />
       ) : (
-        <ExtensionsByEditorView editorNames={diffResult.editorNames} rows={rows} editorByName={editorByName} />
+        <ExtensionsByEditorView
+          editorNames={diffResult.editorNames}
+          rows={rows}
+          editorBySlug={editorBySlug}
+          editors={editors}
+          onRefresh={fetchDiff}
+        />
       )}
     </div>
   );

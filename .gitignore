@@ -2,6 +2,7 @@ node_modules/
 dist/
 docs/plans/*
 docs/superpowers/*
+docs/reviews/*
 out/
 dist-electron/
 .pnpm-store/

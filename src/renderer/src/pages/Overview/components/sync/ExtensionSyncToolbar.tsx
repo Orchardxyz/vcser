@@ -46,8 +46,8 @@ export function ExtensionSyncToolbar({
 }: ExtensionSyncToolbarProps) {
   return (
     <div className="border-b border-slate-100 bg-slate-50/40 px-4 py-4">
-      <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-        <div className="flex flex-1 flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center justify-between">
+        <div className="flex items-center gap-3">
           <div className="flex min-w-0 items-center gap-2">
             <span className="shrink-0 text-xs font-medium text-slate-500">From</span>
             <EditorSelect editors={sourceOptions} value={sourceSlug} onChange={onSourceChange} className="w-56 min-w-56 max-w-full" />
@@ -59,7 +59,7 @@ export function ExtensionSyncToolbar({
           </div>
         </div>
 
-        <div className="flex shrink-0 flex-wrap items-center gap-2">
+        <div className="flex items-center gap-2">
           <Tooltip content={refreshTooltipLabel}>
             <span className="inline-flex">
               <Button

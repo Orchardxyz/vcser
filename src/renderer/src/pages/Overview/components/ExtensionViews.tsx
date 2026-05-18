@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { invoke } from "@/ipc";
 import { toast } from "@/store/toast";
 import type { ExtensionPresence, ResolvedEditor, SyncActionInput, SyncResult } from "@/types";
@@ -25,6 +25,8 @@ export function ExtensionsByExtensionView({
   const [syncModalOpen, setSyncModalOpen] = useState(false);
   const [syncingId, setSyncingId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [alreadyInTargetExpanded, setAlreadyInTargetExpanded] = useState(false);
+  const [notInSourceExpanded, setNotInSourceExpanded] = useState(false);
 
   const sourceEditor = useMemo(() => editors.find((e) => e.slug === sourceSlug), [editors, sourceSlug]);
   const targetEditor = useMemo(() => editors.find((e) => e.slug === targetSlug), [editors, targetSlug]);
@@ -41,12 +43,21 @@ export function ExtensionsByExtensionView({
     [editors, sourceSlug, targetSlug]
   );
 
-  const pairRows = useMemo(() => {
+  useEffect(() => {
+    setAlreadyInTargetExpanded(false);
+    setNotInSourceExpanded(false);
+  }, [sourceSlug, targetSlug]);
+
+  const pairRowGroups = useMemo(() => {
     if (!sourceName || !targetName) {
-      return rows;
+      return null;
     }
 
-    return [...rows]
+    const eligibleRows: ExtensionPresence[] = [];
+    const alreadyInTargetRows: ExtensionPresence[] = [];
+    const notInSourceRows: ExtensionPresence[] = [];
+
+    [...rows]
       .filter((row) => row.presence[sourceName] === true || row.presence[targetName] === true)
       .sort((left, right) => {
         const getPresenceRank = (row: ExtensionPresence) => {
@@ -62,13 +73,49 @@ export function ExtensionsByExtensionView({
         }
 
         return left.extensionId.localeCompare(right.extensionId);
+      })
+      .forEach((row) => {
+        if (row.presence[sourceName] === true && row.presence[targetName] === false) {
+          eligibleRows.push(row);
+          return;
+        }
+
+        if (row.presence[sourceName] === true && row.presence[targetName] === true) {
+          alreadyInTargetRows.push(row);
+          return;
+        }
+
+        notInSourceRows.push(row);
       });
+
+    return {
+      eligibleRows,
+      alreadyInTargetRows,
+      notInSourceRows
+    };
   }, [rows, sourceName, targetName]);
 
+  const pairRows = useMemo(() => {
+    if (!pairRowGroups) {
+      return rows;
+    }
+
+    return [...pairRowGroups.eligibleRows, ...pairRowGroups.alreadyInTargetRows, ...pairRowGroups.notInSourceRows];
+  }, [pairRowGroups, rows]);
+
   const eligibleRows = useMemo(() => {
-    if (!sourceName || !targetName) return [];
-    return pairRows.filter((row) => row.presence[sourceName] === true && row.presence[targetName] === false);
-  }, [pairRows, sourceName, targetName]);
+    if (!pairRowGroups) return [];
+    return pairRowGroups.eligibleRows;
+  }, [pairRowGroups]);
+
+  const alreadyInTargetRows = pairRowGroups?.alreadyInTargetRows ?? [];
+  const notInSourceRows = pairRowGroups?.notInSourceRows ?? [];
+  const visibleCount = hasPair
+    ? eligibleRows.length + (alreadyInTargetExpanded ? alreadyInTargetRows.length : 0) + (notInSourceExpanded ? notInSourceRows.length : 0)
+    : pairRows.length;
+  const collapsedCount = hasPair
+    ? (alreadyInTargetExpanded ? 0 : alreadyInTargetRows.length) + (notInSourceExpanded ? 0 : notInSourceRows.length)
+    : 0;
 
   const handleSourceChange = useCallback(
     (slug: string) => {
@@ -186,7 +233,8 @@ export function ExtensionsByExtensionView({
         targetSlug={targetSlug}
         hasPair={hasPair}
         refreshing={refreshing}
-        visibleCount={pairRows.length}
+        visibleCount={visibleCount}
+        collapsedCount={collapsedCount}
         eligibleCount={eligibleRows.length}
         selectedCount={selectedCount}
         refreshTooltipLabel={refreshTooltipLabel}
@@ -210,12 +258,19 @@ export function ExtensionsByExtensionView({
         targetEditor={targetEditor}
         sourceName={sourceName}
         targetName={targetName}
+        syncableRows={hasPair ? eligibleRows : undefined}
+        alreadyInTargetRows={hasPair ? alreadyInTargetRows : undefined}
+        notInSourceRows={hasPair ? notInSourceRows : undefined}
+        alreadyInTargetExpanded={alreadyInTargetExpanded}
+        notInSourceExpanded={notInSourceExpanded}
         eligibleCount={eligibleRows.length}
         allSelected={allSelected}
         someSelected={someSelected}
         selectedIds={selectedIds}
         syncingId={syncingId}
         onToggleAll={toggleAll}
+        onToggleAlreadyInTarget={() => setAlreadyInTargetExpanded((prev) => !prev)}
+        onToggleNotInSource={() => setNotInSourceExpanded((prev) => !prev)}
         onToggleSelect={toggleSelect}
         onSyncSingle={(entry) => {
           void handleSyncSingle(entry);

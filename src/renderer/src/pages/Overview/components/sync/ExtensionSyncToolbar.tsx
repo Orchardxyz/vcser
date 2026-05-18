@@ -13,6 +13,7 @@ interface ExtensionSyncToolbarProps {
   hasPair: boolean;
   refreshing: boolean;
   visibleCount: number;
+  collapsedCount: number;
   eligibleCount: number;
   selectedCount: number;
   refreshTooltipLabel: string;
@@ -33,6 +34,7 @@ export function ExtensionSyncToolbar({
   hasPair,
   refreshing,
   visibleCount,
+  collapsedCount,
   eligibleCount,
   selectedCount,
   refreshTooltipLabel,
@@ -99,6 +101,12 @@ export function ExtensionSyncToolbar({
       ) : (
         <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-slate-500">
           <span>Showing {visibleCount} extensions</span>
+          {collapsedCount > 0 ? (
+            <>
+              <span className="h-1 w-1 rounded-full bg-slate-300" aria-hidden="true" />
+              <span>Collapsed {collapsedCount}</span>
+            </>
+          ) : null}
           <span className="h-1 w-1 rounded-full bg-slate-300" aria-hidden="true" />
           <span>Ready {eligibleCount}</span>
           {selectedCount > 0 ? (

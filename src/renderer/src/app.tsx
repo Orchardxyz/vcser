@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import { useMedia } from "react-use";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { Sidebar } from "./components/layout/Sidebar";
@@ -36,12 +36,13 @@ export default function App() {
     loadEditors();
   }, [loadEditors]);
 
+  useLayoutEffect(() => {
+    document.documentElement.dataset.theme = resolvedTheme;
+    document.documentElement.style.colorScheme = resolvedTheme;
+  }, [resolvedTheme]);
+
   return (
-    <div
-      className="app-shell flex h-screen overflow-hidden bg-white text-slate-950"
-      data-theme={resolvedTheme}
-      style={{ colorScheme: resolvedTheme }}
-    >
+    <div className="app-shell flex h-screen overflow-hidden bg-white text-slate-950">
       <Sidebar />
       <main className="flex-1 overflow-y-auto">
         <Routes>

@@ -6,7 +6,7 @@ import { Badge, BADGE_VARIANT } from "@/components/ui/Badge";
 import { Button, BUTTON_SIZE, BUTTON_VARIANT } from "@/components/ui/Button";
 import { Tooltip } from "@/components/ui/Tooltip";
 import type { ExtensionPresence, ResolvedEditor } from "@/types";
-import { displayName, shortenExtensionId, formatVersion, ExtensionIcon } from "./ExtensionHelpers";
+import { displayName, shortenExtensionId, formatVersion, ExtensionIcon } from "../ExtensionHelpers";
 
 type CardSection = "missing" | "shared" | "mismatch";
 

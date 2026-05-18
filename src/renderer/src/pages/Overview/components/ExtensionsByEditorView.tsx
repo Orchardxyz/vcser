@@ -1,4 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { translateRuntimeMessageWithT } from "@/i18n/runtime";
 import { invoke } from "@/ipc";
 import { toast } from "@/store/toast";
 import type { ExtensionPresence, ResolvedEditor, SyncActionInput, SyncResult } from "@/types";
@@ -6,6 +8,7 @@ import { SYNC_ACTION_TYPE } from "@/types";
 import { displayName } from "./ExtensionHelpers";
 import { EditorSyncSourcePanel, SyncExtensionModal, EditorSyncCard, EditorSyncControlBar } from "./sync";
 import { computeTargetDataBySlug } from "../utils/editorDiff";
+
 export function ExtensionsByEditorView({
   editorNames,
   rows,
@@ -19,6 +22,7 @@ export function ExtensionsByEditorView({
   editors: ResolvedEditor[];
   onRefresh: () => Promise<void>;
 }) {
+  const { t } = useTranslation();
   const [sourceSlug, setSourceSlug] = useState<string>("");
   const [selectionByTargetSlug, setSelectionByTargetSlug] = useState<Record<string, Set<string>>>({});
   const [syncingKey, setSyncingKey] = useState<string | null>(null);
@@ -62,6 +66,10 @@ export function ExtensionsByEditorView({
       installedExtensions: installed
     };
   }, [sourceSlug, sourceName, targetDataBySlug, installedByEditorName, editors]);
+
+  const modalSourceEditor = syncModalTarget && sourceEditor ? sourceEditor : undefined;
+  const modalTargetEditor = syncModalTarget ? editorBySlug.get(syncModalTarget.targetSlug) : undefined;
+  const modalTargetDisplayName = modalTargetEditor?.displayName ?? "";
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -135,7 +143,7 @@ export function ExtensionsByEditorView({
         const result = results[0];
 
         if (!result?.success) {
-          toast.error(`Could not sync ${displayName(entry.extensionId)}`, result?.error ?? "The target editor did not return a sync result.");
+          toast.error(t("overview.sync.singleFailedTitle", { extension: displayName(entry.extensionId) }), translateRuntimeMessageWithT(t, result));
           return;
         }
 
@@ -147,16 +155,22 @@ export function ExtensionsByEditorView({
           next[targetSlug] = nextSet;
           return next;
         });
-        toast.success(`Synced ${displayName(entry.extensionId)}`, `${sourceEditor.displayName} → ${targetEditor.displayName}`);
+        toast.success(
+          t("overview.sync.singleSuccessTitle", { extension: displayName(entry.extensionId) }),
+          t("overview.sync.singleSuccessDescription", { source: sourceEditor.displayName, target: targetEditor.displayName })
+        );
         await onRefresh();
       } catch (error) {
-        toast.error(`Could not sync ${displayName(entry.extensionId)}`, error instanceof Error ? error.message : String(error));
+        toast.error(
+          t("overview.sync.singleFailedTitle", { extension: displayName(entry.extensionId) }),
+          error instanceof Error ? error.message : String(error)
+        );
       } finally {
         setSyncingKey(null);
         setSyncingTargetSlug(null);
       }
     },
-    [sourceName, sourceEditor, editorBySlug, onRefresh]
+    [sourceName, sourceEditor, editorBySlug, onRefresh, t]
   );
 
   const handleOpenBulkSync = useCallback(
@@ -197,18 +211,18 @@ export function ExtensionsByEditorView({
       const failureCount = results.length - successCount;
 
       if (failureCount === 0) {
-        const pluralS = successCount === 1 ? "" : "s";
-        toast.success("Batch sync completed", `${successCount} extension${pluralS} synced.`);
+        toast.success(
+          t("overview.sync.batchSuccessTitle"),
+          t("overview.sync.batchSuccessDescription", { count: successCount, target: modalTargetDisplayName })
+        );
       } else {
-        toast.error("Batch sync completed with issues", `${successCount} succeeded, ${failureCount} failed.`);
+        toast.error(t("overview.sync.batchFailureTitle"), t("overview.sync.batchFailureDescription", { successCount, failureCount }));
       }
 
       void onRefresh();
     },
-    [syncModalTarget, onRefresh]
+    [modalTargetDisplayName, onRefresh, syncModalTarget, t]
   );
-  const modalSourceEditor = syncModalTarget && sourceEditor ? sourceEditor : undefined;
-  const modalTargetEditor = syncModalTarget ? editorBySlug.get(syncModalTarget.targetSlug) : undefined;
   const hasSource = sourceSlug !== "";
   const gridEditors = hasSource ? editors.filter((editor) => editor.slug !== sourceSlug) : editors;
   const gridClass = hasSource

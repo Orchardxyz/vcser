@@ -1,41 +1,46 @@
 import { useEffect, useRef, useState } from "react";
 import classNames from "classnames";
 import { AlertCircle, ArrowLeftRight, CheckCheck, ChevronDown, ChevronRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Badge, BADGE_VARIANT } from "@/components/ui/Badge";
 import { Popover } from "@/components/ui/Popover";
 
 import { EXTENSION_SETTINGS_GROUP_KIND, type ExtensionSettingsGroup } from "@/types";
 import { DiffTable, DiffBadge } from "./DiffComponents";
 
-export function groupPrimaryLabel(group: ExtensionSettingsGroup): string {
+export function groupPrimaryLabel(group: ExtensionSettingsGroup, t: (key: string) => string): string {
   if (group.kind === EXTENSION_SETTINGS_GROUP_KIND.VERSION_ONLY) {
-    return "Version mismatch only";
+    return t("overview.groupRow.versionMismatchOnly");
   }
 
   return group.namespace;
 }
 
-export function groupSecondaryLabel(group: ExtensionSettingsGroup): string | undefined {
+export function groupSecondaryLabel(group: ExtensionSettingsGroup, t: (key: string) => string): string | undefined {
   if (group.extensionId) {
     return group.extensionId;
   }
 
   if (group.kind === EXTENSION_SETTINGS_GROUP_KIND.VERSION_ONLY) {
-    return "No extension namespace keys found";
+    return t("overview.groupRow.noNamespaceKeysFound");
   }
 
   return undefined;
 }
 
 export function VersionMismatchBadge({ group }: { group: ExtensionSettingsGroup }) {
+  const { t } = useTranslation();
+
   if (!group.hasVersionMismatch) {
     return null;
   }
 
-  return <Badge variant={BADGE_VARIANT.INFO}>Version mismatch</Badge>;
+  return <Badge variant={BADGE_VARIANT.INFO}>{t("overview.groupRow.versionMismatch")}</Badge>;
 }
 
 export function VersionMismatchIndicator({ group, leftName, rightName }: { group: ExtensionSettingsGroup; leftName: string; rightName: string }) {
+  const { t } = useTranslation();
+
   if (!group.hasVersionMismatch) {
     return null;
   }
@@ -49,24 +54,25 @@ export function VersionMismatchIndicator({ group, leftName, rightName }: { group
       panelClassName="min-w-[180px]"
       content={
         <div className="space-y-1.5 text-sm text-slate-700">
-          <div className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Installed versions</div>
+          <div className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">{t("overview.groupRow.installedVersions")}</div>
           <div className="rounded-md bg-slate-50 px-2 py-1">
-            <span className="font-medium">{leftName}:</span> {group.leftVersion ?? "Unknown"}
+            <span className="font-medium">{leftName}:</span> {group.leftVersion ?? t("common.unknown")}
           </div>
           <div className="rounded-md bg-slate-50 px-2 py-1">
-            <span className="font-medium">{rightName}:</span> {group.rightVersion ?? "Unknown"}
+            <span className="font-medium">{rightName}:</span> {group.rightVersion ?? t("common.unknown")}
           </div>
         </div>
       }
     >
       <span className="inline-flex shrink-0 items-center text-sky-500">
-        <ArrowLeftRight size={14} strokeWidth={1.9} />
+        <ArrowLeftRight size={14} />
       </span>
     </Popover>
   );
 }
 
 export function MissingExtensionIndicator({ group, leftName, rightName }: { group: ExtensionSettingsGroup; leftName: string; rightName: string }) {
+  const { t } = useTranslation();
   const missing: string[] = [];
   if (group.leftHasExtension === false) missing.push(leftName);
   if (group.rightHasExtension === false) missing.push(rightName);
@@ -81,7 +87,7 @@ export function MissingExtensionIndicator({ group, leftName, rightName }: { grou
       panelClassName="min-w-[160px]"
       content={
         <div className="space-y-1.5">
-          <div className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Not installed in</div>
+          <div className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">{t("overview.groupRow.notInstalledIn")}</div>
           {missing.map((name) => (
             <div key={name} className="rounded-md bg-slate-50 px-2 py-1 text-sm text-slate-700">
               {name}
@@ -91,7 +97,7 @@ export function MissingExtensionIndicator({ group, leftName, rightName }: { grou
       }
     >
       <span className="inline-flex shrink-0 items-center text-amber-500">
-        <AlertCircle size={14} strokeWidth={1.9} />
+        <AlertCircle size={14} />
       </span>
     </Popover>
   );
@@ -123,6 +129,8 @@ export function ExtensionIcon({ group }: { group: ExtensionSettingsGroup }) {
 }
 
 function GroupDetails({ group, leftName, rightName }: { group: ExtensionSettingsGroup; leftName: string; rightName: string }) {
+  const { t } = useTranslation();
+
   if (group.diffs.length > 0) {
     return <DiffTable diffs={group.diffs} leftName={leftName} rightName={rightName} />;
   }
@@ -132,8 +140,8 @@ function GroupDetails({ group, leftName, rightName }: { group: ExtensionSettings
       <div className="flex items-center justify-center gap-2 px-4 py-6 text-sm text-sky-700">
         <ArrowLeftRight size={16} className="text-sky-500" />
         {group.kind === EXTENSION_SETTINGS_GROUP_KIND.VERSION_ONLY
-          ? "No config keys found. Installed versions differ."
-          : "No config diffs. Installed versions differ."}
+          ? t("overview.diff.noConfigKeysFoundVersionsDiffer")
+          : t("overview.diff.noConfigDiffsVersionsDiffer")}
       </div>
     );
   }
@@ -141,7 +149,7 @@ function GroupDetails({ group, leftName, rightName }: { group: ExtensionSettings
   return (
     <div className="flex items-center justify-center gap-2 py-6 text-sm text-slate-400">
       <CheckCheck size={16} className="text-emerald-500" />
-      No differences in this group.
+      {t("overview.diff.noDifferencesInGroup")}
     </div>
   );
 }
@@ -159,6 +167,7 @@ export function ExtensionGroupRow({
   checked: boolean;
   onCheckedChange: (checked: boolean) => void;
 }) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const checkboxRef = useRef<HTMLInputElement>(null);
 
@@ -180,18 +189,18 @@ export function ExtensionGroupRow({
           onChange={(e) => onCheckedChange(e.target.checked)}
           onClick={(e) => e.stopPropagation()}
           className="h-4 w-4 shrink-0 cursor-pointer accent-primary"
-          aria-label={`Select ${group.namespace} group`}
+          aria-label={t("overview.groupRow.selectGroup", { group: group.namespace })}
         />
 
         <ExtensionIcon group={group} />
 
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
-            <span className="truncate text-sm font-medium text-slate-800">{groupPrimaryLabel(group)}</span>
+            <span className="truncate text-sm font-medium text-slate-800">{groupPrimaryLabel(group, t)}</span>
             <MissingExtensionIndicator group={group} leftName={leftName} rightName={rightName} />
             <VersionMismatchIndicator group={group} leftName={leftName} rightName={rightName} />
           </div>
-          {groupSecondaryLabel(group) && <span className="block truncate font-mono text-xs text-slate-400">{groupSecondaryLabel(group)}</span>}
+          {groupSecondaryLabel(group, t) && <span className="block truncate font-mono text-xs text-slate-400">{groupSecondaryLabel(group, t)}</span>}
         </div>
 
         <VersionMismatchBadge group={group} />

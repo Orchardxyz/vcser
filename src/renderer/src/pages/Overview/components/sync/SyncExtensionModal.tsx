@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { AlertCircle, Check, Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { BaseModal } from "@/components/ui/BaseModal";
 import { Button, BUTTON_VARIANT } from "@/components/ui/Button";
+import { translateRuntimeMessageWithT } from "@/i18n/runtime";
 import { invoke } from "@/ipc";
 import type { ExtensionPresence, ResolvedEditor, SyncActionInput, SyncResult } from "@/types";
 import { SYNC_ACTION_TYPE } from "@/types";
@@ -19,6 +21,7 @@ interface SyncExtensionModalProps {
 type Phase = "idle" | "running" | "done";
 
 export function SyncExtensionModal({ open, sourceEditor, targetEditor, extensions, onClose, onComplete }: SyncExtensionModalProps) {
+  const { t } = useTranslation();
   const [phase, setPhase] = useState<Phase>("idle");
   const [results, setResults] = useState<SyncResult[]>([]);
 
@@ -74,14 +77,17 @@ export function SyncExtensionModal({ open, sourceEditor, targetEditor, extension
     return (
       <BaseModal
         open={open}
-        title={`Sync complete — ${sourceEditor.displayName} → ${targetEditor.displayName}`}
+        title={t("overview.sync.modalResultTitle", { source: sourceEditor.displayName, target: targetEditor.displayName })}
         onClose={handleClose}
         footer={
           <div className="flex items-center justify-between">
             <span className="text-sm text-slate-500">
-              {successCount} succeeded{failCount > 0 ? `, ${failCount} failed` : ""}
+              {t("overview.sync.modalSummary", {
+                successCount,
+                failSummary: failCount > 0 ? t("overview.sync.modalFailureSummary", { count: failCount }) : ""
+              })}
             </span>
-            <Button onClick={handleDone}>Done</Button>
+            <Button onClick={handleDone}>{t("common.done")}</Button>
           </div>
         }
       >
@@ -103,9 +109,9 @@ export function SyncExtensionModal({ open, sourceEditor, targetEditor, extension
                   <span className="block truncate text-sm font-medium text-slate-800">{ext ? displayName(ext.extensionId) : result.action}</span>
                   <span className="block truncate font-mono text-xs text-slate-400">{ext ? shortenExtensionId(ext.extensionId) : ""}</span>
                 </div>
-                {!result.success && result.error && (
-                  <span className="shrink-0 text-xs text-red-500 max-w-[200px] truncate" title={result.error}>
-                    {result.error}
+                {!result.success && (result.error || result.errorKey) && (
+                  <span className="shrink-0 text-xs text-red-500 max-w-[200px] truncate" title={translateRuntimeMessageWithT(t, result)}>
+                    {translateRuntimeMessageWithT(t, result)}
                   </span>
                 )}
               </div>
@@ -119,12 +125,12 @@ export function SyncExtensionModal({ open, sourceEditor, targetEditor, extension
   return (
     <BaseModal
       open={open}
-      title={`Sync ${extensions.length} extensions — ${sourceEditor.displayName} → ${targetEditor.displayName}`}
+      title={t("overview.sync.modalTitle", { count: extensions.length, source: sourceEditor.displayName, target: targetEditor.displayName })}
       onClose={handleClose}
       footer={
         <div className="flex items-center justify-end gap-2">
           <Button variant={BUTTON_VARIANT.SECONDARY} onClick={handleClose} disabled={phase === "running"}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             onClick={() => {
@@ -135,10 +141,10 @@ export function SyncExtensionModal({ open, sourceEditor, targetEditor, extension
             {phase === "running" ? (
               <>
                 <Loader2 size={16} className="animate-spin" />
-                Syncing…
+                {t("overview.sync.syncingAction")}
               </>
             ) : (
-              `Sync ${extensions.length} Extension${extensions.length === 1 ? "" : "s"}`
+              t("overview.sync.confirmSync", { count: extensions.length })
             )}
           </Button>
         </div>
@@ -158,7 +164,7 @@ export function SyncExtensionModal({ open, sourceEditor, targetEditor, extension
             </div>
           ))}
         </div>
-        <p className="text-xs text-slate-400">Extensions will be copied from {sourceEditor.displayName}&apos;s local directory.</p>
+        <p className="text-xs text-slate-400">{t("overview.sync.copyFromDirectory", { source: sourceEditor.displayName })}</p>
       </div>
     </BaseModal>
   );

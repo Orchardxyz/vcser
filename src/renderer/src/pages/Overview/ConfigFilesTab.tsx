@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowLeftRight, CheckCheck, FileJson } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { ValueOf } from "type-fest";
 import { EditorSelect } from "@/components/editor/EditorSelect";
 import { Button, BUTTON_SIZE, BUTTON_VARIANT } from "@/components/ui/Button";
@@ -17,19 +18,13 @@ const TAB = {
 
 type TabType = ValueOf<typeof TAB>;
 
-const TAB_ITEMS: { value: TabType; label: string }[] = [
-  { value: TAB.VERSION_MATCH, label: "Version Match" },
-  { value: TAB.VERSION_MISMATCH, label: "Version Mismatch" }
-];
-
 function TabEmptyState({ tab, leftName, rightName }: { tab: TabType; leftName: string; rightName: string }) {
+  const { t } = useTranslation();
   if (tab === TAB.VERSION_MISMATCH) {
     return (
       <div className="flex flex-col items-center justify-center gap-3 px-4 py-16 text-center">
         <CheckCheck size={32} className="text-emerald-400" />
-        <p className="text-sm text-slate-500">
-          No version mismatches found between {leftName} and {rightName}.
-        </p>
+        <p className="text-sm text-slate-500">{t("overview.configFiles.emptyMismatch", { leftName, rightName })}</p>
       </div>
     );
   }
@@ -37,14 +32,13 @@ function TabEmptyState({ tab, leftName, rightName }: { tab: TabType; leftName: s
   return (
     <div className="flex flex-col items-center justify-center gap-3 px-4 py-16 text-center">
       <ArrowLeftRight size={32} className="text-sky-400" />
-      <p className="text-sm text-slate-500">
-        All groups have version mismatches between {leftName} and {rightName}.
-      </p>
+      <p className="text-sm text-slate-500">{t("overview.configFiles.emptyMatch", { leftName, rightName })}</p>
     </div>
   );
 }
 
 export function ConfigFilesTab() {
+  const { t } = useTranslation();
   const editors = useAppStore((s) => s.editors);
   const [leftSlug, setLeftSlug] = useState<string>("");
   const [rightSlug, setRightSlug] = useState<string>("");
@@ -138,12 +132,19 @@ export function ConfigFilesTab() {
 
   let selectionText: string;
   if (activeSelectedCount > 0) {
-    selectionText = `${activeSelectedCount} of ${activeGroups.length} selected`;
+    selectionText = t("overview.configFiles.selectionSelected", {
+      selectedCount: activeSelectedCount,
+      totalCount: activeGroups.length
+    });
     if (mergedSelectedCount > activeSelectedCount) {
-      selectionText += ` (${mergedSelectedCount} total)`;
+      selectionText = t("overview.configFiles.selectionSelectedWithTotal", {
+        selectedCount: activeSelectedCount,
+        totalCount: activeGroups.length,
+        mergedSelectedCount
+      });
     }
   } else {
-    selectionText = `${activeGroups.length} namespace${activeGroups.length === 1 ? "" : "s"}`;
+    selectionText = t("overview.configFiles.selectionNamespaceCount", { count: activeGroups.length });
   }
 
   const activeHasDiffs = activeGroups.some((g) => g.diffs.length > 0);
@@ -152,25 +153,36 @@ export function ConfigFilesTab() {
   const isMismatchTab = activeTab === TAB.VERSION_MISMATCH;
   const mismatchPlural = activeGroups.length === 1 ? "" : "es";
 
+  const tabItems: { value: TabType; label: string }[] = [
+    { value: TAB.VERSION_MATCH, label: t("overview.configFiles.tabs.versionMatch") },
+    { value: TAB.VERSION_MISMATCH, label: t("overview.configFiles.tabs.versionMismatch") }
+  ];
+
   const headerBar = (
     <div className="flex items-center gap-3 border-b border-slate-100 px-4 py-3">
       {editors.length > 0 ? (
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <EditorSelect editors={editors} value={leftEditorSlug} onChange={setLeftSlug} className="min-w-0 flex-1" />
-          <Button variant={BUTTON_VARIANT.GHOST} size={BUTTON_SIZE.ICON} onClick={handleSwap} title="Swap editors" aria-label="Swap editors">
+          <Button
+            variant={BUTTON_VARIANT.GHOST}
+            size={BUTTON_SIZE.ICON}
+            onClick={handleSwap}
+            title={t("overview.configFiles.swapEditors")}
+            aria-label={t("overview.configFiles.swapEditors")}
+          >
             <ArrowLeftRight size={16} />
           </Button>
           <EditorSelect editors={editors} value={rightEditorSlug} onChange={setRightSlug} className="min-w-0 flex-1" />
         </div>
       ) : (
-        <span className="text-sm text-slate-400">No editors detected</span>
+        <span className="text-sm text-slate-400">{t("overview.configFiles.noEditorsDetected")}</span>
       )}
 
       <div className="ml-auto flex shrink-0 items-center gap-2">
         <Button variant={BUTTON_VARIANT.SECONDARY} disabled={!canOverride}>
-          Override with Left
+          {t("overview.configFiles.overrideWithLeft")}
         </Button>
-        <Button disabled={!canOverride}>Override with Right</Button>
+        <Button disabled={!canOverride}>{t("overview.configFiles.overrideWithRight")}</Button>
       </div>
     </div>
   );
@@ -181,7 +193,7 @@ export function ConfigFilesTab() {
         {headerBar}
         <div className="flex flex-col items-center justify-center gap-3 px-4 py-16 text-center">
           <FileJson size={32} className="text-slate-300" />
-          <p className="text-sm text-slate-500">No editors detected.</p>
+          <p className="text-sm text-slate-500">{t("overview.configFiles.noEditorsDetected")}</p>
         </div>
       </div>
     );
@@ -205,9 +217,7 @@ export function ConfigFilesTab() {
         {headerBar}
         <div className="flex flex-col items-center justify-center gap-3 px-4 py-16 text-center">
           <CheckCheck size={32} className="text-emerald-400" />
-          <p className="text-sm text-slate-500">
-            No settings found between {leftName} and {rightName}.
-          </p>
+          <p className="text-sm text-slate-500">{t("overview.configFiles.noSettingsFound", { leftName, rightName })}</p>
         </div>
       </div>
     );
@@ -218,7 +228,7 @@ export function ConfigFilesTab() {
       {headerBar}
 
       <div className="flex items-center border-b border-slate-100 px-4 py-3">
-        <SegmentedTabs items={TAB_ITEMS} value={activeTab} onChange={setActiveTab} />
+        <SegmentedTabs items={tabItems} value={activeTab} onChange={setActiveTab} />
       </div>
 
       {activeGroups.length === 0 ? (
@@ -235,7 +245,7 @@ export function ConfigFilesTab() {
                 }}
                 onChange={toggleAll}
                 className="h-4 w-4 cursor-pointer accent-primary"
-                aria-label="Select all extension groups in current tab"
+                aria-label={t("overview.configFiles.selectAllCurrentTab")}
               />
               <span className="text-xs text-slate-500">{selectionText}</span>
             </label>

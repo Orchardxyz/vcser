@@ -1,5 +1,6 @@
 import classNames from "classnames";
 import { CheckCheck } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import ReactDiffViewer from "react-diff-viewer-continued";
 import { diffHeaderClass, diffViewerStyles } from "@/lib/diff-constants";
 import type { SettingsKeyDiff } from "@/types";
@@ -7,6 +8,7 @@ import { formatDiffValue } from "@/utils";
 import { Badge, BADGE_VARIANT } from "@/components/ui/Badge";
 
 export function DiffHtml({ diff, leftName, rightName }: { diff: SettingsKeyDiff; leftName: string; rightName: string }) {
+  const { t } = useTranslation();
   const isDark = document.documentElement.dataset.theme === "dark";
   const oldValue = formatDiffValue(diff.sourceValue);
   const newValue = formatDiffValue(diff.targetValue);
@@ -46,7 +48,7 @@ export function DiffHtml({ diff, leftName, rightName }: { diff: SettingsKeyDiff;
           isAddition ? "border-r border-slate-100 bg-slate-50/40" : "bg-slate-50/40"
         )}
       >
-        — not set —
+        {t("common.notSet")}
       </div>
     );
 
@@ -83,27 +85,27 @@ export function DiffHtml({ diff, leftName, rightName }: { diff: SettingsKeyDiff;
 }
 
 export function DiffBadge({ count }: { count: number }) {
+  const { t } = useTranslation();
+
   if (count === 0) {
     return (
       <Badge variant={BADGE_VARIANT.SUCCESS} leadingIcon={<CheckCheck size={10} strokeWidth={2} />}>
-        Identical
+        {t("overview.diff.identical")}
       </Badge>
     );
   }
-  return (
-    <Badge variant={BADGE_VARIANT.DANGER}>
-      {count} {count === 1 ? "diff" : "diffs"}
-    </Badge>
-  );
+  return <Badge variant={BADGE_VARIANT.DANGER}>{t("common.diffCount", { count })}</Badge>;
 }
 
 export function DiffTable({ diffs, leftName, rightName }: { diffs: SettingsKeyDiff[]; leftName: string; rightName: string }) {
+  const { t } = useTranslation();
+
   return (
     <table className="w-full table-fixed text-xs">
       <thead>
         <tr className="border-b border-slate-100 bg-slate-50/60">
-          <th className="w-[24%] px-3 py-2 text-left font-medium text-slate-500">Key</th>
-          <th className="w-[76%] px-3 py-2 text-left font-medium text-slate-500">Diff</th>
+          <th className="w-[24%] px-3 py-2 text-left font-medium text-slate-500">{t("overview.diff.key")}</th>
+          <th className="w-[76%] px-3 py-2 text-left font-medium text-slate-500">{t("overview.diff.diff")}</th>
         </tr>
       </thead>
       <tbody className="divide-y divide-slate-100">

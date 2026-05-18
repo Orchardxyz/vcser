@@ -11,6 +11,7 @@ import { computeExtensionDiff, listInstalledExtensions } from "./editors/extensi
 import { syncExtensionLocal } from "./editors/extensionSync";
 import { registerEditorExtensionHandlers } from "./ipc/editorExtensions";
 import { readSettingsJson, diffSettings, groupSettingsByNamespace } from "./editors/settings";
+import { RUNTIME_MESSAGE_KEY } from "@shared/i18n";
 import type { ExtensionSettingsGroup, MachineIdentity, SettingsDiffByExtensionResult, SyncActionInput, SyncResult } from "@shared/types";
 import { EXTENSION_SETTINGS_GROUP_KIND } from "@shared/types";
 import { SUPPORTED_COMMAND } from "@shared/ipc";
@@ -262,7 +263,10 @@ app.whenReady().then(() => {
           sourceEditor: action.sourceEditor,
           targetEditor: action.targetEditor,
           success: false,
-          error: `Unsupported sync action: ${action.actionType}`
+          errorKey: RUNTIME_MESSAGE_KEY.UNSUPPORTED_SYNC_ACTION,
+          errorParams: {
+            actionType: action.actionType
+          }
         });
         continue;
       }
@@ -275,7 +279,7 @@ app.whenReady().then(() => {
           sourceEditor: action.sourceEditor,
           targetEditor: action.targetEditor,
           success: false,
-          error: "Missing extensionId or source editor"
+          errorKey: RUNTIME_MESSAGE_KEY.MISSING_EXTENSION_ID_OR_SOURCE_EDITOR
         });
         continue;
       }
@@ -291,7 +295,7 @@ app.whenReady().then(() => {
           sourceEditor: action.sourceEditor,
           targetEditor: action.targetEditor,
           success: false,
-          error: "Source or target editor is no longer available"
+          errorKey: RUNTIME_MESSAGE_KEY.SOURCE_OR_TARGET_EDITOR_UNAVAILABLE
         });
         continue;
       }

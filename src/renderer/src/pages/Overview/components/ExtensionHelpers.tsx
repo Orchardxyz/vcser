@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { ArrowLeftRight, CircleOff } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { EditorIdentity, EDITOR_IDENTITY_MODE } from "@/components/editor/EditorIdentity";
 import { Badge, BADGE_VARIANT } from "@/components/ui/Badge";
 import { Popover } from "@/components/ui/Popover";
@@ -25,6 +26,7 @@ export function formatVersion(version: string | null | undefined): string {
 }
 
 export function ExtensionIcon({ extensionId, iconDataUrl }: { extensionId: string; iconDataUrl?: string }) {
+  const { t } = useTranslation();
   const [imageFailed, setImageFailed] = useState(false);
 
   useEffect(() => {
@@ -35,7 +37,7 @@ export function ExtensionIcon({ extensionId, iconDataUrl }: { extensionId: strin
     return (
       <img
         src={iconDataUrl}
-        alt={`${displayName(extensionId)} icon`}
+        alt={t("overview.helpers.extensionIconAlt", { extension: displayName(extensionId) })}
         className="h-7 w-7 shrink-0 rounded object-contain"
         onError={() => setImageFailed(true)}
       />
@@ -95,6 +97,8 @@ export function VersionMismatchIndicator({
   editorNames: string[];
   ribbon?: boolean;
 }) {
+  const { t } = useTranslation();
+
   if (!entry.hasVersionMismatch) {
     return null;
   }
@@ -110,7 +114,7 @@ export function VersionMismatchIndicator({
       panelClassName="min-w-[200px]"
       content={
         <div className="space-y-2">
-          <div className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Installed versions</div>
+          <div className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">{t("overview.helpers.installedVersions")}</div>
           <div className="space-y-1">
             {installedVersions.map((name) => (
               <div key={name} className="rounded-md bg-slate-50 px-2 py-1 text-sm text-slate-700">
@@ -126,15 +130,15 @@ export function VersionMismatchIndicator({
           variant={BADGE_VARIANT.INFO}
           role="button"
           tabIndex={0}
-          aria-label="Show version mismatch details"
-          title="Version mismatch"
+          aria-label={t("overview.helpers.showVersionMismatchDetails")}
+          title={t("overview.groupRow.versionMismatch")}
           className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/50"
         >
           <ArrowLeftRight size={12} aria-hidden="true" />
         </Badge.Ribbon>
       ) : (
         <Badge variant={BADGE_VARIANT.INFO} leadingIcon={<ArrowLeftRight size={12} />}>
-          Version mismatch
+          {t("overview.groupRow.versionMismatch")}
         </Badge>
       )}
     </Popover>
@@ -142,6 +146,8 @@ export function VersionMismatchIndicator({
 }
 
 export function DisabledIndicator({ disabledIn }: { disabledIn: string[] }) {
+  const { t } = useTranslation();
+
   if (disabledIn.length === 0) {
     return null;
   }
@@ -155,7 +161,7 @@ export function DisabledIndicator({ disabledIn }: { disabledIn: string[] }) {
       panelClassName="min-w-[180px]"
       content={
         <div className="space-y-2">
-          <div className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Disabled in</div>
+          <div className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">{t("overview.helpers.disabledIn")}</div>
           <div className="space-y-1">
             {disabledIn.map((name) => (
               <div key={name} className="rounded-md bg-slate-50 px-2 py-1 text-sm text-slate-700">
@@ -169,10 +175,10 @@ export function DisabledIndicator({ disabledIn }: { disabledIn: string[] }) {
       <button
         type="button"
         className="inline-flex rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/50"
-        aria-label="Show disabled editors"
+        aria-label={t("overview.helpers.showDisabledEditors")}
       >
         <Badge variant={BADGE_VARIANT.WARNING} leadingIcon={<CircleOff size={12} aria-hidden="true" />}>
-          Disabled
+          {t("overview.helpers.disabled")}
         </Badge>
       </button>
     </Popover>

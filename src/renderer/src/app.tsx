@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect } from "react";
 import { useMedia } from "react-use";
 import { Navigate, Route, Routes } from "react-router-dom";
+import i18n from "./i18n";
 import { Sidebar } from "./components/layout/Sidebar";
 import { ToastViewport } from "./components/ui/Toast";
 import { Overview } from "./pages/Overview";
@@ -28,6 +29,7 @@ function resolveThemeMode(themeMode: ThemeMode, prefersDark: boolean): ThemeMode
 export default function App() {
   const loadEditors = useAppStore((s) => s.loadEditors);
   const themeMode = useAppStore((s) => s.themeMode);
+  const resolvedLocale = useAppStore((s) => s.resolvedLocale);
   const prefersDark = useMedia(PREFERS_DARK_MEDIA_QUERY, typeof window !== "undefined" ? window.matchMedia(PREFERS_DARK_MEDIA_QUERY).matches : false);
 
   const resolvedTheme = resolveThemeMode(themeMode, prefersDark);
@@ -40,6 +42,11 @@ export default function App() {
     document.documentElement.dataset.theme = resolvedTheme;
     document.documentElement.style.colorScheme = resolvedTheme;
   }, [resolvedTheme]);
+
+  useEffect(() => {
+    document.documentElement.lang = resolvedLocale;
+    void i18n.changeLanguage(resolvedLocale);
+  }, [resolvedLocale]);
 
   return (
     <div className="app-shell flex h-screen overflow-hidden bg-white text-slate-950">

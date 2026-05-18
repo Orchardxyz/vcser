@@ -1,5 +1,8 @@
 import type { ValueOf } from "type-fest";
 
+export { APP_LOCALE, LOCALE_PREFERENCE, RUNTIME_MESSAGE_KEY } from "@shared/i18n";
+export type { AppLocale, LocalePreference, RuntimeMessageKey, RuntimeMessageParams } from "@shared/i18n";
+
 export const EXTENSION_VIEW_MODE = {
   BY_EXTENSION: "by_extension",
   BY_EDITOR: "by_editor"

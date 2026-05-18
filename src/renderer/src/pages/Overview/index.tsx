@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { ValueOf } from "type-fest";
+import { useTranslation } from "react-i18next";
 import { SegmentedTabs } from "@/components/ui/SegmentedTabs";
 import { ConfigFilesTab } from "./ConfigFilesTab";
 import { ExtensionsTab } from "./ExtensionsTab";
@@ -11,13 +12,14 @@ const TAB = {
 
 type Tab = ValueOf<typeof TAB>;
 
-const OVERVIEW_TAB_ITEMS = [
-  { value: TAB.EXTENSIONS, label: "Extensions" },
-  { value: TAB.CONFIG_FILES, label: "Config Files" }
-] as const;
-
 export function Overview() {
+  const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>(TAB.EXTENSIONS);
+
+  const overviewTabItems = [
+    { value: TAB.EXTENSIONS, label: t("overview.tabs.extensions") },
+    { value: TAB.CONFIG_FILES, label: t("overview.tabs.configFiles") }
+  ] as const;
 
   const handleTabChange = (newTab: Tab) => {
     if (newTab === tab) return;
@@ -27,11 +29,11 @@ export function Overview() {
   return (
     <div className="flex flex-col gap-8 p-8">
       <div>
-        <h1 className="text-[30px] font-bold leading-9 text-slate-950">Global Overview</h1>
-        <p className="mt-1 text-sm text-slate-500">Cross-editor config diff comparison and one-click sync</p>
+        <h1 className="text-[30px] font-bold leading-9 text-slate-950">{t("overview.title")}</h1>
+        <p className="mt-1 text-sm text-slate-500">{t("overview.description")}</p>
       </div>
 
-      <SegmentedTabs items={[...OVERVIEW_TAB_ITEMS]} value={tab} onChange={handleTabChange} className="w-fit self-start" />
+      <SegmentedTabs items={[...overviewTabItems]} value={tab} onChange={handleTabChange} className="w-fit self-start" />
 
       {tab === TAB.EXTENSIONS ? <ExtensionsTab /> : <ConfigFilesTab />}
     </div>

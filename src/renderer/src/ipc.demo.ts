@@ -1,4 +1,5 @@
 /* eslint-disable max-lines */
+import { RUNTIME_MESSAGE_KEY } from "@shared/i18n";
 import type { JsonObject } from "type-fest";
 import type {
   EditorExtensionItem,
@@ -329,7 +330,14 @@ function setDemoEditorExtensionDisabled(params: { editorSlug: string; extensionI
     extensionId: params.extensionId,
     success: targetExists,
     disabled: params.disabled,
-    ...(targetExists ? {} : { error: `Extension ${params.extensionId} is not installed` })
+    ...(targetExists
+      ? {}
+      : {
+          errorKey: RUNTIME_MESSAGE_KEY.EXTENSION_NOT_INSTALLED,
+          errorParams: {
+            extensionId: params.extensionId
+          }
+        })
   };
 }
 
@@ -352,7 +360,14 @@ function uninstallDemoEditorExtension(params: { editorSlug: string; extensionId:
     editorName: current.editorName,
     extensionId: params.extensionId,
     success: targetExists,
-    ...(targetExists ? {} : { error: `Extension ${params.extensionId} is not installed` })
+    ...(targetExists
+      ? {}
+      : {
+          errorKey: RUNTIME_MESSAGE_KEY.EXTENSION_NOT_INSTALLED,
+          errorParams: {
+            extensionId: params.extensionId
+          }
+        })
   };
 }
 

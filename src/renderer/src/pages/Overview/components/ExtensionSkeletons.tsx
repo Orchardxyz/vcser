@@ -1,13 +1,16 @@
 import { Skeleton } from "@/components/ui/Skeleton";
+import { useTranslation } from "react-i18next";
 
 export function ExtensionTableSkeleton() {
+  const { t } = useTranslation();
+
   return (
     <table className="w-full text-sm">
       <thead>
         <tr className="border-b border-slate-100 bg-slate-50">
-          <th className="w-1/3 px-4 py-3 text-left text-xs font-medium text-slate-500">Extension</th>
-          <th className="px-4 py-3 text-left text-xs font-medium text-slate-500">Installed In</th>
-          <th className="px-4 py-3 text-left text-xs font-medium text-slate-500">Not Installed In</th>
+          <th className="w-1/3 px-4 py-3 text-left text-xs font-medium text-slate-500">{t("overview.sync.extensionHeader")}</th>
+          <th className="px-4 py-3 text-left text-xs font-medium text-slate-500">{t("overview.sync.installedIn")}</th>
+          <th className="px-4 py-3 text-left text-xs font-medium text-slate-500">{t("overview.sync.missingIn")}</th>
         </tr>
       </thead>
       <tbody className="divide-y divide-slate-100">

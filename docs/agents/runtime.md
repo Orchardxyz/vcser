@@ -28,6 +28,14 @@ Read these areas first for most runtime tasks:
 - The renderer IPC layer first attempts the real Electron bridge and falls back to demo responses on failure.
 - Do not remove the demo fallback unless the task explicitly requires that behavior change.
 
+## Runtime i18n Contract
+
+- Shared locale and runtime message-key contracts live in `src/shared/i18n.ts`.
+- For user-visible runtime failures, prefer stable `errorKey` and optional `errorParams` on shared result types over baking localized strings into main-process code.
+- Keep message keys stable and semantic, for example invalid payloads, unavailable editors, unsupported actions, and missing sync results.
+- Preserve raw `error` strings only as a fallback for unexpected failures that do not yet map cleanly to a shared runtime key.
+- When changing a runtime result contract, update main-process handlers, shared types, renderer consumers, and demo fallback responses together.
+
 ## Electron Security Rules
 
 - Preserve `contextIsolation: true`.

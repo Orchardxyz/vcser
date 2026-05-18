@@ -1,6 +1,7 @@
 import { useEffect, useState, type ElementType } from "react";
 import { LayoutDashboard, MonitorCog, Settings } from "lucide-react";
 import type { ValueOf } from "type-fest";
+import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
 import logoSvg from "@assets/logo.svg";
 import { invoke } from "@/ipc";
@@ -18,18 +19,19 @@ export const PAGE = {
 export type Page = ValueOf<typeof PAGE>;
 
 const navItems: { page: Page; label: string; icon: ElementType }[] = [
-  { page: PAGE.OVERVIEW, label: "Overview", icon: LayoutDashboard },
-  { page: PAGE.EDITORS, label: "Editors", icon: MonitorCog },
-  { page: PAGE.SETTINGS, label: "Settings", icon: Settings }
+  { page: PAGE.OVERVIEW, label: "navigation.overview", icon: LayoutDashboard },
+  { page: PAGE.EDITORS, label: "navigation.editors", icon: MonitorCog },
+  { page: PAGE.SETTINGS, label: "navigation.settings", icon: Settings }
 ];
 
 const FALLBACK_MACHINE_IDENTITY: MachineIdentity = {
-  displayName: "This device",
+  displayName: "",
   hostname: "",
-  platformLabel: "macOS"
+  platformLabel: ""
 };
 
 export function Sidebar() {
+  const { t } = useTranslation();
   const [machineIdentity, setMachineIdentity] = useState<MachineIdentity>(FALLBACK_MACHINE_IDENTITY);
   const editorCount = useAppStore((s) => s.editors.length);
 
@@ -40,9 +42,9 @@ export function Sidebar() {
       .then((value) => {
         if (!cancelled) {
           setMachineIdentity({
-            displayName: value?.displayName?.trim() || FALLBACK_MACHINE_IDENTITY.displayName,
+            displayName: value?.displayName?.trim() || "",
             hostname: value?.hostname?.trim() || "",
-            platformLabel: value?.platformLabel?.trim() || FALLBACK_MACHINE_IDENTITY.platformLabel
+            platformLabel: value?.platformLabel?.trim() || ""
           });
         }
       })
@@ -53,10 +55,11 @@ export function Sidebar() {
     };
   }, []);
 
-  const displayName = machineIdentity.displayName || FALLBACK_MACHINE_IDENTITY.displayName;
+  const displayName = machineIdentity.displayName || t("navigation.thisDevice");
   const hostnameLabel = machineIdentity.hostname;
   const avatarLabel = displayName.charAt(0).toUpperCase() || "?";
-  const editorCountLabel = `${editorCount} editor${editorCount === 1 ? "" : "s"} · ${machineIdentity.platformLabel}`;
+  const platformLabel = machineIdentity.platformLabel || t("common.unknown");
+  const editorCountLabel = t("navigation.editorCountLabel", { count: editorCount, platform: platformLabel });
 
   return (
     <aside className="flex h-screen w-56 shrink-0 flex-col border-r border-slate-200 bg-slate-50 text-slate-600">
@@ -82,7 +85,7 @@ export function Sidebar() {
               }
             >
               <Icon size={16} className="shrink-0" />
-              {label}
+              {t(label)}
             </NavLink>
           );
         })}

@@ -1,6 +1,7 @@
 import "./Toast.css";
 import { CircleAlert, CircleCheck, Info } from "lucide-react";
 import { Toaster as SonnerToaster } from "sonner";
+import { useTranslation } from "react-i18next";
 import { TOAST_DURATION_MS, TOAST_VARIANT } from "@/store/toast";
 
 interface ToastViewportProps {
@@ -8,6 +9,8 @@ interface ToastViewportProps {
 }
 
 export function ToastViewport({ theme }: ToastViewportProps) {
+  const { t } = useTranslation();
+
   return (
     <SonnerToaster
       theme={theme}
@@ -17,7 +20,7 @@ export function ToastViewport({ theme }: ToastViewportProps) {
       gap={12}
       offset={16}
       mobileOffset={{ top: 16, left: 16, right: 16 }}
-      containerAriaLabel="Notifications"
+      containerAriaLabel={t("common.notifications")}
       style={{ zIndex: 40 }}
       toastOptions={{
         duration: TOAST_DURATION_MS[TOAST_VARIANT.INFO],

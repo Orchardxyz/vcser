@@ -1,5 +1,6 @@
 import classNames from "classnames";
 import { ArrowRight, CheckCheck, RefreshCw, RotateCcw } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { EditorSelect } from "@/components/editor/EditorSelect";
 import { Button, BUTTON_SIZE, BUTTON_VARIANT } from "@/components/ui/Button";
 import { Tooltip } from "@/components/ui/Tooltip";
@@ -46,17 +47,19 @@ export function ExtensionSyncToolbar({
   onReset,
   onOpenBulkSync
 }: ExtensionSyncToolbarProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="border-b border-slate-100 bg-slate-50/40 px-4 py-4">
       <div className="flex flex-wrap items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="flex min-w-0 items-center gap-2">
-            <span className="shrink-0 text-xs font-medium text-slate-500">From</span>
+            <span className="shrink-0 text-xs font-medium text-slate-500">{t("overview.sync.from")}</span>
             <EditorSelect editors={sourceOptions} value={sourceSlug} onChange={onSourceChange} className="w-56 min-w-56 max-w-full" />
           </div>
           <ArrowRight size={16} className="shrink-0 text-slate-300" />
           <div className="flex min-w-0 items-center gap-2">
-            <span className="shrink-0 text-xs font-medium text-slate-500">To</span>
+            <span className="shrink-0 text-xs font-medium text-slate-500">{t("overview.sync.to")}</span>
             <EditorSelect editors={targetOptions} value={targetSlug} onChange={onTargetChange} className="w-56 min-w-56 max-w-full" />
           </div>
         </div>
@@ -95,24 +98,22 @@ export function ExtensionSyncToolbar({
       </div>
 
       {!hasPair ? (
-        <p className="mt-4 text-sm text-slate-500">
-          Choose a source and target editor to reveal pair-specific statuses, sync eligibility, and bulk actions.
-        </p>
+        <p className="mt-4 text-sm text-slate-500">{t("overview.sync.choosePairHint")}</p>
       ) : (
         <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-slate-500">
-          <span>Showing {visibleCount} extensions</span>
+          <span>{t("overview.sync.showing", { count: visibleCount })}</span>
           {collapsedCount > 0 ? (
             <>
               <span className="h-1 w-1 rounded-full bg-slate-300" aria-hidden="true" />
-              <span>Collapsed {collapsedCount}</span>
+              <span>{t("overview.sync.collapsed", { count: collapsedCount })}</span>
             </>
           ) : null}
           <span className="h-1 w-1 rounded-full bg-slate-300" aria-hidden="true" />
-          <span>Ready {eligibleCount}</span>
+          <span>{t("overview.sync.ready", { count: eligibleCount })}</span>
           {selectedCount > 0 ? (
             <>
               <span className="h-1 w-1 rounded-full bg-slate-300" aria-hidden="true" />
-              <span>Selected {selectedCount}</span>
+              <span>{t("overview.sync.selected", { count: selectedCount })}</span>
             </>
           ) : null}
         </div>

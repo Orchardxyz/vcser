@@ -1,4 +1,5 @@
 import type { ResolvedEditor } from "@/types";
+import { useTranslation } from "react-i18next";
 import { EditorIdentity, EDITOR_IDENTITY_MODE } from "./EditorIdentity";
 import { Select } from "@/components/ui/Select";
 
@@ -10,6 +11,8 @@ interface EditorSelectProps {
 }
 
 export function EditorSelect({ editors, value, onChange, className }: EditorSelectProps) {
+  const { t } = useTranslation();
+
   return (
     <Select<ResolvedEditor>
       options={editors}
@@ -18,8 +21,8 @@ export function EditorSelect({ editors, value, onChange, className }: EditorSele
       getOptionValue={(editor) => editor.slug}
       renderValue={(editor) => <EditorIdentity editor={editor} mode={EDITOR_IDENTITY_MODE.COMPACT} className="min-w-0 flex-1" />}
       renderOption={(editor) => <EditorIdentity editor={editor} mode={EDITOR_IDENTITY_MODE.COMPACT} className="min-w-0 flex-1" />}
-      placeholder={<span className="text-slate-400">Select an editor</span>}
-      ariaLabel="Editors"
+      placeholder={<span className="text-slate-400">{t("overview.sync.chooseEditorsToSync")}</span>}
+      ariaLabel={t("navigation.editors")}
       className={className}
       triggerClassName="min-w-50"
     />

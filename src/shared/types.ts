@@ -1,4 +1,5 @@
 import type { JsonValue, Simplify, ValueOf } from "type-fest";
+import type { RuntimeMessageKey, RuntimeMessageParams } from "./i18n";
 
 export const APP_ICON_STATUS = {
   READY: "ready",
@@ -90,6 +91,8 @@ export interface EditorExtensionMutationResult {
   extensionId: string;
   success: boolean;
   disabled?: boolean;
+  errorKey?: RuntimeMessageKey;
+  errorParams?: RuntimeMessageParams;
   error?: string;
 }
 
@@ -147,6 +150,8 @@ export interface SyncResult {
   extensionId?: string;
   sourceEditor?: string;
   targetEditor?: string;
+  errorKey?: RuntimeMessageKey;
+  errorParams?: RuntimeMessageParams;
   error?: string;
   backupPath?: string;
 }
@@ -181,3 +186,5 @@ export interface SettingsDiffByExtensionResult {
   rightName: string;
   groups: ExtensionSettingsGroup[];
 }
+
+export type { RuntimeMessageKey, RuntimeMessageParams };

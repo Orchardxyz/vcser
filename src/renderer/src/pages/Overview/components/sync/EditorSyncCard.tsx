@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import classNames from "classnames";
 import { ArrowRight, Check, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { EditorIdentity, EDITOR_IDENTITY_MODE } from "@/components/editor/EditorIdentity";
 import { Badge, BADGE_VARIANT } from "@/components/ui/Badge";
 import { Button, BUTTON_SIZE, BUTTON_VARIANT } from "@/components/ui/Button";
@@ -34,12 +35,6 @@ interface EditorSyncCardProps {
   initialSection?: CardSection;
 }
 
-const SECTION_ITEMS: { value: CardSection; label: string }[] = [
-  { value: "missing", label: "Missing" },
-  { value: "shared", label: "Shared" },
-  { value: "mismatch", label: "Mismatch" }
-];
-
 function countForSection(section: CardSection, missing: number, shared: number, mismatch: number): number {
   if (section === "missing") return missing;
   if (section === "shared") return shared;
@@ -59,9 +54,16 @@ function SectionChips({
   sharedCount: number;
   mismatchCount: number;
 }) {
+  const { t } = useTranslation();
+  const sectionItems: { value: CardSection; label: string }[] = [
+    { value: "missing", label: t("common.missing") },
+    { value: "shared", label: t("common.shared") },
+    { value: "mismatch", label: t("common.mismatch") }
+  ];
+
   return (
     <div className="flex items-center gap-1">
-      {SECTION_ITEMS.map((item) => {
+      {sectionItems.map((item) => {
         const count = countForSection(item.value, missingCount, sharedCount, mismatchCount);
         return (
           <button
@@ -83,7 +85,9 @@ function SectionChips({
     </div>
   );
 }
+
 const PREVIEW_LIMIT = 8;
+
 export function EditorSyncCard({
   editor,
   mode,
@@ -107,6 +111,7 @@ export function EditorSyncCard({
   onSyncAllMissing,
   initialSection
 }: EditorSyncCardProps) {
+  const { t } = useTranslation();
   const [activeSection, setActiveSection] = useState<CardSection>(initialSection ?? "missing");
   const [expandedPreview, setExpandedPreview] = useState(false);
 
@@ -124,7 +129,7 @@ export function EditorSyncCard({
     if (extensions.length === 0) {
       return (
         <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50/50 px-3 py-5 text-center text-xs text-slate-400">
-          No extensions detected.
+          {t("overview.sync.noExtensionsDetected")}
         </div>
       );
     }
@@ -150,12 +155,12 @@ export function EditorSyncCard({
             {expandedPreview ? (
               <>
                 <ChevronUp size={12} />
-                Show less
+                {t("overview.sync.showLess")}
               </>
             ) : (
               <>
                 <ChevronDown size={12} />
-                Show all {installedExtensions!.length}
+                {t("overview.sync.showAll", { count: installedExtensions!.length })}
               </>
             )}
           </button>
@@ -179,31 +184,31 @@ export function EditorSyncCard({
             <h3 className="truncate text-sm font-semibold text-slate-900">{editor.displayName}</h3>
             {mode === "source" && (
               <p className="text-xs text-slate-500">
-                {installedCount} installed · {targetCount} compared · {totalMissingAcrossTargets} missing copies
+                {t("overview.sync.sourceStats", {
+                  installedCount,
+                  targetCount,
+                  missingCount: totalMissingAcrossTargets
+                })}
               </p>
             )}
             {mode === "target" && (
               <p className="text-xs text-slate-500">
-                <span className="font-medium text-slate-700">{missingRows.length}</span> missing
-                {" · "}
-                <span className="font-medium text-slate-700">{sharedRows.length}</span> shared
-                {" · "}
-                <span className="font-medium text-slate-700">{mismatchRows.length}</span> mismatch
-                {mismatchRows.length > 0 && <span className="text-slate-400"> of shared</span>}
+                {t("overview.sync.targetStats", {
+                  missingCount: missingRows.length,
+                  sharedCount: sharedRows.length,
+                  mismatchCount: mismatchRows.length
+                })}
+                {mismatchRows.length > 0 && <span className="text-slate-400">{t("overview.sync.targetStatsWithSharedContext")}</span>}
               </p>
             )}
-            {mode === "neutral" && (
-              <p className="text-xs text-slate-500">
-                {installedCount} extension{installedCount === 1 ? "" : "s"}
-              </p>
-            )}
+            {mode === "neutral" && <p className="text-xs text-slate-500">{t("common.extensionCount", { count: installedCount })}</p>}
           </div>
         </div>
 
-        {mode === "source" && <Badge variant={BADGE_VARIANT.INFO}>Source</Badge>}
+        {mode === "source" && <Badge variant={BADGE_VARIANT.INFO}>{t("overview.sync.sourceBadge")}</Badge>}
         {mode === "neutral" && (
           <Button variant={BUTTON_VARIANT.SECONDARY} size={BUTTON_SIZE.SM} onClick={() => onUseAsSource?.(editor.slug)}>
-            Use as source
+            {t("overview.sync.useAsSource")}
           </Button>
         )}
       </div>
@@ -211,7 +216,9 @@ export function EditorSyncCard({
       {/* Neutral / Source body — preview list */}
       {(mode === "neutral" || mode === "source") && installedExtensions && (
         <div className="flex-1 overflow-y-auto px-3 py-2.5" style={{ maxHeight: expandedPreview ? 320 : 224 }}>
-          {expandedPreview && isPreviewExpandable && <p className="mb-1.5 text-[11px] text-slate-400">{installedExtensions.length} installed</p>}
+          {expandedPreview && isPreviewExpandable && (
+            <p className="mb-1.5 text-[11px] text-slate-400">{t("overview.sync.previewInstalled", { count: installedExtensions.length })}</p>
+          )}
           {renderPreviewList(installedExtensions)}
         </div>
       )}
@@ -236,7 +243,7 @@ export function EditorSyncCard({
               (missingRows.length === 0 ? (
                 <div className="flex flex-col items-center justify-center gap-2 px-4 py-8 text-center">
                   <Check size={18} className="text-emerald-400" />
-                  <p className="text-sm text-slate-500">Already aligned with source.</p>
+                  <p className="text-sm text-slate-500">{t("overview.sync.alreadyAligned")}</p>
                 </div>
               ) : (
                 <div>
@@ -251,7 +258,7 @@ export function EditorSyncCard({
                           checked={isChecked}
                           onChange={(e) => onToggleSelect?.(entry.extensionId, e.target.checked)}
                           className="h-4 w-4 shrink-0 cursor-pointer accent-primary"
-                          aria-label={`Select ${displayName(entry.extensionId)} for sync`}
+                          aria-label={t("overview.sync.syncExtension", { extension: displayName(entry.extensionId) })}
                         />
                         <ExtensionIcon extensionId={entry.extensionId} iconDataUrl={entry.iconDataUrl} />
                         <div className="min-w-0 flex-1" title={displayName(entry.extensionId)}>
@@ -260,7 +267,12 @@ export function EditorSyncCard({
                             {shortenExtensionId(entry.extensionId)}
                           </span>
                         </div>
-                        <Tooltip content={`Installed version in ${sourceEditor.displayName}: ${formatVersion(entry.versions[sourceName])}`}>
+                        <Tooltip
+                          content={t("overview.sync.installedVersionInSource", {
+                            source: sourceEditor.displayName,
+                            version: formatVersion(entry.versions[sourceName])
+                          })}
+                        >
                           <span className="shrink-0 cursor-default font-mono text-[11px] text-slate-400">
                             {formatVersion(entry.versions[sourceName])}
                           </span>
@@ -270,10 +282,10 @@ export function EditorSyncCard({
                           size={BUTTON_SIZE.SM}
                           onClick={() => onSyncSingle?.(entry)}
                           disabled={Boolean(isThisSyncing) || isSyncingBatch}
-                          aria-label={`Sync ${displayName(entry.extensionId)}`}
+                          aria-label={t("overview.sync.syncExtension", { extension: displayName(entry.extensionId) })}
                           leadingIcon={isThisSyncing ? <Loader2 size={12} className="animate-spin" /> : <ArrowRight size={12} />}
                         >
-                          Sync
+                          {t("overview.sync.sync")}
                         </Button>
                       </div>
                     );
@@ -283,7 +295,7 @@ export function EditorSyncCard({
             {activeSection === "shared" &&
               (sharedRows.length === 0 ? (
                 <div className="flex flex-col items-center justify-center gap-2 px-4 py-8 text-center">
-                  <p className="text-sm text-slate-400">No shared extensions.</p>
+                  <p className="text-sm text-slate-400">{t("overview.sync.noSharedExtensions")}</p>
                 </div>
               ) : (
                 <div>
@@ -306,7 +318,7 @@ export function EditorSyncCard({
               (mismatchRows.length === 0 ? (
                 <div className="flex flex-col items-center justify-center gap-2 px-4 py-8 text-center">
                   <Check size={18} className="text-emerald-400" />
-                  <p className="text-sm text-slate-500">All versions match.</p>
+                  <p className="text-sm text-slate-500">{t("overview.sync.allVersionsMatch")}</p>
                 </div>
               ) : (
                 <div>
@@ -340,10 +352,10 @@ export function EditorSyncCard({
                 disabled={isSyncingBatch}
                 leadingIcon={isSyncingBatch ? <Loader2 size={13} className="animate-spin" /> : undefined}
               >
-                Sync all missing
+                {t("overview.sync.syncAllMissing")}
               </Button>
               <Button variant={BUTTON_VARIANT.GHOST} size={BUTTON_SIZE.SM} onClick={onSyncSelected} disabled={selectedCount === 0 || isSyncingBatch}>
-                Sync selected{selectedCount > 0 ? ` (${selectedCount})` : ""}
+                {selectedCount > 0 ? t("overview.sync.syncSelected", { count: selectedCount }) : t("overview.sync.syncSelectedCount", { suffix: "" })}
               </Button>
             </div>
           )}

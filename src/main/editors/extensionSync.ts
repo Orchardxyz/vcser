@@ -4,6 +4,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { cp, readFile } from "node:fs/promises";
 import { basename, join } from "node:path";
 import { promisify } from "node:util";
+import { RUNTIME_MESSAGE_KEY, type RuntimeMessageKey, type RuntimeMessageParams } from "@shared/i18n";
 import type { SyncResult } from "@shared/types";
 import { hasStringProperty, isRecord } from "../typeGuards";
 import { findExtensionDir } from "./extensionFs";
@@ -45,9 +46,11 @@ function createInstallSyncResult(params: {
   sourceEditorName?: string;
   targetEditorName: string;
   success: boolean;
+  errorKey?: RuntimeMessageKey;
+  errorParams?: RuntimeMessageParams;
   error?: string;
 }): SyncResult {
-  const { extensionId, sourceEditorName, targetEditorName, success, error } = params;
+  const { extensionId, sourceEditorName, targetEditorName, success, errorKey, errorParams, error } = params;
 
   return {
     action: "install",
@@ -56,6 +59,8 @@ function createInstallSyncResult(params: {
     sourceEditor: sourceEditorName,
     targetEditor: targetEditorName,
     success,
+    errorKey,
+    errorParams,
     error
   };
 }
@@ -165,7 +170,10 @@ export async function syncExtensionLocal(params: {
       sourceEditorName,
       targetEditorName,
       success: false,
-      error: `Extension ${extensionId} not found in source`
+      errorKey: RUNTIME_MESSAGE_KEY.EXTENSION_NOT_FOUND_IN_SOURCE,
+      errorParams: {
+        extensionId
+      }
     });
   }
 

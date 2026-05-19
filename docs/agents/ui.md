@@ -18,6 +18,7 @@ Read these areas first for most UI tasks:
 - Routing is configured in the renderer entry layer under `src/renderer/src/`
 - Styling uses Tailwind CSS v4 through `src/renderer/src/styles.css`
 - Theme/state uses Zustand in `src/renderer/src/store/`
+- UI localization uses `i18next` + `react-i18next`
 - Icons use `lucide-react`
 - Interaction helpers often use `react-use`
 
@@ -35,8 +36,18 @@ Read these areas first for most UI tasks:
 - The effective theme is resolved in the renderer app shell.
 - Apply the resolved theme to `document.documentElement.dataset.theme`.
 - Also update `document.documentElement.style.colorScheme` alongside the dataset value.
+- Apply the resolved app language to `document.documentElement.lang` in the app shell.
 - Dark theme overrides in `src/renderer/src/styles.css` are keyed off `:root[data-theme="dark"]`.
 - Do not move theme state to an inner app container unless the task explicitly requires reworking the theming model.
+
+## i18n Rules
+
+- Keep renderer-facing strings in `src/renderer/src/i18n/en.ts` and `src/renderer/src/i18n/zh-CN.ts`.
+- Reuse existing translation namespaces such as `common`, `navigation`, `settings`, `overview`, `editors`, `editorExtensions`, and `runtime` before adding new top-level groups.
+- Prefer `useTranslation()` in React components and keep labels/tooltips/toasts on translation keys instead of inline strings.
+- Reuse shared helpers such as `translateRuntimeMessageWithT()` for runtime-originated errors instead of manually branching on `error`, `errorKey`, and `errorParams`.
+- Keep internal identifiers, editor names, extension IDs, and other machine values untranslated unless the task explicitly requires a user-facing label.
+- Locale preference lives in the renderer store as `system | en | zh-CN`; prefer existing store actions/selectors before introducing new locale state.
 
 ## Component Defaults
 

@@ -1,4 +1,5 @@
 import { ipcMain } from "electron";
+import { RUNTIME_MESSAGE_KEY } from "@shared/i18n";
 import { SUPPORTED_COMMAND } from "@shared/ipc";
 import { EDITOR_EXTENSION_ACTION, type EditorExtensionMutationResult, type EditorExtensionsResult } from "@shared/types";
 import { hasBooleanProperty, hasStringProperty, isRecord } from "../typeGuards";
@@ -72,7 +73,7 @@ export function registerEditorExtensionHandlers() {
         editorName: "",
         extensionId: "",
         success: false,
-        error: "Invalid disable payload"
+        errorKey: RUNTIME_MESSAGE_KEY.INVALID_DISABLE_PAYLOAD
       } satisfies EditorExtensionMutationResult;
     }
 
@@ -87,7 +88,7 @@ export function registerEditorExtensionHandlers() {
         extensionId: payload.extensionId,
         success: false,
         disabled: payload.disabled,
-        error: "Editor is no longer available"
+        errorKey: RUNTIME_MESSAGE_KEY.EDITOR_UNAVAILABLE
       } satisfies EditorExtensionMutationResult;
     }
 
@@ -99,7 +100,7 @@ export function registerEditorExtensionHandlers() {
         extensionId: payload.extensionId,
         success: false,
         disabled: payload.disabled,
-        error: "This editor does not expose a writable state database"
+        errorKey: RUNTIME_MESSAGE_KEY.STATE_DATABASE_NOT_WRITABLE
       } satisfies EditorExtensionMutationResult;
     }
 
@@ -139,7 +140,7 @@ export function registerEditorExtensionHandlers() {
         editorName: "",
         extensionId: "",
         success: false,
-        error: "Invalid uninstall payload"
+        errorKey: RUNTIME_MESSAGE_KEY.INVALID_UNINSTALL_PAYLOAD
       } satisfies EditorExtensionMutationResult;
     }
 
@@ -153,7 +154,7 @@ export function registerEditorExtensionHandlers() {
         editorName: payload.editorSlug,
         extensionId: payload.extensionId,
         success: false,
-        error: "Editor is no longer available"
+        errorKey: RUNTIME_MESSAGE_KEY.EDITOR_UNAVAILABLE
       } satisfies EditorExtensionMutationResult;
     }
 
@@ -178,7 +179,14 @@ export function registerEditorExtensionHandlers() {
         editorName: editor.displayName,
         extensionId: payload.extensionId,
         success: false,
-        error: error instanceof Error ? error.message : String(error)
+        ...(error instanceof Error && error.message === `Extension ${payload.extensionId} is not installed`
+          ? {
+              errorKey: RUNTIME_MESSAGE_KEY.EXTENSION_NOT_INSTALLED,
+              errorParams: {
+                extensionId: payload.extensionId
+              }
+            }
+          : { error: error instanceof Error ? error.message : String(error) })
       } satisfies EditorExtensionMutationResult;
     }
   });

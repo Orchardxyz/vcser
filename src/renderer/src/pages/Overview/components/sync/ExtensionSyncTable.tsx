@@ -1,5 +1,6 @@
 import classNames from "classnames";
 import { AlertCircle, ArrowRight, CheckCheck, ChevronDown, ChevronRight, Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Badge, BADGE_VARIANT } from "@/components/ui/Badge";
 import { Button, BUTTON_SIZE, BUTTON_VARIANT } from "@/components/ui/Button";
 import type { ExtensionPresence, ResolvedEditor } from "@/types";
@@ -65,6 +66,7 @@ export function ExtensionSyncTable({
   onToggleSelect,
   onSyncSingle
 }: ExtensionSyncTableProps) {
+  const { t } = useTranslation();
   const groupedSyncableRows = syncableRows ?? [];
   const groupedAlreadyInTargetRows = alreadyInTargetRows ?? [];
   const groupedNotInSourceRows = notInSourceRows ?? [];
@@ -106,8 +108,8 @@ export function ExtensionSyncTable({
         return (
           <span
             className="inline-flex h-5.5 w-5.5 items-center justify-center text-emerald-600"
-            title="Installed in all editors"
-            aria-label="Installed in all editors"
+            title={t("overview.sync.installedInAllEditors")}
+            aria-label={t("overview.sync.installedInAllEditors")}
           >
             <CheckCheck size={14} strokeWidth={1.9} />
           </span>
@@ -132,17 +134,21 @@ export function ExtensionSyncTable({
             leadingIcon={isThisSyncing ? <Loader2 size={14} className="animate-spin" /> : <ArrowRight size={14} />}
             onClick={() => onSyncSingle(entry)}
             disabled={isThisSyncing}
-            title={`Copy ${displayName(entry.extensionId)} from ${sourceEditor?.displayName} to ${targetEditor?.displayName}`}
-            aria-label={`Sync ${displayName(entry.extensionId)}`}
+            title={t("overview.sync.copyExtensionFromTo", {
+              extension: displayName(entry.extensionId),
+              source: sourceEditor?.displayName,
+              target: targetEditor?.displayName
+            })}
+            aria-label={t("overview.sync.syncExtension", { extension: displayName(entry.extensionId) })}
           >
-            {isThisSyncing ? "Syncing" : "Sync"}
+            {isThisSyncing ? t("overview.sync.syncing") : t("overview.sync.sync")}
           </Button>
         );
       }
       if (sourceInstalled && targetInstalled) {
-        return <Badge variant={BADGE_VARIANT.SUCCESS}>Already in target</Badge>;
+        return <Badge variant={BADGE_VARIANT.SUCCESS}>{t("overview.sync.alreadyInTarget")}</Badge>;
       }
-      return <Badge variant={BADGE_VARIANT.NEUTRAL}>Not in source</Badge>;
+      return <Badge variant={BADGE_VARIANT.NEUTRAL}>{t("overview.sync.notInSource")}</Badge>;
     }
     const actionCellContent = getActionCellContent();
 
@@ -156,7 +162,7 @@ export function ExtensionSyncTable({
               disabled={!isEligible}
               onChange={(event) => onToggleSelect(entry.extensionId, event.target.checked)}
               className={classNames("h-4 w-4 accent-primary", isEligible ? "cursor-pointer" : "cursor-not-allowed opacity-30")}
-              aria-label={`Select ${displayName(entry.extensionId)} for sync`}
+              aria-label={t("overview.sync.syncExtension", { extension: displayName(entry.extensionId) })}
             />
           </td>
         ) : null}
@@ -199,7 +205,7 @@ export function ExtensionSyncTable({
           <td colSpan={columnCount} className="px-4 py-12">
             <div className="flex flex-col items-center justify-center gap-3 text-center text-slate-500">
               <CheckCheck size={24} className="text-emerald-500" />
-              <p className="text-sm">{hasPair ? "No extensions match the selected editor pair." : "No extensions available for this view."}</p>
+              <p className="text-sm">{hasPair ? t("overview.sync.noExtensionsForPair") : t("overview.sync.noExtensionsForView")}</p>
             </div>
           </td>
         </tr>
@@ -221,7 +227,7 @@ export function ExtensionSyncTable({
                 >
                   <span className="flex items-center gap-2 text-sm font-medium text-slate-800">
                     <CheckCheck size={14} className="text-emerald-500" />
-                    <span>{`Already in target (${groupedAlreadyInTargetRows.length})`}</span>
+                    <span>{t("overview.sync.alreadyInTargetSection", { count: groupedAlreadyInTargetRows.length })}</span>
                   </span>
                   <span className="text-slate-400">{alreadyInTargetExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}</span>
                 </button>
@@ -240,7 +246,7 @@ export function ExtensionSyncTable({
                 >
                   <span className="flex items-center gap-2 text-sm font-medium text-slate-800">
                     <AlertCircle size={14} className="text-slate-400" />
-                    <span>{`Not in source (${groupedNotInSourceRows.length})`}</span>
+                    <span>{t("overview.sync.notInSourceSection", { count: groupedNotInSourceRows.length })}</span>
                   </span>
                   <span className="text-slate-400">{notInSourceExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}</span>
                 </button>
@@ -272,18 +278,18 @@ export function ExtensionSyncTable({
                 onChange={onToggleAll}
                 className="h-4 w-4 cursor-pointer accent-primary"
                 disabled={eligibleCount === 0}
-                aria-label="Select all eligible extensions"
+                aria-label={t("overview.sync.selectAllEligible")}
               />
             </th>
           )}
-          <th className="w-[42%] px-4 py-3 text-left text-xs font-medium text-slate-500">Extension</th>
+          <th className="w-[42%] px-4 py-3 text-left text-xs font-medium text-slate-500">{t("overview.sync.extensionHeader")}</th>
           <th className="w-[29%] px-4 py-3 text-left text-xs font-medium text-slate-500">
-            {hasPair ? `In ${sourceEditor?.displayName ?? "Source"}` : "Installed In"}
+            {hasPair ? t("overview.sync.inSource", { source: sourceEditor?.displayName ?? t("common.source") }) : t("overview.sync.installedIn")}
           </th>
           <th className="w-[29%] px-4 py-3 text-left text-xs font-medium text-slate-500">
-            {hasPair ? `In ${targetEditor?.displayName ?? "Target"}` : "Missing In"}
+            {hasPair ? t("overview.sync.inTarget", { target: targetEditor?.displayName ?? t("common.target") }) : t("overview.sync.missingIn")}
           </th>
-          {hasPair ? <th className="w-32 px-4 py-3 text-left text-xs font-medium text-slate-500">Action</th> : null}
+          {hasPair ? <th className="w-32 px-4 py-3 text-left text-xs font-medium text-slate-500">{t("common.action")}</th> : null}
         </tr>
       </thead>
       <tbody className="divide-y divide-slate-100">{renderTableBody()}</tbody>

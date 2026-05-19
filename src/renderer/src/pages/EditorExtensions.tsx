@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import classNames from "classnames";
 import { ChevronLeft, CircleOff, LoaderCircle, Power, Puzzle, RefreshCw, Trash2, TriangleAlert } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
 import { EditorIdentity, EDITOR_IDENTITY_MODE } from "@/components/editor/EditorIdentity";
 import { BaseModal } from "@/components/ui/BaseModal";
 import { Button, BUTTON_SIZE, BUTTON_VARIANT } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { translateRuntimeMessageWithT } from "@/i18n/runtime";
 import { invoke } from "@/ipc";
 import { displayName, ExtensionIcon, formatVersion, shortenExtensionId } from "@/pages/Overview/components/ExtensionHelpers";
 import { APP_ROUTE } from "@/routes";
@@ -40,6 +42,7 @@ function ExtensionsListSkeleton() {
 }
 
 export function EditorExtensions() {
+  const { t } = useTranslation();
   const { editorSlug } = useParams<{ editorSlug: string }>();
   const editor = useAppStore((state) => state.editors.find((item) => item.slug === editorSlug));
   const [extensionsResult, setExtensionsResult] = useState<EditorExtensionsResult | null>(null);
@@ -52,7 +55,7 @@ export function EditorExtensions() {
     async (options?: { silent?: boolean }) => {
       if (!editorSlug) {
         setExtensionsResult(null);
-        setErrorMessage("Missing editor route parameter.");
+        setErrorMessage(t("editorExtensions.missingRouteParameter"));
         setLoading(false);
         return;
       }
@@ -67,12 +70,12 @@ export function EditorExtensions() {
         const result = await invoke<EditorExtensionsResult>(SUPPORTED_COMMAND.GET_EDITOR_EXTENSIONS, { editorSlug });
         setExtensionsResult(result);
       } catch (error) {
-        setErrorMessage(error instanceof Error ? error.message : "Failed to load extensions.");
+        setErrorMessage(error instanceof Error ? error.message : t("editorExtensions.failedToLoad"));
       } finally {
         setLoading(false);
       }
     },
-    [editorSlug]
+    [editorSlug, t]
   );
 
   useEffect(() => {
@@ -95,14 +98,20 @@ export function EditorExtensions() {
       });
 
       if (!result.success) {
-        toast.error(disabled ? "Failed to disable extension" : "Failed to enable extension", result.error);
+        toast.error(
+          disabled ? t("editorExtensions.toasts.disableFailed") : t("editorExtensions.toasts.enableFailed"),
+          translateRuntimeMessageWithT(t, result)
+        );
         return;
       }
 
-      toast.success(disabled ? "Extension disabled" : "Extension enabled", displayName(item.extensionId));
+      toast.success(disabled ? t("editorExtensions.toasts.disabled") : t("editorExtensions.toasts.enabled"), displayName(item.extensionId));
       await loadExtensions({ silent: true });
     } catch (error) {
-      toast.error(disabled ? "Failed to disable extension" : "Failed to enable extension", error instanceof Error ? error.message : String(error));
+      toast.error(
+        disabled ? t("editorExtensions.toasts.disableFailed") : t("editorExtensions.toasts.enableFailed"),
+        error instanceof Error ? error.message : String(error)
+      );
     } finally {
       setPendingActionKey(null);
     }
@@ -123,15 +132,15 @@ export function EditorExtensions() {
       });
 
       if (!result.success) {
-        toast.error("Failed to uninstall extension", result.error);
+        toast.error(t("editorExtensions.toasts.uninstallFailed"), translateRuntimeMessageWithT(t, result));
         return;
       }
 
-      toast.success("Extension uninstalled", displayName(extensionToRemove.extensionId));
+      toast.success(t("editorExtensions.toasts.uninstalled"), displayName(extensionToRemove.extensionId));
       setExtensionToRemove(null);
       await loadExtensions({ silent: true });
     } catch (error) {
-      toast.error("Failed to uninstall extension", error instanceof Error ? error.message : String(error));
+      toast.error(t("editorExtensions.toasts.uninstallFailed"), error instanceof Error ? error.message : String(error));
     } finally {
       setPendingActionKey(null);
     }
@@ -141,8 +150,8 @@ export function EditorExtensions() {
     return (
       <div className="flex flex-col gap-6 p-8">
         <div>
-          <h1 className="text-[30px] font-bold leading-9 text-slate-950">Editor not found</h1>
-          <p className="mt-1 text-sm text-slate-500">The requested editor is unavailable or has not been detected on this device.</p>
+          <h1 className="text-[30px] font-bold leading-9 text-slate-950">{t("editorExtensions.notFoundTitle")}</h1>
+          <p className="mt-1 text-sm text-slate-500">{t("editorExtensions.notFoundDescription")}</p>
         </div>
 
         <div className="flex max-w-xl flex-col gap-4 rounded-2xl border border-amber-200 bg-amber-50/80 p-6 text-amber-900 shadow-xs">
@@ -151,8 +160,8 @@ export function EditorExtensions() {
               <TriangleAlert size={18} strokeWidth={1.75} />
             </span>
             <div>
-              <p className="text-sm font-semibold">No editor matches this route.</p>
-              <p className="text-sm text-amber-800/80">The editor may have been removed or the route is stale.</p>
+              <p className="text-sm font-semibold">{t("editorExtensions.noEditorMatches")}</p>
+              <p className="text-sm text-amber-800/80">{t("editorExtensions.staleRouteDescription")}</p>
             </div>
           </div>
 
@@ -162,7 +171,7 @@ export function EditorExtensions() {
               className="inline-flex items-center gap-2 rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm font-medium text-amber-900 transition-colors hover:border-amber-400 hover:bg-amber-100/60"
             >
               <ChevronLeft size={16} strokeWidth={1.75} />
-              Back to editors
+              {t("editorExtensions.backToEditors")}
             </Link>
           </div>
         </div>
@@ -171,15 +180,15 @@ export function EditorExtensions() {
   }
 
   const extensions = extensionsResult?.items ?? [];
-  const extensionsCountLabel = `${extensions.length} extension${extensions.length === 1 ? "" : "s"}`;
-  const headerStatusLabel = loading && !extensionsResult ? "Loading current editor state..." : extensionsCountLabel;
+  const extensionsCountLabel = t("common.extensionCount", { count: extensions.length });
+  const headerStatusLabel = loading && !extensionsResult ? t("editorExtensions.loadingState") : extensionsCountLabel;
 
   function renderContent() {
     if (loading && !extensionsResult) return <ExtensionsListSkeleton />;
     if (errorMessage) {
       return (
         <div className="rounded-2xl border border-rose-200 bg-rose-50 px-5 py-6 text-sm text-rose-700">
-          <p className="font-medium">Failed to load extensions.</p>
+          <p className="font-medium">{t("editorExtensions.failedToLoad")}</p>
           <p className="mt-1 text-rose-700/80">{errorMessage}</p>
         </div>
       );
@@ -191,8 +200,8 @@ export function EditorExtensions() {
             <Puzzle size={20} strokeWidth={1.75} />
           </span>
           <div>
-            <p className="text-sm font-medium text-slate-700">No extensions detected</p>
-            <p className="mt-1 text-sm text-slate-500">This editor does not currently expose any installed extensions.</p>
+            <p className="text-sm font-medium text-slate-700">{t("editorExtensions.noExtensionsTitle")}</p>
+            <p className="mt-1 text-sm text-slate-500">{t("editorExtensions.noExtensionsDescription")}</p>
           </div>
         </div>
       );
@@ -232,7 +241,7 @@ export function EditorExtensions() {
                         item.disabled ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"
                       )}
                     >
-                      {item.disabled ? "Disabled" : "Enabled"}
+                      {item.disabled ? t("editorExtensions.status.disabled") : t("editorExtensions.status.enabled")}
                     </span>
                     <span className="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600">
                       {formatVersion(item.version)}
@@ -257,7 +266,7 @@ export function EditorExtensions() {
                   disabled={actionPending}
                   onClick={() => void handleSetDisabled(item, !item.disabled)}
                 >
-                  {item.disabled ? "Enable" : "Disable"}
+                  {item.disabled ? t("editorExtensions.actions.enable") : t("editorExtensions.actions.disable")}
                 </Button>
                 <Button
                   variant={BUTTON_VARIANT.GHOST}
@@ -267,7 +276,7 @@ export function EditorExtensions() {
                   disabled={actionPending}
                   onClick={() => setExtensionToRemove(item)}
                 >
-                  Uninstall
+                  {t("editorExtensions.actions.uninstall")}
                 </Button>
               </div>
             </div>
@@ -287,13 +296,13 @@ export function EditorExtensions() {
               className="inline-flex w-fit items-center gap-2 text-sm font-medium text-slate-500 transition-colors hover:text-slate-700"
             >
               <ChevronLeft size={16} strokeWidth={1.75} />
-              Back to editors
+              {t("editorExtensions.backToEditors")}
             </Link>
 
             <div className="flex items-center gap-4">
               <EditorIdentity editor={editor} mode={EDITOR_IDENTITY_MODE.ICON} className="h-14 w-14 rounded-2xl" />
               <div>
-                <h1 className="text-[30px] font-bold leading-9 text-slate-950">Installed extensions</h1>
+                <h1 className="text-[30px] font-bold leading-9 text-slate-950">{t("editorExtensions.title")}</h1>
                 <p className="mt-1 text-sm text-slate-500">{headerStatusLabel}</p>
               </div>
             </div>
@@ -305,7 +314,7 @@ export function EditorExtensions() {
             leadingIcon={<RefreshCw size={14} strokeWidth={1.75} />}
             onClick={() => void loadExtensions()}
           >
-            Refresh
+            {t("common.refresh")}
           </Button>
         </div>
 
@@ -314,12 +323,12 @@ export function EditorExtensions() {
 
       <BaseModal
         open={extensionToRemove !== null}
-        title="Uninstall extension"
+        title={t("editorExtensions.uninstallModal.title")}
         onClose={() => (pendingActionKey ? undefined : setExtensionToRemove(null))}
         footer={
           <div className="flex justify-end gap-2">
             <Button variant={BUTTON_VARIANT.SECONDARY} onClick={() => setExtensionToRemove(null)} disabled={pendingActionKey !== null}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               leadingIcon={
@@ -328,19 +337,19 @@ export function EditorExtensions() {
               disabled={pendingActionKey !== null}
               onClick={() => void handleConfirmUninstall()}
             >
-              Uninstall
+              {t("editorExtensions.actions.uninstall")}
             </Button>
           </div>
         }
       >
         <div className="space-y-3 text-sm text-slate-600">
           <p>
-            Remove{" "}
-            <span className="font-semibold text-slate-900">{extensionToRemove ? displayName(extensionToRemove.extensionId) : "this extension"}</span>{" "}
-            from
-            <span className="font-semibold text-slate-900"> {editor.displayName}</span>.
+            {t("editorExtensions.uninstallModal.description", {
+              extension: extensionToRemove ? displayName(extensionToRemove.extensionId) : t("editorExtensions.uninstallModal.fallbackExtension"),
+              editor: editor.displayName
+            })}
           </p>
-          <p>This removes the local extension files from the selected editor. Reinstallation is intentionally out of scope for this screen.</p>
+          <p>{t("editorExtensions.uninstallModal.note")}</p>
           {extensionToRemove ? (
             <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 font-mono text-xs text-slate-500">
               {extensionToRemove.extensionId}

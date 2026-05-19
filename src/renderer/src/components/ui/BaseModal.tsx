@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { useId, useRef } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useClickAway, useKey, useLockBodyScroll } from "react-use";
 import { Button, BUTTON_SIZE, BUTTON_VARIANT } from "./Button";
 
@@ -14,6 +15,7 @@ interface BaseModalProps {
 }
 
 export function BaseModal({ open, title, onClose, children, footer }: BaseModalProps) {
+  const { t } = useTranslation();
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement | null>(null);
 
@@ -54,7 +56,7 @@ export function BaseModal({ open, title, onClose, children, footer }: BaseModalP
             <h3 id={titleId} className="text-xl font-semibold leading-7 text-slate-950">
               {title}
             </h3>
-            <Button variant={BUTTON_VARIANT.GHOST} size={BUTTON_SIZE.ICON_SM} onClick={onClose} aria-label="Close">
+            <Button variant={BUTTON_VARIANT.GHOST} size={BUTTON_SIZE.ICON_SM} onClick={onClose} aria-label={t("common.close")}>
               <X size={15} />
             </Button>
           </div>

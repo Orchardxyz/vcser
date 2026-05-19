@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { translateRuntimeMessageWithT } from "@/i18n/runtime";
 import { invoke } from "@/ipc";
 import { toast } from "@/store/toast";
 import type { ExtensionPresence, ResolvedEditor, SyncActionInput, SyncResult } from "@/types";
@@ -19,6 +21,7 @@ export function ExtensionsByExtensionView({
   editors: ResolvedEditor[];
   onRefresh: () => Promise<void>;
 }) {
+  const { t } = useTranslation();
   const [sourceSlug, setSourceSlug] = useState<string>("");
   const [targetSlug, setTargetSlug] = useState<string>("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -193,7 +196,7 @@ export function ExtensionsByExtensionView({
         const result = results[0];
 
         if (!result?.success) {
-          toast.error(`Could not sync ${displayName(entry.extensionId)}`, result?.error ?? "The target editor did not return a sync result.");
+          toast.error(t("overview.sync.singleFailedTitle", { extension: displayName(entry.extensionId) }), translateRuntimeMessageWithT(t, result));
           return;
         }
 
@@ -202,27 +205,33 @@ export function ExtensionsByExtensionView({
           next.delete(entry.extensionId);
           return next;
         });
-        toast.success(`Synced ${displayName(entry.extensionId)}`, `${sourceEditor.displayName} → ${targetEditor.displayName}`);
+        toast.success(
+          t("overview.sync.singleSuccessTitle", { extension: displayName(entry.extensionId) }),
+          t("overview.sync.singleSuccessDescription", { source: sourceEditor.displayName, target: targetEditor.displayName })
+        );
         await onRefresh();
       } catch (error) {
-        toast.error(`Could not sync ${displayName(entry.extensionId)}`, error instanceof Error ? error.message : String(error));
+        toast.error(
+          t("overview.sync.singleFailedTitle", { extension: displayName(entry.extensionId) }),
+          error instanceof Error ? error.message : String(error)
+        );
       } finally {
         setSyncingId(null);
       }
     },
-    [onRefresh, sourceEditor, sourceName, targetEditor, targetName]
+    [onRefresh, sourceEditor, sourceName, t, targetEditor, targetName]
   );
 
   const allSelected = eligibleRows.length > 0 && selectedCount === eligibleRows.length;
   const someSelected = selectedCount > 0 && !allSelected;
   function getSyncTooltipLabel() {
-    if (!hasPair) return "Choose editors to sync";
-    if (selectedCount > 0) return `Sync ${selectedCount} selected`;
-    if (eligibleRows.length > 0) return "Select extensions to sync";
-    return "No extensions to sync";
+    if (!hasPair) return t("overview.sync.chooseEditorsToSync");
+    if (selectedCount > 0) return t("overview.sync.syncSelected", { count: selectedCount });
+    if (eligibleRows.length > 0) return t("overview.sync.selectExtensionsToSync");
+    return t("overview.sync.noExtensionsToSync");
   }
   const syncTooltipLabel = getSyncTooltipLabel();
-  const refreshTooltipLabel = refreshing ? "Refreshing extension diff" : "Refresh extension diff";
+  const refreshTooltipLabel = refreshing ? t("overview.sync.refreshingExtensionDiff") : t("overview.sync.refreshExtensionDiff");
 
   return (
     <div>
@@ -238,7 +247,7 @@ export function ExtensionsByExtensionView({
         eligibleCount={eligibleRows.length}
         selectedCount={selectedCount}
         refreshTooltipLabel={refreshTooltipLabel}
-        resetTooltipLabel="Reset selected editors"
+        resetTooltipLabel={t("overview.sync.resetSelectedEditors")}
         syncTooltipLabel={syncTooltipLabel}
         onSourceChange={handleSourceChange}
         onTargetChange={handleTargetChange}
@@ -289,12 +298,11 @@ export function ExtensionsByExtensionView({
             setSelectedIds(new Set());
             const successCount = results.filter((result) => result.success).length;
             const failureCount = results.length - successCount;
-            const pluralS = successCount === 1 ? "" : "s";
-            const title = failureCount === 0 ? "Batch sync completed" : "Batch sync completed with issues";
+            const title = failureCount === 0 ? t("overview.sync.batchSuccessTitle") : t("overview.sync.batchFailureTitle");
             const description =
               failureCount === 0
-                ? `${successCount} extension${pluralS} synced to ${targetEditor.displayName}.`
-                : `${successCount} succeeded, ${failureCount} failed. Review the result details in the modal output.`;
+                ? t("overview.sync.batchSuccessDescription", { count: successCount, target: targetEditor.displayName })
+                : t("overview.sync.batchFailureDescription", { successCount, failureCount });
 
             if (failureCount === 0) {
               toast.success(title, description);

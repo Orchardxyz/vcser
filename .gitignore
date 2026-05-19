@@ -5,6 +5,7 @@ docs/superpowers/*
 docs/reviews/*
 out/
 dist-electron/
+packages/core/dist-types/
 .pnpm-store/
 src/generated/
 *.tsbuildinfo

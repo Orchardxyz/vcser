@@ -2,10 +2,10 @@
   "files": [],
   "references": [
     {
-      "path": "./tsconfig.node.json"
+      "path": "./packages/core"
     },
     {
-      "path": "./tsconfig.web.json"
+      "path": "./apps/desktop"
     }
   ]
 }

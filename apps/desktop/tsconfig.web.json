@@ -1,0 +1,21 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "types": ["vite/client"],
+    "paths": {
+      "@/*": ["./src/renderer/src/*"],
+      "@assets/*": ["./src/assets/*"],
+      "@vcser/core": ["../../packages/core/src/index.ts"],
+      "@vcser/core/*": ["../../packages/core/src/*"]
+    }
+  },
+  "references": [
+    {
+      "path": "../../packages/core"
+    }
+  ],
+  "include": ["src/renderer/src/**/*.ts", "src/renderer/src/**/*.tsx"]
+}

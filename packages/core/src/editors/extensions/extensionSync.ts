@@ -4,9 +4,9 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { cp, readFile } from "node:fs/promises";
 import { basename, join } from "node:path";
 import { promisify } from "node:util";
-import { RUNTIME_MESSAGE_KEY, type RuntimeMessageKey, type RuntimeMessageParams } from "../shared/i18n";
-import type { SyncResult } from "../shared/types";
-import { hasStringProperty, isRecord } from "../typeGuards";
+import { RUNTIME_MESSAGE_KEY, type RuntimeMessageKey, type RuntimeMessageParams } from "../../shared/i18n";
+import type { SyncResult } from "../../shared/types";
+import { hasStringProperty, isRecord } from "../../typeGuards";
 import { findExtensionDir } from "./extensionFs";
 
 const execFilePromise = promisify(execFile);

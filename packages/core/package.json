@@ -6,6 +6,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./db": "./src/db.ts",
+    "./editors/detect": "./src/editors/detect/index.ts",
+    "./editors/extensions": "./src/editors/extensions/index.ts",
     "./editors/*": "./src/editors/*.ts",
     "./generated/prisma": "./src/generated/prisma/index.js",
     "./i18n": "./src/shared/i18n.ts",

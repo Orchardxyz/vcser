@@ -1,10 +1,10 @@
 import { readFile } from "node:fs/promises";
 import { join, resolve, sep } from "node:path";
-import type { PrismaClient } from "../generated/prisma";
-import { isRecord } from "../typeGuards";
+import type { PrismaClient } from "../../generated/prisma";
+import { isRecord } from "../../typeGuards";
 import { findExtensionDir } from "./extensionFs";
-import { namespaceOf } from "./settings";
-import { mimeTypeForPath } from "./utils";
+import { namespaceOf } from "../settings";
+import { mimeTypeForPath } from "../utils";
 
 type NamespaceCacheRow = {
   extensionId: string;

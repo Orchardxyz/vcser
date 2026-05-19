@@ -3,8 +3,7 @@ import { RUNTIME_MESSAGE_KEY } from "@vcser/core/i18n";
 import { SUPPORTED_COMMAND } from "@vcser/core/ipc";
 import { EDITOR_EXTENSION_ACTION, type EditorExtensionMutationResult, type EditorExtensionsResult } from "@vcser/core/types";
 import { detectEditors } from "@vcser/core/editors/detect";
-import { listEditorExtensions } from "@vcser/core/editors/extensions";
-import { setEditorExtensionDisabled, uninstallEditorExtension } from "@vcser/core/editors/extensionManagement";
+import { listEditorExtensions, setEditorExtensionDisabled, uninstallEditorExtension } from "@vcser/core/editors/extensions";
 import { hasBooleanProperty, hasStringProperty, isRecord } from "@vcser/core/typeGuards";
 
 interface EditorSlugPayload {

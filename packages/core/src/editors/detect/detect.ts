@@ -1,7 +1,7 @@
 import type { ValueOf } from "type-fest";
 import { detectMacOSEditors } from "./detect.macos";
 import { detectWindowsEditors } from "./detect.windows";
-import { SUPPORTED_EDITORS } from "./registry";
+import { SUPPORTED_EDITORS } from "../registry";
 
 export const APP_ICON_STATUS = {
   READY: "ready",

@@ -3,9 +3,9 @@ import { readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join, resolve, sep } from "node:path";
 import type { Schema } from "type-fest";
-import type { EditorExtensionItem, ExtensionDiffResult, ExtensionPresence } from "../shared/types";
+import type { EditorExtensionItem, ExtensionDiffResult, ExtensionPresence } from "../../shared/types";
 import { findExtensionDir } from "./extensionFs";
-import { mimeTypeForPath } from "./utils";
+import { mimeTypeForPath } from "../utils";
 
 interface EditorWithExtensions {
   name: string;

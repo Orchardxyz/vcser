@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { accessSync, constants, existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
 import { extname, join } from "node:path";
-import type { EditorRegistryEntry } from "./registry";
+import type { EditorRegistryEntry } from "../registry";
 import type { AppIconStatus } from "./detect";
 import { type DetectedEditor, APP_ICON_STATUS } from "./detect";
 

@@ -1,4 +1,4 @@
-import type { EditorRegistryEntry } from "./registry";
+import type { EditorRegistryEntry } from "../registry";
 import type { DetectedEditor } from "./detect";
 
 export async function detectWindowsEditors(_entries: readonly EditorRegistryEntry[]): Promise<DetectedEditor[]> {

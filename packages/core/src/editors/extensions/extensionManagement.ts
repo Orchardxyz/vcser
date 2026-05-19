@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { rm } from "node:fs/promises";
 import { join } from "node:path";
-import { hasStringProperty, isRecord } from "../typeGuards";
+import { hasStringProperty, isRecord } from "../../typeGuards";
 import { findExtensionDir } from "./extensionFs";
 
 interface DisabledExtensionRow {

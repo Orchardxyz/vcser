@@ -9,11 +9,9 @@ import { RUNTIME_MESSAGE_KEY } from "@vcser/core/i18n";
 import { SUPPORTED_COMMAND } from "@vcser/core/ipc";
 import type { ExtensionSettingsGroup, MachineIdentity, SettingsDiffByExtensionResult, SyncActionInput, SyncResult } from "@vcser/core/types";
 import { EXTENSION_SETTINGS_GROUP_KIND } from "@vcser/core/types";
-import { resolveNamespacesToExtensions } from "@vcser/core/editors/configNamespace";
-import { detectEditors } from "@vcser/core/editors/detect";
-import { computeExtensionDiff, listInstalledExtensions } from "@vcser/core/editors/extensions";
-import { syncExtensionLocal } from "@vcser/core/editors/extensionSync";
+import { computeExtensionDiff, listInstalledExtensions, resolveNamespacesToExtensions, syncExtensionLocal } from "@vcser/core/editors/extensions";
 import { diffSettings, groupSettingsByNamespace, readSettingsJson } from "@vcser/core/editors/settings";
+import { detectEditors } from "@vcser/core/editors/detect";
 import { registerEditorExtensionHandlers } from "./ipc/editorExtensions";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));

@@ -43,6 +43,7 @@ export const zhCN = {
   settings: {
     title: "设置",
     description: "管理应用的外观与语言偏好",
+    general: "通用",
     appearance: "外观",
     themeMode: "主题模式",
     themeModeDescription: "选择浅色、深色，或跟随系统外观",

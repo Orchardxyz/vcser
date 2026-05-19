@@ -43,6 +43,7 @@ export const en = {
   settings: {
     title: "Settings",
     description: "Manage application appearance and language preferences",
+    general: "General",
     appearance: "Appearance",
     themeMode: "Theme Mode",
     themeModeDescription: "Choose Light, Dark, or follow your system appearance",

@@ -1,3 +1,4 @@
+import { Select } from "@/components/ui/Select";
 import { useAppStore } from "@/store";
 import { useTranslation } from "react-i18next";
 import { APP_LOCALE, LOCALE_PREFERENCE, THEME_MODE, type LocalePreference, type ThemeMode } from "@/types";
@@ -65,7 +66,7 @@ export function Settings() {
         <p className="mt-1 text-sm text-slate-500">{t("settings.description")}</p>
       </div>
 
-      <SectionCard title={t("settings.appearance")}>
+      <SectionCard title={t("settings.general")}>
         <SettingRow label={t("settings.themeMode")} description={t("settings.themeModeDescription")}>
           <div className="flex items-center rounded-lg border border-slate-200 bg-slate-50 p-0.5">
             {themeModes.map(({ value, label }) => (
@@ -83,9 +84,6 @@ export function Settings() {
             ))}
           </div>
         </SettingRow>
-      </SectionCard>
-
-      <SectionCard title={t("settings.internationalization")}>
         <SettingRow
           label={t("settings.languageLabel")}
           description={
@@ -94,21 +92,15 @@ export function Settings() {
               : t("settings.languageDescription")
           }
         >
-          <div className="flex items-center rounded-lg border border-slate-200 bg-slate-50 p-0.5">
-            {localePreferences.map(({ value, label }) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setLocalePreference(value)}
-                className={[
-                  "rounded-lg px-3 py-2 text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
-                  localePreference === value ? "bg-white text-slate-950 shadow-xs" : "text-slate-500 hover:text-slate-700"
-                ].join(" ")}
-              >
-                {t(label)}
-              </button>
-            ))}
-          </div>
+          <Select
+            options={localePreferences}
+            value={localePreference}
+            onChange={(option) => setLocalePreference(option.value)}
+            getOptionValue={(option) => option.value}
+            renderValue={(option) => t(option.label)}
+            ariaLabel={t("settings.languageLabel")}
+            className="w-48"
+          />
         </SettingRow>
       </SectionCard>
     </div>

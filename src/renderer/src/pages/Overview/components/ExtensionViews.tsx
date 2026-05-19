@@ -252,7 +252,7 @@ export function ExtensionsByExtensionView({
         onSourceChange={handleSourceChange}
         onTargetChange={handleTargetChange}
         onRefresh={() => {
-          void handleRefresh();
+          handleRefresh();
         }}
         onReset={handleResetPair}
         onOpenBulkSync={() => setSyncModalOpen(true)}
@@ -282,7 +282,7 @@ export function ExtensionsByExtensionView({
         onToggleNotInSource={() => setNotInSourceExpanded((prev) => !prev)}
         onToggleSelect={toggleSelect}
         onSyncSingle={(entry) => {
-          void handleSyncSingle(entry);
+          handleSyncSingle(entry);
         }}
       />
 
@@ -310,7 +310,7 @@ export function ExtensionsByExtensionView({
               toast.error(title, description);
             }
 
-            void onRefresh();
+            onRefresh();
           }}
         />
       )}

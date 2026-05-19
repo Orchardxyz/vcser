@@ -219,7 +219,7 @@ export function ExtensionsByEditorView({
         toast.error(t("overview.sync.batchFailureTitle"), t("overview.sync.batchFailureDescription", { successCount, failureCount }));
       }
 
-      void onRefresh();
+      onRefresh();
     },
     [modalTargetDisplayName, onRefresh, syncModalTarget, t]
   );
@@ -236,7 +236,9 @@ export function ExtensionsByEditorView({
         sourceSlug={sourceSlug}
         refreshing={refreshing}
         onSourceChange={handleSourceChange}
-        onRefresh={() => void handleRefresh()}
+        onRefresh={() => {
+          handleRefresh();
+        }}
         onReset={handleReset}
       />
 
@@ -288,7 +290,9 @@ export function ExtensionsByEditorView({
                 syncingKey={isSyncingThis ? syncingKey : null}
                 isSyncingBatch={isSyncingThis}
                 onToggleSelect={(extensionId, checked) => handleToggleSelect(slug, extensionId, checked)}
-                onSyncSingle={(entry) => void handleSyncSingle(slug, entry)}
+                onSyncSingle={(entry) => {
+                  handleSyncSingle(slug, entry);
+                }}
                 onSyncSelected={() => handleOpenBulkSync(slug, "selected")}
                 onSyncAllMissing={() => handleOpenBulkSync(slug, "all")}
                 initialSection="missing"

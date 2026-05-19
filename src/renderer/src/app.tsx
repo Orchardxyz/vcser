@@ -45,7 +45,7 @@ export default function App() {
 
   useEffect(() => {
     document.documentElement.lang = resolvedLocale;
-    void i18n.changeLanguage(resolvedLocale);
+    i18n.changeLanguage(resolvedLocale);
   }, [resolvedLocale]);
 
   return (

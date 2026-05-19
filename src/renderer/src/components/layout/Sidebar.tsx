@@ -38,7 +38,7 @@ export function Sidebar() {
   useEffect(() => {
     let cancelled = false;
 
-    void invoke<MachineIdentity>("get_machine_identity")
+    invoke<MachineIdentity>("get_machine_identity")
       .then((value) => {
         if (!cancelled) {
           setMachineIdentity({

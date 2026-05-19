@@ -26,7 +26,7 @@ export function ExtensionsTab() {
   }, []);
 
   useEffect(() => {
-    void fetchDiff();
+    fetchDiff();
   }, [fetchDiff]);
 
   const editorByName = useMemo(() => {

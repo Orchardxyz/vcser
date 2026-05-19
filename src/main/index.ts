@@ -106,9 +106,9 @@ function createMainWindow(appIcon: NativeImage | null) {
   });
 
   if (process.env.ELECTRON_RENDERER_URL) {
-    void mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL);
+    mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL);
   } else {
-    void mainWindow.loadFile(join(__dirname, "../renderer/index.html"));
+    mainWindow.loadFile(join(__dirname, "../renderer/index.html"));
   }
 
   mainWindow.on("closed", () => {

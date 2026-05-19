@@ -134,7 +134,7 @@ export function SyncExtensionModal({ open, sourceEditor, targetEditor, extension
           </Button>
           <Button
             onClick={() => {
-              void handleSync();
+              handleSync();
             }}
             disabled={phase === "running"}
           >

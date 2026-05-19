@@ -79,7 +79,7 @@ export function EditorExtensions() {
   );
 
   useEffect(() => {
-    void loadExtensions();
+    loadExtensions();
   }, [loadExtensions]);
 
   async function handleSetDisabled(item: EditorExtensionItem, disabled: boolean) {
@@ -264,7 +264,9 @@ export function EditorExtensions() {
                       : "border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100 active:bg-amber-200/70 disabled:border-amber-100 disabled:bg-amber-50 disabled:text-amber-300"
                   )}
                   disabled={actionPending}
-                  onClick={() => void handleSetDisabled(item, !item.disabled)}
+                  onClick={() => {
+                    handleSetDisabled(item, !item.disabled);
+                  }}
                 >
                   {item.disabled ? t("editorExtensions.actions.enable") : t("editorExtensions.actions.disable")}
                 </Button>
@@ -312,7 +314,9 @@ export function EditorExtensions() {
             variant={BUTTON_VARIANT.SECONDARY}
             size={BUTTON_SIZE.SM}
             leadingIcon={<RefreshCw size={14} strokeWidth={1.75} />}
-            onClick={() => void loadExtensions()}
+            onClick={() => {
+              loadExtensions();
+            }}
           >
             {t("common.refresh")}
           </Button>
@@ -335,7 +339,9 @@ export function EditorExtensions() {
                 pendingActionKey === `${extensionToRemove?.extensionId}:uninstall` ? <LoaderCircle size={14} className="animate-spin" /> : undefined
               }
               disabled={pendingActionKey !== null}
-              onClick={() => void handleConfirmUninstall()}
+              onClick={() => {
+                handleConfirmUninstall();
+              }}
             >
               {t("editorExtensions.actions.uninstall")}
             </Button>

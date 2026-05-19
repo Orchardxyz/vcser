@@ -46,6 +46,7 @@ const personalTypeScriptRules = {
   ],
   "@typescript-eslint/require-await": "off",
   "no-nested-ternary": "error",
+  "no-void": "error",
   "no-restricted-syntax": [
     "error",
     {

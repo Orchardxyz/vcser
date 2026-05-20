@@ -90,6 +90,13 @@ export default tseslint.config(
   },
 
   {
+    files: ["packages/cli/src/**/*.ts"],
+    rules: {
+      "max-lines": ["warn", { ...maxLinesRuleOptions, max: 450 }]
+    }
+  },
+
+  {
     files: ["**/*.tsx"],
     rules: {
       "max-lines": ["warn", { ...maxLinesRuleOptions, max: 350 }]
@@ -149,11 +156,21 @@ export default tseslint.config(
       "scripts/**/*.cjs",
       "apps/*/scripts/**/*.js",
       "apps/*/scripts/**/*.mjs",
-      "apps/*/scripts/**/*.cjs"
+      "apps/*/scripts/**/*.cjs",
+      "packages/*/scripts/**/*.js",
+      "packages/*/scripts/**/*.mjs",
+      "packages/*/scripts/**/*.cjs"
     ],
     languageOptions: {
       globals: globals.node
     },
+    rules: {
+      "no-console": "off"
+    }
+  },
+
+  {
+    files: ["packages/cli/src/logger.ts"],
     rules: {
       "no-console": "off"
     }

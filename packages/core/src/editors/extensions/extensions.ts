@@ -186,8 +186,12 @@ export function listInstalledExtensions(extensionsPath: string): string[] {
   return listInstalledExtensionMetadata(extensionsPath).map((entry) => entry.extensionId);
 }
 
-export async function listEditorExtensions(params: { extensionsPath: string; stateDbPath?: string }): Promise<EditorExtensionItem[]> {
-  const { extensionsPath, stateDbPath } = params;
+export async function listEditorExtensions(params: {
+  extensionsPath: string;
+  stateDbPath?: string;
+  includeIcons?: boolean;
+}): Promise<EditorExtensionItem[]> {
+  const { extensionsPath, stateDbPath, includeIcons = true } = params;
   const installed = listInstalledExtensionMetadata(extensionsPath).sort((left, right) => left.extensionId.localeCompare(right.extensionId));
   const disabledIds = stateDbPath ? readDisabledExtensionIds(stateDbPath) : new Set<string>();
 
@@ -196,7 +200,7 @@ export async function listEditorExtensions(params: { extensionsPath: string; sta
       extensionId: entry.extensionId,
       version: entry.version,
       disabled: disabledIds.has(entry.extensionId),
-      iconDataUrl: await getExtensionIconDataUrl(extensionsPath, entry.extensionId)
+      iconDataUrl: includeIcons ? await getExtensionIconDataUrl(extensionsPath, entry.extensionId) : undefined
     }))
   );
 

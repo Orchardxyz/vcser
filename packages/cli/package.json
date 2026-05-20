@@ -1,0 +1,29 @@
+{
+  "name": "@vcser/cli",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CLI to sync local extensions across VS Code-based editors",
+  "type": "module",
+  "bin": {
+    "vscer": "./dist/bin.cjs"
+  },
+  "scripts": {
+    "build": "node ./scripts/build.mjs",
+    "build:watch": "node ./scripts/build.mjs --watch",
+    "dev": "node ./scripts/build.mjs --watch",
+    "smoke": "pnpm run build && node ./dist/bin.cjs --help",
+    "start": "node ./dist/bin.cjs",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@vcser/core": "workspace:*",
+    "cac": "^6.7.14",
+    "ora": "^8.2.0",
+    "picocolors": "^1.1.1",
+    "prompts": "^2.4.2"
+  },
+  "devDependencies": {
+    "@types/prompts": "^2.4.9",
+    "esbuild": "^0.24.2"
+  }
+}

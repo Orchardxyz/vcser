@@ -67,7 +67,9 @@ const personalTypeScriptRules = {
 };
 
 export default tseslint.config(
-  { ignores: ["out/**", "dist/**", "src/generated/**", "*.tsbuildinfo"] },
+  {
+    ignores: ["**/out/**", "**/dist/**", "**/dist-electron/**", "packages/core/dist-types/**", "packages/core/src/generated/**", "**/*.tsbuildinfo"]
+  },
 
   // Base JS/TS rules for all authored files
   js.configs.recommended,
@@ -96,7 +98,7 @@ export default tseslint.config(
 
   // Root config files and node-side TypeScript
   {
-    files: ["*.ts", "src/main/**/*.ts", "src/preload/**/*.ts"],
+    files: ["*.ts", "apps/*/electron.vite.config.ts", "apps/*/src/main/**/*.ts", "apps/*/src/preload/**/*.ts", "packages/*/src/**/*.ts"],
     languageOptions: {
       ...typedLanguageOptions,
       globals: globals.node
@@ -114,7 +116,7 @@ export default tseslint.config(
 
   // Renderer (web)
   {
-    files: ["src/renderer/src/**/*.ts", "src/renderer/src/**/*.tsx"],
+    files: ["apps/*/src/renderer/src/**/*.ts", "apps/*/src/renderer/src/**/*.tsx"],
     plugins: {
       "react-hooks": reactHooks,
       "react-refresh": reactRefresh
@@ -138,7 +140,17 @@ export default tseslint.config(
 
   // Root-level config/script files (JS/MJS/CJS)
   {
-    files: ["*.js", "*.mjs", "*.cjs", "scripts/**/*.js", "scripts/**/*.mjs", "scripts/**/*.cjs"],
+    files: [
+      "*.js",
+      "*.mjs",
+      "*.cjs",
+      "scripts/**/*.js",
+      "scripts/**/*.mjs",
+      "scripts/**/*.cjs",
+      "apps/*/scripts/**/*.js",
+      "apps/*/scripts/**/*.mjs",
+      "apps/*/scripts/**/*.cjs"
+    ],
     languageOptions: {
       globals: globals.node
     },

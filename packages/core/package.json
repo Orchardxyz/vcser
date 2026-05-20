@@ -1,0 +1,35 @@
+{
+  "name": "@vcser/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./db": "./src/db.ts",
+    "./editors/detect": "./src/editors/detect/index.ts",
+    "./editors/extensions": "./src/editors/extensions/index.ts",
+    "./editors/*": "./src/editors/*.ts",
+    "./generated/prisma": "./src/generated/prisma/index.js",
+    "./i18n": "./src/shared/i18n.ts",
+    "./ipc": "./src/shared/ipc.ts",
+    "./package.json": "./package.json",
+    "./typeGuards": "./src/typeGuards.ts",
+    "./types": "./src/shared/types.ts"
+  },
+  "scripts": {
+    "db:generate": "prisma generate --schema prisma/schema.prisma",
+    "db:migrate": "prisma migrate dev --schema prisma/schema.prisma",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "postinstall": "prisma generate --schema prisma/schema.prisma"
+  },
+  "dependencies": {
+    "@prisma/adapter-better-sqlite3": "^7.7.0",
+    "@prisma/client": "^7.7.0",
+    "@prisma/client-runtime-utils": "7.8.0",
+    "jsonc-parser": "^3.3.1",
+    "type-fest": "^5.6.0"
+  },
+  "devDependencies": {
+    "prisma": "^7.8.0"
+  }
+}

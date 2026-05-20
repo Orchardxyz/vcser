@@ -1,11 +1,11 @@
 import { defineConfig } from "prisma/config";
 
 export default defineConfig({
-  schema: "prisma/schema.prisma",
+  schema: "packages/core/prisma/schema.prisma",
   migrations: {
-    path: "prisma/migrations"
+    path: "packages/core/prisma/migrations"
   },
   datasource: {
-    url: "file:./prisma/dev.db"
+    url: "file:./packages/core/prisma/dev.db"
   }
 });

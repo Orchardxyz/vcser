@@ -1,36 +1,37 @@
 # Runtime Agent Guide
 
-Use this file for Electron main-process work, preload changes, shared IPC contracts, editor detection/sync logic, and Prisma-backed runtime code.
+Use this file for desktop Electron main-process work, preload changes, desktop IPC handlers, and integration with the reusable core package.
 
 ## Start Here
 
 Read these areas first for most runtime tasks:
 
-- `src/main/`
-- `src/preload/`
-- `src/shared/`
-- `src/main/editors/`
-- `electron.vite.config.ts`
-- `prisma/schema.prisma`
+- `apps/desktop/src/main/`
+- `apps/desktop/src/preload/`
+- `packages/core/src/shared/`
+- `packages/core/src/editors/`
+- `apps/desktop/electron.vite.config.ts`
+- `packages/core/prisma/schema.prisma`
 
 ## Runtime Boundaries
 
-- Electron main-process code lives in `src/main/`.
-- The context bridge lives in `src/preload/`.
-- Shared IPC commands and shared contracts live in `src/shared/`.
+- Electron main-process code lives in `apps/desktop/src/main/`.
+- The context bridge lives in `apps/desktop/src/preload/`.
+- Shared IPC commands and shared contracts live in `packages/core/src/shared/`.
+- Reusable editor/runtime logic lives in `packages/core/src/editors/`.
 - The renderer should call into runtime logic through the renderer IPC abstraction.
-- Keep Prisma usage in the Electron main process, never in the renderer.
+- Keep Prisma usage in `packages/core` and desktop main-process integration code, never in the renderer.
 
 ## IPC Model
 
-- Supported command names and shared payload/result contracts are defined in `src/shared/`.
+- Supported command names and shared payload/result contracts are defined in `packages/core/src/shared/`.
 - The preload layer exposes `window.electronAPI.invoke()` via `contextBridge`.
 - The renderer IPC layer first attempts the real Electron bridge and falls back to demo responses on failure.
 - Do not remove the demo fallback unless the task explicitly requires that behavior change.
 
 ## Runtime i18n Contract
 
-- Shared locale and runtime message-key contracts live in `src/shared/i18n.ts`.
+- Shared locale and runtime message-key contracts live in `packages/core/src/shared/i18n.ts`.
 - For user-visible runtime failures, prefer stable `errorKey` and optional `errorParams` on shared result types over baking localized strings into main-process code.
 - Keep message keys stable and semantic, for example invalid payloads, unavailable editors, unsupported actions, and missing sync results.
 - Preserve raw `error` strings only as a fallback for unexpected failures that do not yet map cleanly to a shared runtime key.
@@ -45,15 +46,15 @@ Read these areas first for most runtime tasks:
 
 ## Prisma and Database Rules
 
-- The Prisma schema output path must remain `../src/generated/prisma` in `prisma/schema.prisma`.
-- Never manually edit `src/generated/prisma/`.
-- The main-process database layer bridges Electron main ESM code to the generated CommonJS Prisma client via `createRequire()`.
+- The Prisma schema output path must remain `../src/generated/prisma` in `packages/core/prisma/schema.prisma`.
+- Never manually edit `packages/core/src/generated/prisma/`.
+- The core database layer bridges ESM runtime code to the generated CommonJS Prisma client via `createRequire()`.
 - Be careful when changing Prisma initialization; the current code intentionally tolerates Prisma unavailability and falls back when cache access is unavailable.
-- Keep database/cache concerns in main-process code.
+- Keep database/cache concerns in `packages/core` and call them from desktop main-process code.
 
 ## Editor Logic
 
-The editor/runtime implementation currently centers around `src/main/editors/`:
+The editor/runtime implementation currently centers around `packages/core/src/editors/`:
 
 - discovery logic handles editor detection across supported platforms.
 - extension logic handles inspection, mutation, and sync execution.
@@ -73,9 +74,9 @@ When changing sync behavior, inspect the full path from IPC handler to editor he
 
 For a typical runtime task:
 
-1. Confirm whether the change belongs in `src/shared/`, `src/preload/`, or `src/main/`.
-2. Trace the command and payload through the shared contract layer, preload, main handlers, and editor helpers.
-3. Update shared contracts before or alongside call-site behavior.
+1. Confirm whether the change belongs in `packages/core/src/shared/`, `packages/core/src/editors/`, `apps/desktop/src/preload/`, or `apps/desktop/src/main/`.
+2. Trace the command and payload through the shared contract layer, preload, desktop IPC handlers, and core editor helpers.
+3. Update shared contracts in core before or alongside call-site behavior.
 4. Preserve renderer compatibility, including demo fallback behavior, unless the task explicitly changes that contract.
 5. If a runtime change affects UI assumptions, also read `docs/agents/ui.md`.
 

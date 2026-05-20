@@ -1,5 +1,5 @@
-import { CliLoggerImpl } from "./logger.js";
-import { runCli } from "./cli.js";
+import { CliLoggerImpl } from "./logger";
+import { runCli } from "./cli";
 
 async function main(): Promise<void> {
   process.exitCode = await runCli(process.argv);

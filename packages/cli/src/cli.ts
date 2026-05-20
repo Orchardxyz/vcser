@@ -8,7 +8,7 @@ import { listEditorExtensions } from "@vcser/core/editors/extensions/extensions"
 import { syncExtensionLocal } from "@vcser/core/editors/extensions/extensionSync";
 import { RUNTIME_MESSAGE_KEY } from "@vcser/core/i18n";
 import type { EditorExtensionItem, SyncResult } from "@vcser/core/types";
-import { createLogger, type CliLogger } from "./logger.js";
+import { createLogger, type CliLogger } from "./logger";
 import ora from "ora";
 import prompts from "prompts";
 

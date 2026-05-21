@@ -8,6 +8,13 @@ export const APP_ICON_STATUS = {
 
 export type AppIconStatus = ValueOf<typeof APP_ICON_STATUS>;
 
+export const EDITOR_SOURCE = {
+  DETECTED: "detected",
+  CUSTOM: "custom"
+} as const;
+
+export type EditorSource = ValueOf<typeof EDITOR_SOURCE>;
+
 export interface ResolvedEditor {
   name: string;
   displayName: string;
@@ -22,13 +29,49 @@ export interface ResolvedEditor {
   appPath?: string;
   iconPayload?: string;
   iconStatus: AppIconStatus;
+  source: EditorSource;
 }
 
 export interface CustomEditorInput {
   name: string;
+  appPath?: string;
   extensionsPath: string;
   settingsPath: string;
-  cli: string;
+  cli?: string;
+}
+
+export interface CustomEditorRecord {
+  id: string;
+  slug: string;
+  name: string;
+  displayName: string;
+  cli?: string;
+  appPath?: string;
+  extensionsPath: string;
+  settingsPath: string;
+  createdAt: string;
+}
+
+export interface PickCustomEditorAppResult {
+  canceled: boolean;
+  appPath?: string;
+  suggestedName?: string;
+  suggestedCli?: string;
+  iconPayload?: string;
+  iconStatus?: AppIconStatus;
+}
+
+export interface PickCustomEditorPathResult {
+  canceled: boolean;
+  path?: string;
+}
+
+export interface AddCustomEditorResult {
+  success: boolean;
+  editor?: ResolvedEditor;
+  errorKey?: RuntimeMessageKey;
+  errorParams?: RuntimeMessageParams;
+  error?: string;
 }
 
 export interface MachineIdentity {

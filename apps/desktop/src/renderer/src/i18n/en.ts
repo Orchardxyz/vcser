@@ -202,16 +202,22 @@ export const en = {
     emptyTitle: "No supported editors detected",
     emptyDescription: "Install a supported editor to get started",
     detected: "Detected",
+    custom: "Custom",
     extensions: "Extensions",
     settings: "Settings",
     addOtherEditor: "Add Other Editor",
     modal: {
       title: "Add Custom Editor",
-      description: "Provide the file paths and optionally the CLI command for your custom editor.",
+      description: "Select your editor app if available, then provide the extensions and settings paths.",
+      appPath: "Editor App",
       name: "Name",
-      cliCommand: "CLI Command",
+      cliCommand: "CLI Command (optional)",
       extensionsPath: "Extensions Path",
       settingsPath: "Settings Path",
+      browseApp: "Select App",
+      browseFolder: "Browse Folder",
+      browseFile: "Browse File",
+      placeholderAppPath: "/Applications/My Editor.app",
       placeholderName: "My Editor",
       placeholderCli: "myeditor",
       placeholderExtensionsPath: "/path/to/extensions",
@@ -223,6 +229,11 @@ export const en = {
         extensionsPathRequired: "Extensions path is required",
         settingsPathRequired: "Settings path is required"
       }
+    },
+    toasts: {
+      added: "Custom editor added",
+      addFailed: "Failed to add custom editor",
+      pickerFailed: "Failed to select path"
     }
   },
   editorExtensions: {
@@ -262,10 +273,14 @@ export const en = {
     }
   },
   runtime: {
+    invalidAddCustomEditorPayload: "The add custom editor payload is invalid.",
     invalidDisablePayload: "The disable request payload is invalid.",
     invalidUninstallPayload: "The uninstall request payload is invalid.",
     editorUnavailable: "The selected editor is no longer available.",
     stateDatabaseNotWritable: "This editor does not expose a writable state database.",
+    customEditorAlreadyExists: "A matching editor configuration already exists.",
+    customEditorPersistFailed: "Failed to save the custom editor configuration.",
+    customEditorPickerUnavailable: "The system picker is unavailable right now.",
     missingExtensionIdOrSourceEditor: "Missing extension ID or source editor.",
     sourceOrTargetEditorUnavailable: "Source or target editor is no longer available.",
     unsupportedSyncAction: "Unsupported sync action: {{actionType}}.",

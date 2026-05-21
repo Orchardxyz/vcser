@@ -16,10 +16,14 @@ export const LOCALE_PREFERENCE = {
 export type LocalePreference = ValueOf<typeof LOCALE_PREFERENCE>;
 
 export const RUNTIME_MESSAGE_KEY = {
+  INVALID_ADD_CUSTOM_EDITOR_PAYLOAD: "runtime.invalidAddCustomEditorPayload",
   INVALID_DISABLE_PAYLOAD: "runtime.invalidDisablePayload",
   INVALID_UNINSTALL_PAYLOAD: "runtime.invalidUninstallPayload",
   EDITOR_UNAVAILABLE: "runtime.editorUnavailable",
   STATE_DATABASE_NOT_WRITABLE: "runtime.stateDatabaseNotWritable",
+  CUSTOM_EDITOR_ALREADY_EXISTS: "runtime.customEditorAlreadyExists",
+  CUSTOM_EDITOR_PERSIST_FAILED: "runtime.customEditorPersistFailed",
+  CUSTOM_EDITOR_PICKER_UNAVAILABLE: "runtime.customEditorPickerUnavailable",
   MISSING_EXTENSION_ID_OR_SOURCE_EDITOR: "runtime.missingExtensionIdOrSourceEditor",
   SOURCE_OR_TARGET_EDITOR_UNAVAILABLE: "runtime.sourceOrTargetEditorUnavailable",
   UNSUPPORTED_SYNC_ACTION: "runtime.unsupportedSyncAction",

@@ -5,46 +5,55 @@ import { BadgeCheck, Plus, FolderOpen, FileText, Terminal } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { BaseModal } from "@/components/ui/BaseModal";
-import { Button, BUTTON_VARIANT } from "@/components/ui/Button";
-import { Skeleton } from "@/components/ui/Skeleton";
+import { Button, BUTTON_SIZE, BUTTON_VARIANT } from "@/components/ui/Button";
 import { EditorIdentity, EDITOR_IDENTITY_MODE } from "@/components/editor/EditorIdentity";
+import { translateRuntimeMessageWithT } from "@/i18n/runtime";
+import { invoke } from "@/ipc";
 import { getEditorExtensionsRoute } from "@/routes";
 import { useAppStore } from "@/store";
-import { createCustomEditorSchema, customEditorDefaultValues, getInputClass } from "./Editors.form";
-import type { CustomEditorInput } from "@/types";
+import { toast } from "@/store/toast";
+import { createCustomEditorSchema, customEditorDefaultValues, getInputClass, type CustomEditorFormValues } from "./Editors.form";
+import { EditorsSkeleton } from "./EditorsSkeleton";
+import type { RuntimeMessageKey } from "@/types";
 
-function EditorsSkeleton() {
-  return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {[1, 2, 3].map((item) => (
-        <div key={item} className="animate-pulse rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center gap-3">
-            <Skeleton className="h-11 w-11 rounded-lg" />
-            <Skeleton className="h-5 w-24" />
-          </div>
-          <div className="mt-4 space-y-2">
-            <Skeleton className="h-3 w-3/4" />
-            <Skeleton className="h-3 w-1/2" />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+const PICK_CUSTOM_EDITOR_APP_PATH_COMMAND = "pick_custom_editor_app_path";
+const PICK_CUSTOM_EDITOR_EXTENSIONS_PATH_COMMAND = "pick_custom_editor_extensions_path";
+const PICK_CUSTOM_EDITOR_SETTINGS_PATH_COMMAND = "pick_custom_editor_settings_path";
+const ADD_CUSTOM_EDITOR_COMMAND = "add_custom_editor";
+const CUSTOM_EDITOR_SOURCE = "custom";
+interface EditorAppPickResult {
+  canceled: boolean;
+  appPath?: string;
+  suggestedName?: string;
+}
+interface EditorPathPickResult {
+  canceled: boolean;
+  path?: string;
+}
+interface AddEditorRuntimeResult {
+  success: boolean;
+  editor?: { displayName?: string };
+  errorKey?: RuntimeMessageKey;
+  error?: string;
+  errorParams?: Record<string, string | number | boolean>;
 }
 
 export function Editors() {
   const { t } = useTranslation();
   const editors = useAppStore((s) => s.editors);
   const editorsLoading = useAppStore((s) => s.editorsLoading);
+  const loadEditors = useAppStore((s) => s.loadEditors);
 
   const schema = useMemo(() => createCustomEditorSchema(t), [t]);
 
   const {
     register,
+    setValue,
+    getValues,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting }
-  } = useForm<CustomEditorInput>({
+  } = useForm<CustomEditorFormValues>({
     resolver: zodResolver(schema),
     defaultValues: customEditorDefaultValues,
     mode: "onBlur",
@@ -52,20 +61,94 @@ export function Editors() {
   });
 
   const [addModalOpen, setAddModalOpen] = useState(false);
+  const [lastSuggestedName, setLastSuggestedName] = useState<string | null>(null);
 
   const openModal = useCallback(() => {
     reset(customEditorDefaultValues);
+    setLastSuggestedName(null);
     setAddModalOpen(true);
   }, [reset]);
 
   const closeModal = useCallback(() => {
     reset(customEditorDefaultValues);
+    setLastSuggestedName(null);
     setAddModalOpen(false);
   }, [reset]);
 
-  const onSubmit = useCallback((_values: CustomEditorInput) => {
-    // TODO: Wire to store action / IPC for persistence (Phase 2)
-  }, []);
+  const handlePickAppPath = useCallback(async () => {
+    try {
+      const result = await invoke<EditorAppPickResult>(PICK_CUSTOM_EDITOR_APP_PATH_COMMAND);
+
+      if (!result || result.canceled || !result.appPath) {
+        return;
+      }
+
+      setValue("appPath", result.appPath, {
+        shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: true
+      });
+
+      const currentName = getValues("name")?.trim();
+      const suggestedName = result.suggestedName?.trim();
+      const shouldOverwriteName = !currentName || (!!lastSuggestedName && currentName === lastSuggestedName);
+
+      if (suggestedName && shouldOverwriteName) {
+        setValue("name", suggestedName, {
+          shouldDirty: true,
+          shouldTouch: true,
+          shouldValidate: true
+        });
+      }
+
+      if (suggestedName) {
+        setLastSuggestedName(suggestedName);
+      }
+    } catch {
+      toast.error(t("editors.toasts.pickerFailed"), t("runtime.customEditorPickerUnavailable"));
+    }
+  }, [getValues, lastSuggestedName, setValue, t]);
+
+  const handlePickPath = useCallback(
+    async (command: string, field: "extensionsPath" | "settingsPath") => {
+      try {
+        const result = await invoke<EditorPathPickResult>(command);
+
+        if (!result || result.canceled || !result.path) {
+          return;
+        }
+
+        setValue(field, result.path, {
+          shouldDirty: true,
+          shouldTouch: true,
+          shouldValidate: true
+        });
+      } catch {
+        toast.error(t("editors.toasts.pickerFailed"), t("runtime.customEditorPickerUnavailable"));
+      }
+    },
+    [setValue, t]
+  );
+
+  const onSubmit = useCallback(
+    async (values: CustomEditorFormValues) => {
+      try {
+        const result = await invoke<AddEditorRuntimeResult>(ADD_CUSTOM_EDITOR_COMMAND, values);
+
+        if (!result?.success) {
+          toast.error(t("editors.toasts.addFailed"), result ? translateRuntimeMessageWithT(t, result) : t("runtime.customEditorPersistFailed"));
+          return;
+        }
+
+        await loadEditors();
+        closeModal();
+        toast.success(t("editors.toasts.added"), result.editor?.displayName ?? values.name.trim());
+      } catch (error) {
+        toast.error(t("editors.toasts.addFailed"), error instanceof Error ? error.message : String(error));
+      }
+    },
+    [closeModal, loadEditors, t]
+  );
 
   function renderContent() {
     if (editorsLoading) return <EditorsSkeleton />;
@@ -89,11 +172,15 @@ export function Editors() {
             <div className="flex items-start justify-between">
               <EditorIdentity editor={editor} mode={EDITOR_IDENTITY_MODE.ICON} />
               <span
-                aria-label={t("editors.detected")}
-                title={t("editors.detected")}
-                className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-blue-100 bg-blue-50 text-blue-600"
+                aria-label={editor.source === CUSTOM_EDITOR_SOURCE ? t("editors.custom") : t("editors.detected")}
+                title={editor.source === CUSTOM_EDITOR_SOURCE ? t("editors.custom") : t("editors.detected")}
+                className={
+                  editor.source === CUSTOM_EDITOR_SOURCE
+                    ? "inline-flex rounded-full border border-amber-100 bg-amber-50 px-2.5 py-1 text-[11px] font-medium text-amber-700"
+                    : "inline-flex h-7 w-7 items-center justify-center rounded-full border border-blue-100 bg-blue-50 text-blue-600"
+                }
               >
-                <BadgeCheck size={14} strokeWidth={1.75} />
+                {editor.source === CUSTOM_EDITOR_SOURCE ? t("editors.custom") : <BadgeCheck size={14} strokeWidth={1.75} />}
               </span>
             </div>
 
@@ -170,6 +257,22 @@ export function Editors() {
         >
           <div className="grid gap-4">
             <p className="text-sm text-slate-500">{t("editors.modal.description")}</p>
+            <label className="flex flex-col gap-1.5 text-sm">
+              <div className="flex items-center justify-between gap-3">
+                <span className="font-medium text-slate-700">{t("editors.modal.appPath")}</span>
+                <Button
+                  variant={BUTTON_VARIANT.SECONDARY}
+                  size={BUTTON_SIZE.SM}
+                  onClick={() => {
+                    handlePickAppPath().catch(() => undefined);
+                  }}
+                  disabled={isSubmitting}
+                >
+                  {t("editors.modal.browseApp")}
+                </Button>
+              </div>
+              <input type="text" placeholder={t("editors.modal.placeholderAppPath")} className={getInputClass(false)} {...register("appPath")} />
+            </label>
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="flex flex-col gap-1.5 text-sm">
                 <span className="font-medium text-slate-700">{t("editors.modal.name")}</span>
@@ -205,7 +308,19 @@ export function Editors() {
               </label>
             </div>
             <label className="flex flex-col gap-1.5 text-sm">
-              <span className="font-medium text-slate-700">{t("editors.modal.extensionsPath")}</span>
+              <div className="flex items-center justify-between gap-3">
+                <span className="font-medium text-slate-700">{t("editors.modal.extensionsPath")}</span>
+                <Button
+                  variant={BUTTON_VARIANT.SECONDARY}
+                  size={BUTTON_SIZE.SM}
+                  onClick={() => {
+                    handlePickPath(PICK_CUSTOM_EDITOR_EXTENSIONS_PATH_COMMAND, "extensionsPath").catch(() => undefined);
+                  }}
+                  disabled={isSubmitting}
+                >
+                  {t("editors.modal.browseFolder")}
+                </Button>
+              </div>
               <input
                 type="text"
                 placeholder={t("editors.modal.placeholderExtensionsPath")}
@@ -221,7 +336,19 @@ export function Editors() {
               )}
             </label>
             <label className="flex flex-col gap-1.5 text-sm">
-              <span className="font-medium text-slate-700">{t("editors.modal.settingsPath")}</span>
+              <div className="flex items-center justify-between gap-3">
+                <span className="font-medium text-slate-700">{t("editors.modal.settingsPath")}</span>
+                <Button
+                  variant={BUTTON_VARIANT.SECONDARY}
+                  size={BUTTON_SIZE.SM}
+                  onClick={() => {
+                    handlePickPath(PICK_CUSTOM_EDITOR_SETTINGS_PATH_COMMAND, "settingsPath").catch(() => undefined);
+                  }}
+                  disabled={isSubmitting}
+                >
+                  {t("editors.modal.browseFile")}
+                </Button>
+              </div>
               <input
                 type="text"
                 placeholder={t("editors.modal.placeholderSettingsPath")}

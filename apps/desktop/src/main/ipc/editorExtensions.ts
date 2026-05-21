@@ -2,9 +2,9 @@ import { ipcMain } from "electron";
 import { RUNTIME_MESSAGE_KEY } from "@vcser/core/i18n";
 import { SUPPORTED_COMMAND } from "@vcser/core/ipc";
 import { EDITOR_EXTENSION_ACTION, type EditorExtensionMutationResult, type EditorExtensionsResult } from "@vcser/core/types";
-import { detectEditors } from "@vcser/core/editors/detect";
 import { listEditorExtensions, setEditorExtensionDisabled, uninstallEditorExtension } from "@vcser/core/editors/extensions";
 import { hasBooleanProperty, hasStringProperty, isRecord } from "@vcser/core/typeGuards";
+import { resolveAllEditors } from "../editors/resolveAllEditors";
 
 interface EditorSlugPayload {
   editorSlug: string;
@@ -47,7 +47,7 @@ export function registerEditorExtensionHandlers() {
       return createMissingEditorResult("");
     }
 
-    const detected = await detectEditors();
+    const detected = await resolveAllEditors();
     const editor = detected.find((item) => item.slug === payload.editorSlug);
 
     if (!editor) {
@@ -76,7 +76,7 @@ export function registerEditorExtensionHandlers() {
       } satisfies EditorExtensionMutationResult;
     }
 
-    const detected = await detectEditors();
+    const detected = await resolveAllEditors();
     const editor = detected.find((item) => item.slug === payload.editorSlug);
 
     if (!editor) {
@@ -143,7 +143,7 @@ export function registerEditorExtensionHandlers() {
       } satisfies EditorExtensionMutationResult;
     }
 
-    const detected = await detectEditors();
+    const detected = await resolveAllEditors();
     const editor = detected.find((item) => item.slug === payload.editorSlug);
 
     if (!editor) {

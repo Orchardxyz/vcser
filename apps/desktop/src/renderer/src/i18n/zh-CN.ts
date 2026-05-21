@@ -202,16 +202,22 @@ export const zhCN = {
     emptyTitle: "未检测到受支持的编辑器",
     emptyDescription: "请先安装一个受支持的编辑器以开始使用",
     detected: "已检测到",
+    custom: "自定义",
     extensions: "扩展",
     settings: "设置",
     addOtherEditor: "添加其他编辑器",
     modal: {
       title: "添加自定义编辑器",
-      description: "填写自定义编辑器的相关文件路径，CLI 命令为选填项。",
+      description: "如有应用路径可先选择应用，再填写扩展目录与设置文件路径。",
+      appPath: "编辑器应用",
       name: "名称",
-      cliCommand: "CLI 命令",
+      cliCommand: "CLI 命令（选填）",
       extensionsPath: "扩展目录路径",
       settingsPath: "设置文件路径",
+      browseApp: "选择应用",
+      browseFolder: "选择目录",
+      browseFile: "选择文件",
+      placeholderAppPath: "/Applications/My Editor.app",
       placeholderName: "My Editor",
       placeholderCli: "myeditor",
       placeholderExtensionsPath: "/path/to/extensions",
@@ -223,6 +229,11 @@ export const zhCN = {
         extensionsPathRequired: "请输入扩展目录路径",
         settingsPathRequired: "请输入设置文件路径"
       }
+    },
+    toasts: {
+      added: "已添加自定义编辑器",
+      addFailed: "添加自定义编辑器失败",
+      pickerFailed: "选择路径失败"
     }
   },
   editorExtensions: {
@@ -262,10 +273,14 @@ export const zhCN = {
     }
   },
   runtime: {
+    invalidAddCustomEditorPayload: "添加自定义编辑器请求的参数无效。",
     invalidDisablePayload: "禁用请求的参数无效。",
     invalidUninstallPayload: "卸载请求的参数无效。",
     editorUnavailable: "所选编辑器已不可用。",
     stateDatabaseNotWritable: "该编辑器未暴露可写的状态数据库。",
+    customEditorAlreadyExists: "已存在相同的编辑器配置。",
+    customEditorPersistFailed: "保存自定义编辑器配置失败。",
+    customEditorPickerUnavailable: "当前无法使用系统路径选择器。",
     missingExtensionIdOrSourceEditor: "缺少扩展 ID 或源编辑器。",
     sourceOrTargetEditorUnavailable: "源编辑器或目标编辑器已不可用。",
     unsupportedSyncAction: "不支持的同步动作：{{actionType}}。",

@@ -11,8 +11,9 @@ import type { ExtensionSettingsGroup, MachineIdentity, SettingsDiffByExtensionRe
 import { EXTENSION_SETTINGS_GROUP_KIND } from "@vcser/core/types";
 import { computeExtensionDiff, listInstalledExtensions, resolveNamespacesToExtensions, syncExtensionLocal } from "@vcser/core/editors/extensions";
 import { diffSettings, groupSettingsByNamespace, readSettingsJson } from "@vcser/core/editors/settings";
-import { detectEditors } from "@vcser/core/editors/detect";
 import { registerEditorExtensionHandlers } from "./ipc/editorExtensions";
+import { registerCustomEditorHandlers } from "./ipc/customEditors";
+import { resolveAllEditors } from "./editors/resolveAllEditors";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -124,13 +125,14 @@ app.whenReady().then(() => {
   });
 
   ipcMain.handle(SUPPORTED_COMMAND.DETECT_EDITORS, async () => {
-    return detectEditors();
+    return resolveAllEditors();
   });
 
   registerEditorExtensionHandlers();
+  registerCustomEditorHandlers();
 
   ipcMain.handle(SUPPORTED_COMMAND.COMPUTE_EXTENSION_DIFF, async () => {
-    const detected = await detectEditors();
+    const detected = await resolveAllEditors();
     return await computeExtensionDiff(
       detected.map((e) => ({
         name: e.name,
@@ -142,7 +144,7 @@ app.whenReady().then(() => {
 
   ipcMain.handle(SUPPORTED_COMMAND.COMPUTE_SETTINGS_DIFF_BY_EXTENSION, async (_event, payload: { leftEditor: string; rightEditor: string }) => {
     const prisma = getPrismaClient();
-    const detected = await detectEditors();
+    const detected = await resolveAllEditors();
 
     const leftEditor = detected.find((e) => e.name === payload.leftEditor);
     const rightEditor = detected.find((e) => e.name === payload.rightEditor);
@@ -245,7 +247,7 @@ app.whenReady().then(() => {
   });
 
   ipcMain.handle(SUPPORTED_COMMAND.EXECUTE_SYNC, async (_event, payload: { actions: SyncActionInput[] }) => {
-    const detected = await detectEditors();
+    const detected = await resolveAllEditors();
     const editorsByName = new Map(detected.map((e) => [e.name, e]));
 
     const results: SyncResult[] = [];

@@ -20,9 +20,15 @@ export type ThemeMode = ValueOf<typeof THEME_MODE>;
 
 export {
   APP_ICON_STATUS,
+  EDITOR_SOURCE,
   type AppIconStatus,
+  type EditorSource,
   type ResolvedEditor,
   type CustomEditorInput,
+  type CustomEditorRecord,
+  type PickCustomEditorAppResult,
+  type PickCustomEditorPathResult,
+  type AddCustomEditorResult,
   type MachineIdentity,
   type ExtensionPresence,
   type ExtensionDiffResult,

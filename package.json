@@ -20,6 +20,7 @@
     "icons:generate": "pnpm --filter @vcser/desktop icons:generate",
     "db:generate": "pnpm --filter @vcser/core db:generate",
     "db:migrate": "pnpm --filter @vcser/core db:migrate",
+    "db:studio": "npx prisma studio",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier . --write",

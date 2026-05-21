@@ -7,35 +7,27 @@ import { Link } from "react-router-dom";
 import { BaseModal } from "@/components/ui/BaseModal";
 import { Button, BUTTON_SIZE, BUTTON_VARIANT } from "@/components/ui/Button";
 import { EditorIdentity, EDITOR_IDENTITY_MODE } from "@/components/editor/EditorIdentity";
-import { translateRuntimeMessageWithT } from "@/i18n/runtime";
 import { invoke } from "@/ipc";
 import { getEditorExtensionsRoute } from "@/routes";
 import { useAppStore } from "@/store";
 import { toast } from "@/store/toast";
-import { createCustomEditorSchema, customEditorDefaultValues, getInputClass, type CustomEditorFormValues } from "./Editors.form";
-import { EditorsSkeleton } from "./EditorsSkeleton";
-import type { RuntimeMessageKey } from "@/types";
+import { createCustomEditorSchema, customEditorDefaultValues, getInputClass, type CustomEditorFormValues } from "./form";
+import { EditorsSkeleton } from "./Skeleton";
 
 const PICK_CUSTOM_EDITOR_APP_PATH_COMMAND = "pick_custom_editor_app_path";
 const PICK_CUSTOM_EDITOR_EXTENSIONS_PATH_COMMAND = "pick_custom_editor_extensions_path";
 const PICK_CUSTOM_EDITOR_SETTINGS_PATH_COMMAND = "pick_custom_editor_settings_path";
 const ADD_CUSTOM_EDITOR_COMMAND = "add_custom_editor";
 const CUSTOM_EDITOR_SOURCE = "custom";
-interface EditorAppPickResult {
-  canceled: boolean;
-  appPath?: string;
-  suggestedName?: string;
-}
-interface EditorPathPickResult {
-  canceled: boolean;
-  path?: string;
-}
-interface AddEditorRuntimeResult {
-  success: boolean;
-  editor?: { displayName?: string };
-  errorKey?: RuntimeMessageKey;
-  error?: string;
-  errorParams?: Record<string, string | number | boolean>;
+
+function resolveRuntimeMessage(
+  t: (key: string, options?: Record<string, string | number | boolean>) => string,
+  errorKey: string | undefined,
+  errorMessage: string | undefined,
+  fallbackKey: string,
+  errorParams?: Record<string, string | number | boolean>
+) {
+  return errorKey ? t(errorKey, errorParams ?? {}) : (errorMessage ?? t(fallbackKey));
 }
 
 export function Editors() {
@@ -62,13 +54,11 @@ export function Editors() {
 
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [lastSuggestedName, setLastSuggestedName] = useState<string | null>(null);
-
   const openModal = useCallback(() => {
     reset(customEditorDefaultValues);
     setLastSuggestedName(null);
     setAddModalOpen(true);
   }, [reset]);
-
   const closeModal = useCallback(() => {
     reset(customEditorDefaultValues);
     setLastSuggestedName(null);
@@ -77,28 +67,42 @@ export function Editors() {
 
   const handlePickAppPath = useCallback(async () => {
     try {
-      const result = await invoke<EditorAppPickResult>(PICK_CUSTOM_EDITOR_APP_PATH_COMMAND);
+      const rawResult = await invoke<unknown>(PICK_CUSTOM_EDITOR_APP_PATH_COMMAND);
 
-      if (!result || result.canceled || !result.appPath) {
+      if (!rawResult || typeof rawResult !== "object" || Array.isArray(rawResult)) {
         return;
       }
 
-      setValue("appPath", result.appPath, {
-        shouldDirty: true,
-        shouldTouch: true,
-        shouldValidate: true
-      });
+      const result = rawResult as Record<string, unknown>;
+      const errorKey = typeof result.errorKey === "string" ? result.errorKey : undefined;
+      const errorMessage = typeof result.error === "string" ? result.error : undefined;
+      const canceled = result.canceled === true;
+      const appPath = typeof result.appPath === "string" ? result.appPath : undefined;
+      const suggestedName = typeof result.suggestedName === "string" ? result.suggestedName.trim() : undefined;
+      const errorParams =
+        result.errorParams && typeof result.errorParams === "object" && !Array.isArray(result.errorParams)
+          ? (result.errorParams as Record<string, string | number | boolean>)
+          : undefined;
+
+      if (errorKey || errorMessage) {
+        toast.error(
+          t("editors.toasts.pickerFailed"),
+          resolveRuntimeMessage(t, errorKey, errorMessage, "runtime.customEditorPickerUnavailable", errorParams)
+        );
+        return;
+      }
+
+      if (canceled || !appPath) {
+        return;
+      }
+
+      setValue("appPath", appPath, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
 
       const currentName = getValues("name")?.trim();
-      const suggestedName = result.suggestedName?.trim();
       const shouldOverwriteName = !currentName || (!!lastSuggestedName && currentName === lastSuggestedName);
 
       if (suggestedName && shouldOverwriteName) {
-        setValue("name", suggestedName, {
-          shouldDirty: true,
-          shouldTouch: true,
-          shouldValidate: true
-        });
+        setValue("name", suggestedName, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
       }
 
       if (suggestedName) {
@@ -112,17 +116,21 @@ export function Editors() {
   const handlePickPath = useCallback(
     async (command: string, field: "extensionsPath" | "settingsPath") => {
       try {
-        const result = await invoke<EditorPathPickResult>(command);
+        const rawResult = await invoke<unknown>(command);
 
-        if (!result || result.canceled || !result.path) {
+        if (!rawResult || typeof rawResult !== "object" || Array.isArray(rawResult)) {
           return;
         }
 
-        setValue(field, result.path, {
-          shouldDirty: true,
-          shouldTouch: true,
-          shouldValidate: true
-        });
+        const result = rawResult as Record<string, unknown>;
+        const canceled = result.canceled === true;
+        const pathValue = typeof result.path === "string" ? result.path : undefined;
+
+        if (canceled || !pathValue) {
+          return;
+        }
+
+        setValue(field, pathValue, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
       } catch {
         toast.error(t("editors.toasts.pickerFailed"), t("runtime.customEditorPickerUnavailable"));
       }
@@ -133,16 +141,40 @@ export function Editors() {
   const onSubmit = useCallback(
     async (values: CustomEditorFormValues) => {
       try {
-        const result = await invoke<AddEditorRuntimeResult>(ADD_CUSTOM_EDITOR_COMMAND, values);
+        const rawResult = await invoke<unknown>(ADD_CUSTOM_EDITOR_COMMAND, values);
 
-        if (!result?.success) {
-          toast.error(t("editors.toasts.addFailed"), result ? translateRuntimeMessageWithT(t, result) : t("runtime.customEditorPersistFailed"));
+        if (!rawResult || typeof rawResult !== "object" || Array.isArray(rawResult)) {
+          toast.error(t("editors.toasts.addFailed"), t("runtime.customEditorPersistFailed"));
+          return;
+        }
+
+        const result = rawResult as Record<string, unknown>;
+        const success = result.success === true;
+        const errorKey = typeof result.errorKey === "string" ? result.errorKey : undefined;
+        const errorMessage = typeof result.error === "string" ? result.error : undefined;
+        const errorParams =
+          result.errorParams && typeof result.errorParams === "object" && !Array.isArray(result.errorParams)
+            ? (result.errorParams as Record<string, string | number | boolean>)
+            : undefined;
+        const editorDisplayName =
+          result.editor &&
+          typeof result.editor === "object" &&
+          !Array.isArray(result.editor) &&
+          typeof (result.editor as { displayName?: unknown }).displayName === "string"
+            ? ((result.editor as { displayName?: string }).displayName ?? undefined)
+            : undefined;
+
+        if (!success) {
+          toast.error(
+            t("editors.toasts.addFailed"),
+            resolveRuntimeMessage(t, errorKey, errorMessage, "runtime.customEditorPersistFailed", errorParams)
+          );
           return;
         }
 
         await loadEditors();
         closeModal();
-        toast.success(t("editors.toasts.added"), result.editor?.displayName ?? values.name.trim());
+        toast.success(t("editors.toasts.added"), editorDisplayName ?? values.name.trim());
       } catch (error) {
         toast.error(t("editors.toasts.addFailed"), error instanceof Error ? error.message : String(error));
       }

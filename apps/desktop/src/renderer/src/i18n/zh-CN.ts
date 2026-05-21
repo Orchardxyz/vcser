@@ -274,6 +274,7 @@ export const zhCN = {
   },
   runtime: {
     invalidAddCustomEditorPayload: "添加自定义编辑器请求的参数无效。",
+    unsupportedCustomEditorApp: "{{appName}} 是辅助程序或 URL Handler，不能作为编辑器添加。",
     invalidDisablePayload: "禁用请求的参数无效。",
     invalidUninstallPayload: "卸载请求的参数无效。",
     editorUnavailable: "所选编辑器已不可用。",

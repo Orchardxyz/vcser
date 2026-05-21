@@ -1,10 +1,7 @@
-import { basename, extname, join } from "node:path";
-import { execFileSync } from "node:child_process";
 import { dialog, ipcMain } from "electron";
 import { RUNTIME_MESSAGE_KEY } from "@vcser/core/i18n";
 import { SUPPORTED_COMMAND } from "@vcser/core/ipc";
 import {
-  APP_ICON_STATUS,
   type AddCustomEditorResult,
   type CustomEditorInput,
   type PickCustomEditorAppResult,
@@ -12,12 +9,8 @@ import {
 } from "@vcser/core/types";
 import { hasStringProperty, isRecord } from "@vcser/core/typeGuards";
 import { appendCustomEditor } from "../customEditors/store";
+import { resolveAppBundleSelection } from "../editors/appBundle";
 import { resolveAllEditors } from "../editors/resolveAllEditors";
-
-interface MacOSInfoPlist {
-  CFBundleDisplayName?: string;
-  CFBundleName?: string;
-}
 
 function hasOptionalStringProperty(value: unknown, key: string): boolean {
   return !isRecord(value) || !(key in value) || typeof value[key] === "string";
@@ -53,26 +46,6 @@ function getAppFilters() {
   return undefined;
 }
 
-function inferNameFromPath(appPath: string) {
-  if (process.platform === "darwin") {
-    try {
-      const output = execFileSync("plutil", ["-convert", "json", "-o", "-", join(appPath, "Contents", "Info.plist")], {
-        encoding: "utf8"
-      });
-      const plist = JSON.parse(output) as MacOSInfoPlist;
-      const displayName = plist.CFBundleDisplayName?.trim() || plist.CFBundleName?.trim();
-      if (displayName) {
-        return displayName;
-      }
-    } catch {
-      // fall back to bundle basename
-    }
-  }
-
-  const ext = extname(appPath);
-  return basename(appPath, ext || undefined).trim() || basename(appPath).trim();
-}
-
 async function pickPath(params: {
   properties: Array<"openFile" | "openDirectory">;
   title: string;
@@ -103,16 +76,30 @@ export function registerCustomEditorHandlers() {
         return { canceled: true } satisfies PickCustomEditorAppResult;
       }
 
+      const selection = await resolveAppBundleSelection(result.path);
+
+      if (selection.unsupported) {
+        return {
+          canceled: false,
+          errorKey: RUNTIME_MESSAGE_KEY.UNSUPPORTED_CUSTOM_EDITOR_APP,
+          errorParams: {
+            appName: selection.suggestedName
+          },
+          iconStatus: selection.iconStatus
+        } satisfies PickCustomEditorAppResult;
+      }
+
       return {
         canceled: false,
-        appPath: result.path,
-        suggestedName: inferNameFromPath(result.path),
-        iconStatus: APP_ICON_STATUS.FALLBACK
+        appPath: selection.appPath,
+        suggestedName: selection.suggestedName,
+        iconPayload: selection.iconPayload,
+        iconStatus: selection.iconStatus
       } satisfies PickCustomEditorAppResult;
     } catch {
       return {
         canceled: true,
-        iconStatus: APP_ICON_STATUS.FALLBACK
+        errorKey: RUNTIME_MESSAGE_KEY.CUSTOM_EDITOR_PICKER_UNAVAILABLE
       } satisfies PickCustomEditorAppResult;
     }
   });
@@ -147,6 +134,20 @@ export function registerCustomEditorHandlers() {
       extensionsPath: normalizeRequiredString(payload.extensionsPath),
       settingsPath: normalizeRequiredString(payload.settingsPath)
     };
+
+    if (normalized.appPath) {
+      const selection = await resolveAppBundleSelection(normalized.appPath);
+
+      if (selection.unsupported) {
+        return {
+          success: false,
+          errorKey: RUNTIME_MESSAGE_KEY.UNSUPPORTED_CUSTOM_EDITOR_APP,
+          errorParams: {
+            appName: selection.suggestedName
+          }
+        } satisfies AddCustomEditorResult;
+      }
+    }
 
     const editors = await resolveAllEditors();
     const samePathEditor = editors.find(

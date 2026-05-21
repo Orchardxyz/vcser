@@ -17,6 +17,7 @@ export type LocalePreference = ValueOf<typeof LOCALE_PREFERENCE>;
 
 export const RUNTIME_MESSAGE_KEY = {
   INVALID_ADD_CUSTOM_EDITOR_PAYLOAD: "runtime.invalidAddCustomEditorPayload",
+  UNSUPPORTED_CUSTOM_EDITOR_APP: "runtime.unsupportedCustomEditorApp",
   INVALID_DISABLE_PAYLOAD: "runtime.invalidDisablePayload",
   INVALID_UNINSTALL_PAYLOAD: "runtime.invalidUninstallPayload",
   EDITOR_UNAVAILABLE: "runtime.editorUnavailable",

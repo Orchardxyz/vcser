@@ -274,6 +274,7 @@ export const en = {
   },
   runtime: {
     invalidAddCustomEditorPayload: "The add custom editor payload is invalid.",
+    unsupportedCustomEditorApp: "{{appName}} is a helper or URL-handler app and cannot be added as an editor.",
     invalidDisablePayload: "The disable request payload is invalid.",
     invalidUninstallPayload: "The uninstall request payload is invalid.",
     editorUnavailable: "The selected editor is no longer available.",

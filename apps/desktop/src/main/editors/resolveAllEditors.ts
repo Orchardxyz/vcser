@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import { detectEditors, type DetectedEditor } from "@vcser/core/editors/detect";
 import { APP_ICON_STATUS, EDITOR_SOURCE, type CustomEditorRecord, type ResolvedEditor } from "@vcser/core/types";
 import { listCustomEditors } from "../customEditors/store";
+import { resolveAppBundleSelection } from "./appBundle";
 
 export interface ResolvedDesktopEditor extends ResolvedEditor {
   stateDbPath?: string;
@@ -44,7 +45,13 @@ function toResolvedDetectedEditor(editor: DetectedEditor): ResolvedDesktopEditor
   };
 }
 
-function toResolvedCustomEditor(editor: CustomEditorRecord): ResolvedDesktopEditor {
+async function toResolvedCustomEditor(editor: CustomEditorRecord): Promise<ResolvedDesktopEditor | null> {
+  const selection = editor.appPath ? await resolveAppBundleSelection(editor.appPath) : undefined;
+
+  if (selection?.unsupported) {
+    return null;
+  }
+
   return {
     name: editor.name,
     displayName: editor.displayName,
@@ -57,7 +64,8 @@ function toResolvedCustomEditor(editor: CustomEditorRecord): ResolvedDesktopEdit
     extensionsExist: existsSync(editor.extensionsPath),
     settingsExist: existsSync(editor.settingsPath),
     appPath: editor.appPath,
-    iconStatus: APP_ICON_STATUS.FALLBACK,
+    iconPayload: selection?.iconPayload,
+    iconStatus: selection?.iconStatus ?? APP_ICON_STATUS.FALLBACK,
     source: EDITOR_SOURCE.CUSTOM
   };
 }
@@ -65,6 +73,7 @@ function toResolvedCustomEditor(editor: CustomEditorRecord): ResolvedDesktopEdit
 export async function resolveAllEditors(): Promise<ResolvedDesktopEditor[]> {
   const detected = await detectEditors();
   const custom = listCustomEditors();
+  const resolvedCustom = await Promise.all(custom.map((editor) => toResolvedCustomEditor(editor)));
 
-  return [...detected.map(toResolvedDetectedEditor), ...custom.map(toResolvedCustomEditor)];
+  return [...detected.map(toResolvedDetectedEditor), ...resolvedCustom.filter((editor): editor is ResolvedDesktopEditor => Boolean(editor))];
 }

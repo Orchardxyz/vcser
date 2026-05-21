@@ -59,6 +59,9 @@ export interface PickCustomEditorAppResult {
   suggestedCli?: string;
   iconPayload?: string;
   iconStatus?: AppIconStatus;
+  errorKey?: RuntimeMessageKey;
+  errorParams?: RuntimeMessageParams;
+  error?: string;
 }
 
 export interface PickCustomEditorPathResult {

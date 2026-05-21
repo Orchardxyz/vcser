@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { BadgeCheck, Plus, FolderOpen, FileText, Terminal } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
@@ -8,6 +10,8 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { EditorIdentity, EDITOR_IDENTITY_MODE } from "@/components/editor/EditorIdentity";
 import { getEditorExtensionsRoute } from "@/routes";
 import { useAppStore } from "@/store";
+import { createCustomEditorSchema, customEditorDefaultValues, getInputClass } from "./Editors.form";
+import type { CustomEditorInput } from "@/types";
 
 function EditorsSkeleton() {
   return (
@@ -30,12 +34,38 @@ function EditorsSkeleton() {
 
 export function Editors() {
   const { t } = useTranslation();
-  const [addModalOpen, setAddModalOpen] = useState(false);
   const editors = useAppStore((s) => s.editors);
   const editorsLoading = useAppStore((s) => s.editorsLoading);
 
-  const inputClass =
-    "rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 outline-none focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white";
+  const schema = useMemo(() => createCustomEditorSchema(t), [t]);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting }
+  } = useForm<CustomEditorInput>({
+    resolver: zodResolver(schema),
+    defaultValues: customEditorDefaultValues,
+    mode: "onBlur",
+    reValidateMode: "onChange"
+  });
+
+  const [addModalOpen, setAddModalOpen] = useState(false);
+
+  const openModal = useCallback(() => {
+    reset(customEditorDefaultValues);
+    setAddModalOpen(true);
+  }, [reset]);
+
+  const closeModal = useCallback(() => {
+    reset(customEditorDefaultValues);
+    setAddModalOpen(false);
+  }, [reset]);
+
+  const onSubmit = useCallback((_values: CustomEditorInput) => {
+    // TODO: Wire to store action / IPC for persistence (Phase 2)
+  }, []);
 
   function renderContent() {
     if (editorsLoading) return <EditorsSkeleton />;
@@ -97,7 +127,7 @@ export function Editors() {
 
         <button
           type="button"
-          onClick={() => setAddModalOpen(true)}
+          onClick={openModal}
           className="flex min-h-50 flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-200 bg-transparent p-5 text-slate-400 transition-colors outline-none hover:border-slate-300 hover:bg-slate-50 hover:text-slate-500 focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
         >
           <Plus size={22} strokeWidth={1.5} />
@@ -119,37 +149,95 @@ export function Editors() {
       <BaseModal
         open={addModalOpen}
         title={t("editors.modal.title")}
-        onClose={() => setAddModalOpen(false)}
+        onClose={closeModal}
         footer={
           <div className="flex justify-end gap-2">
-            <Button variant={BUTTON_VARIANT.SECONDARY} onClick={() => setAddModalOpen(false)}>
+            <Button variant={BUTTON_VARIANT.SECONDARY} onClick={closeModal}>
               {t("common.cancel")}
             </Button>
-            <Button>{t("editors.modal.addEditor")}</Button>
+            <Button type="submit" form="add-custom-editor-form" disabled={isSubmitting}>
+              {t("editors.modal.addEditor")}
+            </Button>
           </div>
         }
       >
-        <div className="grid gap-4">
-          <p className="text-sm text-slate-500">{t("editors.modal.description")}</p>
-          <div className="grid gap-4 sm:grid-cols-2">
+        <form
+          id="add-custom-editor-form"
+          onSubmit={(e) => {
+            handleSubmit(onSubmit)(e);
+          }}
+          noValidate
+        >
+          <div className="grid gap-4">
+            <p className="text-sm text-slate-500">{t("editors.modal.description")}</p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="flex flex-col gap-1.5 text-sm">
+                <span className="font-medium text-slate-700">{t("editors.modal.name")}</span>
+                <input
+                  type="text"
+                  placeholder={t("editors.modal.placeholderName")}
+                  className={getInputClass(!!errors.name)}
+                  aria-invalid={!!errors.name}
+                  aria-describedby={errors.name ? "name-error" : undefined}
+                  {...register("name")}
+                />
+                {errors.name && (
+                  <p id="name-error" className="text-xs text-red-500" role="alert">
+                    {errors.name.message}
+                  </p>
+                )}
+              </label>
+              <label className="flex flex-col gap-1.5 text-sm">
+                <span className="font-medium text-slate-700">{t("editors.modal.cliCommand")}</span>
+                <input
+                  type="text"
+                  placeholder={t("editors.modal.placeholderCli")}
+                  className={getInputClass(!!errors.cli)}
+                  aria-invalid={!!errors.cli}
+                  aria-describedby={errors.cli ? "cli-error" : undefined}
+                  {...register("cli")}
+                />
+                {errors.cli && (
+                  <p id="cli-error" className="text-xs text-red-500" role="alert">
+                    {errors.cli.message}
+                  </p>
+                )}
+              </label>
+            </div>
             <label className="flex flex-col gap-1.5 text-sm">
-              <span className="font-medium text-slate-700">{t("editors.modal.name")}</span>
-              <input type="text" placeholder={t("editors.modal.placeholderName")} className={inputClass} />
+              <span className="font-medium text-slate-700">{t("editors.modal.extensionsPath")}</span>
+              <input
+                type="text"
+                placeholder={t("editors.modal.placeholderExtensionsPath")}
+                className={getInputClass(!!errors.extensionsPath)}
+                aria-invalid={!!errors.extensionsPath}
+                aria-describedby={errors.extensionsPath ? "extensionsPath-error" : undefined}
+                {...register("extensionsPath")}
+              />
+              {errors.extensionsPath && (
+                <p id="extensionsPath-error" className="text-xs text-red-500" role="alert">
+                  {errors.extensionsPath.message}
+                </p>
+              )}
             </label>
             <label className="flex flex-col gap-1.5 text-sm">
-              <span className="font-medium text-slate-700">{t("editors.modal.cliCommand")}</span>
-              <input type="text" placeholder={t("editors.modal.placeholderCli")} className={inputClass} />
+              <span className="font-medium text-slate-700">{t("editors.modal.settingsPath")}</span>
+              <input
+                type="text"
+                placeholder={t("editors.modal.placeholderSettingsPath")}
+                className={getInputClass(!!errors.settingsPath)}
+                aria-invalid={!!errors.settingsPath}
+                aria-describedby={errors.settingsPath ? "settingsPath-error" : undefined}
+                {...register("settingsPath")}
+              />
+              {errors.settingsPath && (
+                <p id="settingsPath-error" className="text-xs text-red-500" role="alert">
+                  {errors.settingsPath.message}
+                </p>
+              )}
             </label>
           </div>
-          <label className="flex flex-col gap-1.5 text-sm">
-            <span className="font-medium text-slate-700">{t("editors.modal.extensionsPath")}</span>
-            <input type="text" placeholder={t("editors.modal.placeholderExtensionsPath")} className={inputClass} />
-          </label>
-          <label className="flex flex-col gap-1.5 text-sm">
-            <span className="font-medium text-slate-700">{t("editors.modal.settingsPath")}</span>
-            <input type="text" placeholder={t("editors.modal.placeholderSettingsPath")} className={inputClass} />
-          </label>
-        </div>
+        </form>
       </BaseModal>
     </div>
   );

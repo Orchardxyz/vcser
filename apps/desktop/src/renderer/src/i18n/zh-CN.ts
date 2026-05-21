@@ -207,7 +207,7 @@ export const zhCN = {
     addOtherEditor: "添加其他编辑器",
     modal: {
       title: "添加自定义编辑器",
-      description: "填写自定义编辑器的 CLI 命令和相关文件路径。",
+      description: "填写自定义编辑器的相关文件路径，CLI 命令为选填项。",
       name: "名称",
       cliCommand: "CLI 命令",
       extensionsPath: "扩展目录路径",
@@ -216,7 +216,13 @@ export const zhCN = {
       placeholderCli: "myeditor",
       placeholderExtensionsPath: "/path/to/extensions",
       placeholderSettingsPath: "/path/to/User/settings.json",
-      addEditor: "添加编辑器"
+      addEditor: "添加编辑器",
+      validation: {
+        nameRequired: "请输入编辑器名称",
+        nameTooShort: "名称至少需要 2 个字符",
+        extensionsPathRequired: "请输入扩展目录路径",
+        settingsPathRequired: "请输入设置文件路径"
+      }
     }
   },
   editorExtensions: {

@@ -207,7 +207,7 @@ export const en = {
     addOtherEditor: "Add Other Editor",
     modal: {
       title: "Add Custom Editor",
-      description: "Provide the CLI command and file paths for your custom editor.",
+      description: "Provide the file paths and optionally the CLI command for your custom editor.",
       name: "Name",
       cliCommand: "CLI Command",
       extensionsPath: "Extensions Path",
@@ -216,7 +216,13 @@ export const en = {
       placeholderCli: "myeditor",
       placeholderExtensionsPath: "/path/to/extensions",
       placeholderSettingsPath: "/path/to/User/settings.json",
-      addEditor: "Add Editor"
+      addEditor: "Add Editor",
+      validation: {
+        nameRequired: "Name is required",
+        nameTooShort: "Name must be at least 2 characters",
+        extensionsPathRequired: "Extensions path is required",
+        settingsPathRequired: "Settings path is required"
+      }
     }
   },
   editorExtensions: {

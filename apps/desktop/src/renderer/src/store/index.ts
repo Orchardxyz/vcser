@@ -92,6 +92,9 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
     try {
       const detected = await invoke<ResolvedEditor[]>("detect_editors");
       set({ editors: detected ?? [] });
+    } catch (error) {
+      console.error("[vcser] Failed to load editors.", error);
+      set({ editors: [] });
     } finally {
       set({ editorsLoading: false });
     }

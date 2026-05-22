@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { detectEditors, type DetectedEditor } from "@vcser/core/editors/detect";
 import { APP_ICON_STATUS, EDITOR_SOURCE, type CustomEditorRecord, type ResolvedEditor } from "@vcser/core/types";
-import { listCustomEditors } from "../customEditors/store";
+import { CustomEditorStoreError, listCustomEditors } from "../customEditors/store";
 import { resolveAppBundleSelection } from "./appBundle";
 
 export interface ResolvedDesktopEditor extends ResolvedEditor {
@@ -53,6 +53,7 @@ async function toResolvedCustomEditor(editor: CustomEditorRecord): Promise<Resol
   }
 
   return {
+    id: editor.id,
     name: editor.name,
     displayName: editor.displayName,
     slug: editor.slug,
@@ -72,7 +73,18 @@ async function toResolvedCustomEditor(editor: CustomEditorRecord): Promise<Resol
 
 export async function resolveAllEditors(): Promise<ResolvedDesktopEditor[]> {
   const detected = await detectEditors();
-  const custom = listCustomEditors();
+  let custom: CustomEditorRecord[] = [];
+
+  try {
+    custom = await listCustomEditors();
+  } catch (error) {
+    if (!(error instanceof CustomEditorStoreError) || error.code !== "custom_editor_store_unavailable") {
+      throw error;
+    }
+
+    console.warn("[vcser] Custom editor storage unavailable; continuing without custom editors.");
+  }
+
   const resolvedCustom = await Promise.all(custom.map((editor) => toResolvedCustomEditor(editor)));
 
   return [...detected.map(toResolvedDetectedEditor), ...resolvedCustom.filter((editor): editor is ResolvedDesktopEditor => Boolean(editor))];

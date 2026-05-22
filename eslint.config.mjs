@@ -97,6 +97,14 @@ export default tseslint.config(
   },
 
   {
+    files: ["apps/*/src/renderer/src/i18n/**/*.ts"],
+    rules: {
+      "max-lines": "off",
+      "max-len": "off"
+    }
+  },
+
+  {
     files: ["**/*.tsx"],
     rules: {
       "max-lines": ["warn", { ...maxLinesRuleOptions, max: 350 }]

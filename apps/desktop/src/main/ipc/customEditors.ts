@@ -4,13 +4,26 @@ import { SUPPORTED_COMMAND } from "@vcser/core/ipc";
 import {
   type AddCustomEditorResult,
   type CustomEditorInput,
+  type DeleteCustomEditorInput,
+  type DeleteCustomEditorResult,
   type PickCustomEditorAppResult,
-  type PickCustomEditorPathResult
+  type PickCustomEditorPathResult,
+  type UpdateCustomEditorInput,
+  type UpdateCustomEditorResult
 } from "@vcser/core/types";
 import { hasStringProperty, isRecord } from "@vcser/core/typeGuards";
-import { appendCustomEditor } from "../customEditors/store";
+import { appendCustomEditor, CustomEditorStoreError, removeCustomEditor, updateCustomEditor } from "../customEditors/store";
 import { resolveAppBundleSelection } from "../editors/appBundle";
 import { resolveAllEditors } from "../editors/resolveAllEditors";
+
+function logCustomEditorDebug(message: string, details?: unknown) {
+  if (details === undefined) {
+    console.info(`[vcser][custom-editor][ipc] ${message}`);
+    return;
+  }
+
+  console.info(`[vcser][custom-editor][ipc] ${message}`, details);
+}
 
 function hasOptionalStringProperty(value: unknown, key: string): boolean {
   return !isRecord(value) || !(key in value) || typeof value[key] === "string";
@@ -27,6 +40,14 @@ function isCustomEditorInput(value: unknown): value is CustomEditorInput {
   );
 }
 
+function isUpdateCustomEditorInput(value: unknown): value is UpdateCustomEditorInput {
+  return isCustomEditorInput(value) && hasStringProperty(value, "id");
+}
+
+function isDeleteCustomEditorInput(value: unknown): value is DeleteCustomEditorInput {
+  return isRecord(value) && hasStringProperty(value, "id");
+}
+
 function normalizeRequiredString(value: string) {
   return value.trim();
 }
@@ -34,6 +55,10 @@ function normalizeRequiredString(value: string) {
 function normalizeOptionalString(value?: string) {
   const normalized = value?.trim();
   return normalized ? normalized : undefined;
+}
+
+function isStoreNotFoundError(error: unknown): error is CustomEditorStoreError {
+  return error instanceof CustomEditorStoreError && error.code === "custom_editor_not_found";
 }
 
 function getAppFilters() {
@@ -120,7 +145,10 @@ export function registerCustomEditorHandlers() {
   });
 
   ipcMain.handle(SUPPORTED_COMMAND.ADD_CUSTOM_EDITOR, async (_event, payload: unknown) => {
+    logCustomEditorDebug("Received add request.", payload);
+
     if (!isCustomEditorInput(payload)) {
+      logCustomEditorDebug("Rejected add request because payload is invalid.");
       return {
         success: false,
         errorKey: RUNTIME_MESSAGE_KEY.INVALID_ADD_CUSTOM_EDITOR_PAYLOAD
@@ -128,6 +156,89 @@ export function registerCustomEditorHandlers() {
     }
 
     const normalized: CustomEditorInput = {
+      name: normalizeRequiredString(payload.name),
+      cli: normalizeOptionalString(payload.cli),
+      appPath: normalizeOptionalString(payload.appPath),
+      extensionsPath: normalizeRequiredString(payload.extensionsPath),
+      settingsPath: normalizeRequiredString(payload.settingsPath)
+    };
+    logCustomEditorDebug("Normalized add payload.", normalized);
+
+    if (normalized.appPath) {
+      const selection = await resolveAppBundleSelection(normalized.appPath);
+      logCustomEditorDebug("Resolved application bundle selection.", selection);
+
+      if (selection.unsupported) {
+        logCustomEditorDebug("Rejected add request because selected application is unsupported.");
+        return {
+          success: false,
+          errorKey: RUNTIME_MESSAGE_KEY.UNSUPPORTED_CUSTOM_EDITOR_APP,
+          errorParams: {
+            appName: selection.suggestedName
+          }
+        } satisfies AddCustomEditorResult;
+      }
+    }
+
+    const editors = await resolveAllEditors();
+    const samePathEditor = editors.find(
+      (editor) =>
+        editor.extensionsPath === normalized.extensionsPath || editor.settingsPath === normalized.settingsPath || editor.name === normalized.name
+    );
+    logCustomEditorDebug("Resolved editors before add.", {
+      count: editors.length,
+      editorSlugs: editors.map((editor) => editor.slug)
+    });
+
+    if (samePathEditor) {
+      logCustomEditorDebug("Rejected add request because an editor already matches the submitted values.", samePathEditor);
+      return {
+        success: false,
+        errorKey: RUNTIME_MESSAGE_KEY.CUSTOM_EDITOR_ALREADY_EXISTS,
+        errorParams: {
+          editorName: samePathEditor.displayName
+        }
+      } satisfies AddCustomEditorResult;
+    }
+
+    try {
+      logCustomEditorDebug("Persisting custom editor.");
+      const record = await appendCustomEditor(
+        normalized,
+        editors.map((editor) => editor.slug)
+      );
+      logCustomEditorDebug("Persisted custom editor record.", record);
+      const nextEditors = await resolveAllEditors();
+      const created = nextEditors.find((editor) => editor.slug === record.slug);
+      logCustomEditorDebug("Resolved editors after add.", {
+        count: nextEditors.length,
+        createdEditor: created
+      });
+
+      return {
+        success: true,
+        editor: created
+      } satisfies AddCustomEditorResult;
+    } catch (error) {
+      logCustomEditorDebug("Failed to add custom editor.", error);
+      return {
+        success: false,
+        errorKey: RUNTIME_MESSAGE_KEY.CUSTOM_EDITOR_PERSIST_FAILED,
+        error: error instanceof Error ? error.message : String(error)
+      } satisfies AddCustomEditorResult;
+    }
+  });
+
+  ipcMain.handle(SUPPORTED_COMMAND.UPDATE_CUSTOM_EDITOR, async (_event, payload: unknown) => {
+    if (!isUpdateCustomEditorInput(payload)) {
+      return {
+        success: false,
+        errorKey: RUNTIME_MESSAGE_KEY.INVALID_UPDATE_CUSTOM_EDITOR_PAYLOAD
+      } satisfies UpdateCustomEditorResult;
+    }
+
+    const normalized: UpdateCustomEditorInput = {
+      id: normalizeRequiredString(payload.id),
       name: normalizeRequiredString(payload.name),
       cli: normalizeOptionalString(payload.cli),
       appPath: normalizeOptionalString(payload.appPath),
@@ -145,14 +256,15 @@ export function registerCustomEditorHandlers() {
           errorParams: {
             appName: selection.suggestedName
           }
-        } satisfies AddCustomEditorResult;
+        } satisfies UpdateCustomEditorResult;
       }
     }
 
     const editors = await resolveAllEditors();
     const samePathEditor = editors.find(
       (editor) =>
-        editor.extensionsPath === normalized.extensionsPath || editor.settingsPath === normalized.settingsPath || editor.name === normalized.name
+        editor.id !== normalized.id &&
+        (editor.extensionsPath === normalized.extensionsPath || editor.settingsPath === normalized.settingsPath || editor.name === normalized.name)
     );
 
     if (samePathEditor) {
@@ -162,27 +274,69 @@ export function registerCustomEditorHandlers() {
         errorParams: {
           editorName: samePathEditor.displayName
         }
-      } satisfies AddCustomEditorResult;
+      } satisfies UpdateCustomEditorResult;
     }
 
     try {
-      const record = appendCustomEditor(
-        normalized,
-        editors.map((editor) => editor.slug)
-      );
+      const record = await updateCustomEditor(normalized);
       const nextEditors = await resolveAllEditors();
-      const created = nextEditors.find((editor) => editor.slug === record.slug);
+      const updated = nextEditors.find((editor) => editor.id === record.id);
 
       return {
         success: true,
-        editor: created
-      } satisfies AddCustomEditorResult;
+        editor: updated
+      } satisfies UpdateCustomEditorResult;
     } catch (error) {
+      if (isStoreNotFoundError(error)) {
+        return {
+          success: false,
+          errorKey: RUNTIME_MESSAGE_KEY.CUSTOM_EDITOR_NOT_FOUND
+        } satisfies UpdateCustomEditorResult;
+      }
+
       return {
         success: false,
         errorKey: RUNTIME_MESSAGE_KEY.CUSTOM_EDITOR_PERSIST_FAILED,
         error: error instanceof Error ? error.message : String(error)
-      } satisfies AddCustomEditorResult;
+      } satisfies UpdateCustomEditorResult;
+    }
+  });
+
+  ipcMain.handle(SUPPORTED_COMMAND.DELETE_CUSTOM_EDITOR, async (_event, payload: unknown) => {
+    if (!isDeleteCustomEditorInput(payload)) {
+      return {
+        success: false,
+        id: "",
+        errorKey: RUNTIME_MESSAGE_KEY.INVALID_DELETE_CUSTOM_EDITOR_PAYLOAD
+      } satisfies DeleteCustomEditorResult;
+    }
+
+    const normalizedId = normalizeRequiredString(payload.id);
+
+    try {
+      const record = await removeCustomEditor(normalizedId);
+
+      return {
+        success: true,
+        id: normalizedId,
+        slug: record.slug,
+        displayName: record.displayName
+      } satisfies DeleteCustomEditorResult;
+    } catch (error) {
+      if (isStoreNotFoundError(error)) {
+        return {
+          success: false,
+          id: normalizedId,
+          errorKey: RUNTIME_MESSAGE_KEY.CUSTOM_EDITOR_NOT_FOUND
+        } satisfies DeleteCustomEditorResult;
+      }
+
+      return {
+        success: false,
+        id: normalizedId,
+        errorKey: RUNTIME_MESSAGE_KEY.CUSTOM_EDITOR_DELETE_FAILED,
+        error: error instanceof Error ? error.message : String(error)
+      } satisfies DeleteCustomEditorResult;
     }
   });
 }

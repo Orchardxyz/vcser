@@ -16,6 +16,7 @@ export const EDITOR_SOURCE = {
 export type EditorSource = ValueOf<typeof EDITOR_SOURCE>;
 
 export interface ResolvedEditor {
+  id?: string;
   name: string;
   displayName: string;
   slug: string;
@@ -72,6 +73,32 @@ export interface PickCustomEditorPathResult {
 export interface AddCustomEditorResult {
   success: boolean;
   editor?: ResolvedEditor;
+  errorKey?: RuntimeMessageKey;
+  errorParams?: RuntimeMessageParams;
+  error?: string;
+}
+
+export interface UpdateCustomEditorInput extends CustomEditorInput {
+  id: string;
+}
+
+export interface DeleteCustomEditorInput {
+  id: string;
+}
+
+export interface UpdateCustomEditorResult {
+  success: boolean;
+  editor?: ResolvedEditor;
+  errorKey?: RuntimeMessageKey;
+  errorParams?: RuntimeMessageParams;
+  error?: string;
+}
+
+export interface DeleteCustomEditorResult {
+  success: boolean;
+  id: string;
+  slug?: string;
+  displayName?: string;
   errorKey?: RuntimeMessageKey;
   errorParams?: RuntimeMessageParams;
   error?: string;

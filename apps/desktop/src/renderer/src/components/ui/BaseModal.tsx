@@ -12,9 +12,10 @@ interface BaseModalProps {
   onClose: () => void;
   children: ReactNode;
   footer?: ReactNode;
+  maskClosable?: boolean;
 }
 
-export function BaseModal({ open, title, onClose, children, footer }: BaseModalProps) {
+export function BaseModal({ open, title, onClose, children, footer, maskClosable = true }: BaseModalProps) {
   const { t } = useTranslation();
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement | null>(null);
@@ -33,7 +34,7 @@ export function BaseModal({ open, title, onClose, children, footer }: BaseModalP
   );
 
   useClickAway(dialogRef, () => {
-    if (open) {
+    if (open && maskClosable) {
       onClose();
     }
   });

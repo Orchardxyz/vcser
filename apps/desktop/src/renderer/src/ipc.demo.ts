@@ -3,6 +3,7 @@ import { RUNTIME_MESSAGE_KEY } from "@vcser/core/i18n";
 import type { JsonObject } from "type-fest";
 import type {
   AddCustomEditorResult,
+  DeleteCustomEditorResult,
   EditorExtensionItem,
   EditorExtensionMutationResult,
   EditorExtensionsResult,
@@ -13,7 +14,8 @@ import type {
   ResolvedEditor,
   SettingsDiffByExtensionResult,
   SettingsDiffResult,
-  SyncResult
+  SyncResult,
+  UpdateCustomEditorResult
 } from "./types";
 import { APP_ICON_STATUS, CHANGE_TYPE, EDITOR_EXTENSION_ACTION, EDITOR_SOURCE, EXTENSION_SETTINGS_GROUP_KIND } from "./types";
 import { SUPPORTED_COMMAND, type SupportedCommand } from "@vcser/core/ipc";
@@ -133,6 +135,23 @@ function isCustomEditorInputPayload(value: unknown): value is {
   );
 }
 
+function isUpdateCustomEditorInputPayload(value: unknown): value is {
+  id: string;
+  name: string;
+  cli?: string;
+  appPath?: string;
+  extensionsPath: string;
+  settingsPath: string;
+} {
+  return isCustomEditorInputPayload(value) && typeof (value as { id?: unknown }).id === "string";
+}
+
+function isDeleteCustomEditorInputPayload(value: unknown): value is {
+  id: string;
+} {
+  return !!value && typeof value === "object" && typeof (value as { id?: unknown }).id === "string";
+}
+
 function slugifyName(name: string): string {
   return (
     name
@@ -161,6 +180,7 @@ function createDemoCustomEditor(payload: {
   }
 
   return {
+    id: crypto.randomUUID(),
     name: payload.name.trim(),
     displayName: payload.name.trim(),
     slug,
@@ -174,6 +194,76 @@ function createDemoCustomEditor(payload: {
     appPath: payload.appPath?.trim() || undefined,
     iconStatus: APP_ICON_STATUS.FALLBACK,
     source: EDITOR_SOURCE.CUSTOM
+  };
+}
+
+function findDemoCustomEditorIndex(id: string): number {
+  return demoCustomEditors.findIndex((editor) => editor.id === id);
+}
+
+function updateDemoCustomEditor(payload: {
+  id: string;
+  name: string;
+  cli?: string;
+  appPath?: string;
+  extensionsPath: string;
+  settingsPath: string;
+}): UpdateCustomEditorResult {
+  const index = findDemoCustomEditorIndex(payload.id);
+
+  if (index < 0) {
+    return {
+      success: false,
+      errorKey: RUNTIME_MESSAGE_KEY.CUSTOM_EDITOR_NOT_FOUND
+    };
+  }
+
+  const current = demoCustomEditors[index];
+  const nextEditor: ResolvedEditor = {
+    ...current,
+    name: payload.name.trim(),
+    displayName: payload.name.trim(),
+    cli: payload.cli?.trim() ?? "",
+    cliAvailable: Boolean(payload.cli?.trim()),
+    appPath: payload.appPath?.trim() || undefined,
+    extensionsPath: payload.extensionsPath.trim(),
+    settingsPath: payload.settingsPath.trim()
+  };
+
+  demoCustomEditors[index] = nextEditor;
+  const currentExtensions = demoEditorExtensionsBySlug.get(current.slug);
+  if (currentExtensions) {
+    demoEditorExtensionsBySlug.set(current.slug, {
+      ...currentExtensions,
+      editorName: nextEditor.displayName
+    });
+  }
+
+  return {
+    success: true,
+    editor: { ...nextEditor }
+  };
+}
+
+function deleteDemoCustomEditor(payload: { id: string }): DeleteCustomEditorResult {
+  const index = findDemoCustomEditorIndex(payload.id);
+
+  if (index < 0) {
+    return {
+      success: false,
+      id: payload.id,
+      errorKey: RUNTIME_MESSAGE_KEY.CUSTOM_EDITOR_NOT_FOUND
+    };
+  }
+
+  const [removed] = demoCustomEditors.splice(index, 1);
+  demoEditorExtensionsBySlug.delete(removed.slug);
+
+  return {
+    success: true,
+    id: payload.id,
+    slug: removed.slug,
+    displayName: removed.displayName
   };
 }
 
@@ -198,6 +288,14 @@ const defaultResponses: Record<SupportedCommand, unknown> = {
     success: true,
     editor: undefined
   } satisfies AddCustomEditorResult,
+  [SUPPORTED_COMMAND.UPDATE_CUSTOM_EDITOR]: {
+    success: true,
+    editor: undefined
+  } satisfies UpdateCustomEditorResult,
+  [SUPPORTED_COMMAND.DELETE_CUSTOM_EDITOR]: {
+    success: true,
+    id: "demo-custom-editor"
+  } satisfies DeleteCustomEditorResult,
   [SUPPORTED_COMMAND.GET_EDITOR_EXTENSIONS]: getDemoEditorExtensions("cursor"),
   [SUPPORTED_COMMAND.SET_EDITOR_EXTENSION_DISABLED]: {
     action: EDITOR_EXTENSION_ACTION.DISABLE,
@@ -492,6 +590,14 @@ export function resolveDemoResponse<T>(command: string, payload?: unknown): T | 
       success: true,
       editor: { ...nextEditor }
     } as T;
+  }
+
+  if (command === SUPPORTED_COMMAND.UPDATE_CUSTOM_EDITOR && isUpdateCustomEditorInputPayload(payload)) {
+    return updateDemoCustomEditor(payload) as T;
+  }
+
+  if (command === SUPPORTED_COMMAND.DELETE_CUSTOM_EDITOR && isDeleteCustomEditorInputPayload(payload)) {
+    return deleteDemoCustomEditor(payload) as T;
   }
 
   if (command === SUPPORTED_COMMAND.EXECUTE_SYNC && isSyncPayload(payload)) {

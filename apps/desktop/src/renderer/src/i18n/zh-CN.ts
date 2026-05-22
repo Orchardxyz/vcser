@@ -1,4 +1,4 @@
-export const zhCN = {
+export default {
   common: {
     unknown: "未知",
     close: "关闭",
@@ -206,9 +206,16 @@ export const zhCN = {
     extensions: "扩展",
     settings: "设置",
     addOtherEditor: "添加其他编辑器",
+    actions: {
+      openMenu: "打开编辑器操作菜单",
+      edit: "编辑",
+      delete: "删除"
+    },
     modal: {
       title: "添加自定义编辑器",
       description: "如有应用路径可先选择应用，再填写扩展目录与设置文件路径。",
+      editTitle: "编辑自定义编辑器",
+      editDescription: "更新这个自定义编辑器的应用路径、扩展目录与设置文件路径。",
       appPath: "编辑器应用",
       name: "名称",
       cliCommand: "CLI 命令（选填）",
@@ -223,6 +230,7 @@ export const zhCN = {
       placeholderExtensionsPath: "/path/to/extensions",
       placeholderSettingsPath: "/path/to/User/settings.json",
       addEditor: "添加编辑器",
+      saveEditor: "保存修改",
       validation: {
         nameRequired: "请输入编辑器名称",
         nameTooShort: "名称至少需要 2 个字符",
@@ -230,9 +238,18 @@ export const zhCN = {
         settingsPathRequired: "请输入设置文件路径"
       }
     },
+    deleteModal: {
+      title: "删除自定义编辑器",
+      description: "从 vcser 已保存的自定义编辑器中移除 {{editor}}。",
+      note: "这只会删除 vcser 内保存的配置，不会删除当前设备上的应用、扩展目录或设置文件。"
+    },
     toasts: {
       added: "已添加自定义编辑器",
       addFailed: "添加自定义编辑器失败",
+      updated: "已更新自定义编辑器",
+      updateFailed: "更新自定义编辑器失败",
+      deleted: "已删除自定义编辑器",
+      deleteFailed: "删除自定义编辑器失败",
       pickerFailed: "选择路径失败"
     }
   },
@@ -274,13 +291,17 @@ export const zhCN = {
   },
   runtime: {
     invalidAddCustomEditorPayload: "添加自定义编辑器请求的参数无效。",
+    invalidUpdateCustomEditorPayload: "更新自定义编辑器请求的参数无效。",
+    invalidDeleteCustomEditorPayload: "删除自定义编辑器请求的参数无效。",
     unsupportedCustomEditorApp: "{{appName}} 是辅助程序或 URL Handler，不能作为编辑器添加。",
     invalidDisablePayload: "禁用请求的参数无效。",
     invalidUninstallPayload: "卸载请求的参数无效。",
     editorUnavailable: "所选编辑器已不可用。",
     stateDatabaseNotWritable: "该编辑器未暴露可写的状态数据库。",
     customEditorAlreadyExists: "已存在相同的编辑器配置。",
+    customEditorNotFound: "未找到该自定义编辑器。",
     customEditorPersistFailed: "保存自定义编辑器配置失败。",
+    customEditorDeleteFailed: "删除自定义编辑器配置失败。",
     customEditorPickerUnavailable: "当前无法使用系统路径选择器。",
     missingExtensionIdOrSourceEditor: "缺少扩展 ID 或源编辑器。",
     sourceOrTargetEditorUnavailable: "源编辑器或目标编辑器已不可用。",

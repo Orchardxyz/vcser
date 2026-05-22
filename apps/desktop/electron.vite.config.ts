@@ -11,6 +11,7 @@ const root = import.meta.dirname;
 const rendererPath = path.resolve(root, "src/renderer/src");
 const assetsPath = path.resolve(root, "src/assets");
 const coreSrcPath = path.resolve(root, "../../packages/core/src");
+const nativeMainExternals = ["@prisma/adapter-better-sqlite3", "better-sqlite3", "bindings"];
 
 const coreAliases: Array<{ find: string; replacement: string }> = [
   { find: "@vcser/core/db", replacement: path.resolve(coreSrcPath, "db.ts") },
@@ -25,6 +26,9 @@ const coreAliases: Array<{ find: string; replacement: string }> = [
 const preload = {
   clearScreen: false,
   build: {
+    externalizeDeps: {
+      include: nativeMainExternals
+    },
     rollupOptions: {
       output: {
         format: "cjs"
@@ -39,6 +43,11 @@ const preload = {
 export default defineConfig({
   main: {
     clearScreen: false,
+    build: {
+      externalizeDeps: {
+        include: nativeMainExternals
+      }
+    },
     resolve: {
       alias: coreAliases
     }

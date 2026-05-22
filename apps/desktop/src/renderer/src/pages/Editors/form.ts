@@ -3,6 +3,7 @@ import type { TFunction } from "i18next";
 import type { CustomEditorInput } from "@/types";
 
 export const customEditorDefaultValues: CustomEditorInput = {
+  appPath: "",
   name: "",
   cli: "",
   extensionsPath: "",
@@ -11,6 +12,7 @@ export const customEditorDefaultValues: CustomEditorInput = {
 
 export function createCustomEditorSchema(t: TFunction<"translation", undefined>) {
   return z.object({
+    appPath: z.string().trim(),
     name: z.string().trim().min(1, t("editors.modal.validation.nameRequired")).min(2, t("editors.modal.validation.nameTooShort")),
     cli: z.string().trim(),
     extensionsPath: z.string().trim().min(1, t("editors.modal.validation.extensionsPathRequired")),

@@ -1,6 +1,6 @@
 import { APP_LOCALE } from "@vcser/core/i18n";
-import { en } from "./en";
-import { zhCN } from "./zh-CN";
+import en from "./en";
+import zhCN from "./zh-CN";
 
 export const resources = {
   [APP_LOCALE.EN]: {

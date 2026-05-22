@@ -15,3 +15,18 @@ model ExtensionNamespaceCache {
   @@unique([extensionId, namespace])
   @@index([namespace])
 }
+
+model CustomEditor {
+  id             String   @id @default(uuid())
+  slug           String   @unique
+  name           String
+  displayName    String
+  cli            String?
+  appPath        String?
+  extensionsPath String
+  settingsPath   String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([slug])
+}

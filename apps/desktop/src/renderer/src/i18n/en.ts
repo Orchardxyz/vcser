@@ -1,4 +1,4 @@
-export const en = {
+export default {
   common: {
     unknown: "Unknown",
     close: "Close",
@@ -202,27 +202,55 @@ export const en = {
     emptyTitle: "No supported editors detected",
     emptyDescription: "Install a supported editor to get started",
     detected: "Detected",
+    custom: "Custom",
     extensions: "Extensions",
     settings: "Settings",
     addOtherEditor: "Add Other Editor",
+    actions: {
+      openMenu: "Open editor actions",
+      edit: "Edit",
+      delete: "Delete"
+    },
     modal: {
       title: "Add Custom Editor",
-      description: "Provide the file paths and optionally the CLI command for your custom editor.",
+      description: "Select your editor app if available, then provide the extensions and settings paths.",
+      editTitle: "Edit Custom Editor",
+      editDescription: "Update the editor app, extensions path, and settings path for this custom editor.",
+      appPath: "Editor App",
       name: "Name",
-      cliCommand: "CLI Command",
+      cliCommand: "CLI Command (optional)",
       extensionsPath: "Extensions Path",
       settingsPath: "Settings Path",
+      browseApp: "Select App",
+      browseFolder: "Browse Folder",
+      browseFile: "Browse File",
+      placeholderAppPath: "/Applications/My Editor.app",
       placeholderName: "My Editor",
       placeholderCli: "myeditor",
       placeholderExtensionsPath: "/path/to/extensions",
       placeholderSettingsPath: "/path/to/User/settings.json",
       addEditor: "Add Editor",
+      saveEditor: "Save Changes",
       validation: {
         nameRequired: "Name is required",
         nameTooShort: "Name must be at least 2 characters",
         extensionsPathRequired: "Extensions path is required",
         settingsPathRequired: "Settings path is required"
       }
+    },
+    deleteModal: {
+      title: "Delete custom editor",
+      description: "Remove {{editor}} from vcser's saved custom editors.",
+      note: "This only removes the saved vcser configuration. It does not delete the app, extensions folder, or settings file on this device."
+    },
+    toasts: {
+      added: "Custom editor added",
+      addFailed: "Failed to add custom editor",
+      updated: "Custom editor updated",
+      updateFailed: "Failed to update custom editor",
+      deleted: "Custom editor deleted",
+      deleteFailed: "Failed to delete custom editor",
+      pickerFailed: "Failed to select path"
     }
   },
   editorExtensions: {
@@ -262,10 +290,19 @@ export const en = {
     }
   },
   runtime: {
+    invalidAddCustomEditorPayload: "The add custom editor payload is invalid.",
+    invalidUpdateCustomEditorPayload: "The update custom editor payload is invalid.",
+    invalidDeleteCustomEditorPayload: "The delete custom editor payload is invalid.",
+    unsupportedCustomEditorApp: "{{appName}} is a helper or URL-handler app and cannot be added as an editor.",
     invalidDisablePayload: "The disable request payload is invalid.",
     invalidUninstallPayload: "The uninstall request payload is invalid.",
     editorUnavailable: "The selected editor is no longer available.",
     stateDatabaseNotWritable: "This editor does not expose a writable state database.",
+    customEditorAlreadyExists: "A matching editor configuration already exists.",
+    customEditorNotFound: "The custom editor could not be found.",
+    customEditorPersistFailed: "Failed to save the custom editor configuration.",
+    customEditorDeleteFailed: "Failed to delete the custom editor configuration.",
+    customEditorPickerUnavailable: "The system picker is unavailable right now.",
     missingExtensionIdOrSourceEditor: "Missing extension ID or source editor.",
     sourceOrTargetEditorUnavailable: "Source or target editor is no longer available.",
     unsupportedSyncAction: "Unsupported sync action: {{actionType}}.",

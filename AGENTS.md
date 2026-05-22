@@ -70,6 +70,7 @@ DESIGN.md                Authoritative UI design reference
 
 ## Practical Defaults For Agents
 
+- Before ending a task, run the narrowest relevant validation aligned with `package.json` guardrails such as `eslint`, `tsc`, or the staged-file checks implied by `lint-staged`; do not assume commit hooks will catch avoidable issues later.
 - For UI work, inspect `apps/desktop/src/renderer/src/`, `apps/desktop/src/renderer/src/components/`, and `apps/desktop/src/renderer/src/pages/` first.
 - For shared contracts and reusable runtime logic, inspect `packages/core/src/shared/` and `packages/core/src/editors/` first.
 - For desktop runtime work, inspect `apps/desktop/src/main/`, `apps/desktop/src/preload/`, and then the relevant `packages/core/src/` modules.

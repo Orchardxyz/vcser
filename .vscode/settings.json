@@ -3,5 +3,9 @@
   "i18n-ally.enabledFrameworks": ["i18next", "react-i18next"],
   "i18n-ally.enabledParsers": ["ts"],
   "i18n-ally.pathMatcher": "{locale}.ts",
-  "i18n-ally.sourceLanguage": "en"
+  "i18n-ally.sourceLanguage": "en",
+  "i18n-ally.theme.annotation": "#a8ff60",
+  "i18n-ally.theme.annotationBorder": "#a8ff60",
+  "i18n-ally.theme.annotationMissing": "#ff6e6e",
+  "i18n-ally.theme.annotationMissingBorder": "#ff6e6e"
 }

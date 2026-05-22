@@ -2,24 +2,29 @@
 import { RUNTIME_MESSAGE_KEY } from "@vcser/core/i18n";
 import type { JsonObject } from "type-fest";
 import type {
+  AddCustomEditorResult,
+  DeleteCustomEditorResult,
   EditorExtensionItem,
   EditorExtensionMutationResult,
   EditorExtensionsResult,
   ExtensionDiffResult,
   MachineIdentity,
+  PickCustomEditorAppResult,
+  PickCustomEditorPathResult,
   ResolvedEditor,
   SettingsDiffByExtensionResult,
   SettingsDiffResult,
-  SyncResult
+  SyncResult,
+  UpdateCustomEditorResult
 } from "./types";
-import { APP_ICON_STATUS, CHANGE_TYPE, EDITOR_EXTENSION_ACTION, EXTENSION_SETTINGS_GROUP_KIND } from "./types";
+import { APP_ICON_STATUS, CHANGE_TYPE, EDITOR_EXTENSION_ACTION, EDITOR_SOURCE, EXTENSION_SETTINGS_GROUP_KIND } from "./types";
 import { SUPPORTED_COMMAND, type SupportedCommand } from "@vcser/core/ipc";
 
 function createDemoItems(items: EditorExtensionItem[]): EditorExtensionItem[] {
   return items.map((item) => ({ ...item }));
 }
 
-const demoEditors: ResolvedEditor[] = [
+const builtInDemoEditors: ResolvedEditor[] = [
   {
     name: "Cursor",
     displayName: "Cursor",
@@ -31,7 +36,8 @@ const demoEditors: ResolvedEditor[] = [
     cliAvailable: true,
     extensionsExist: true,
     settingsExist: true,
-    iconStatus: APP_ICON_STATUS.FALLBACK
+    iconStatus: APP_ICON_STATUS.FALLBACK,
+    source: EDITOR_SOURCE.DETECTED
   },
   {
     name: "Windsurf",
@@ -44,7 +50,8 @@ const demoEditors: ResolvedEditor[] = [
     cliAvailable: true,
     extensionsExist: true,
     settingsExist: true,
-    iconStatus: APP_ICON_STATUS.FALLBACK
+    iconStatus: APP_ICON_STATUS.FALLBACK,
+    source: EDITOR_SOURCE.DETECTED
   },
   {
     name: "VS Code",
@@ -57,9 +64,12 @@ const demoEditors: ResolvedEditor[] = [
     cliAvailable: true,
     extensionsExist: true,
     settingsExist: true,
-    iconStatus: APP_ICON_STATUS.FALLBACK
+    iconStatus: APP_ICON_STATUS.FALLBACK,
+    source: EDITOR_SOURCE.DETECTED
   }
 ];
+
+const demoCustomEditors: ResolvedEditor[] = [];
 
 const demoMachineIdentity: MachineIdentity = {
   displayName: "My MacBook",
@@ -105,9 +115,187 @@ const demoEditorExtensionsBySlug = new Map<string, EditorExtensionsResult>([
   ]
 ]);
 
+function getDemoEditors(): ResolvedEditor[] {
+  return [...builtInDemoEditors, ...demoCustomEditors].map((editor) => ({ ...editor }));
+}
+
+function isCustomEditorInputPayload(value: unknown): value is {
+  name: string;
+  cli?: string;
+  appPath?: string;
+  extensionsPath: string;
+  settingsPath: string;
+} {
+  return (
+    !!value &&
+    typeof value === "object" &&
+    typeof (value as { name?: unknown }).name === "string" &&
+    typeof (value as { extensionsPath?: unknown }).extensionsPath === "string" &&
+    typeof (value as { settingsPath?: unknown }).settingsPath === "string"
+  );
+}
+
+function isUpdateCustomEditorInputPayload(value: unknown): value is {
+  id: string;
+  name: string;
+  cli?: string;
+  appPath?: string;
+  extensionsPath: string;
+  settingsPath: string;
+} {
+  return isCustomEditorInputPayload(value) && typeof (value as { id?: unknown }).id === "string";
+}
+
+function isDeleteCustomEditorInputPayload(value: unknown): value is {
+  id: string;
+} {
+  return !!value && typeof value === "object" && typeof (value as { id?: unknown }).id === "string";
+}
+
+function slugifyName(name: string): string {
+  return (
+    name
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "editor"
+  );
+}
+
+function createDemoCustomEditor(payload: {
+  name: string;
+  cli?: string;
+  appPath?: string;
+  extensionsPath: string;
+  settingsPath: string;
+}): ResolvedEditor {
+  const usedSlugs = new Set(getDemoEditors().map((editor) => editor.slug));
+  const baseSlug = `custom-${slugifyName(payload.name)}`;
+  let slug = baseSlug;
+  let index = 2;
+
+  while (usedSlugs.has(slug)) {
+    slug = `${baseSlug}-${index}`;
+    index += 1;
+  }
+
+  return {
+    id: crypto.randomUUID(),
+    name: payload.name.trim(),
+    displayName: payload.name.trim(),
+    slug,
+    cli: payload.cli?.trim() ?? "",
+    badgeColor: "slate",
+    extensionsPath: payload.extensionsPath.trim(),
+    settingsPath: payload.settingsPath.trim(),
+    cliAvailable: Boolean(payload.cli?.trim()),
+    extensionsExist: true,
+    settingsExist: true,
+    appPath: payload.appPath?.trim() || undefined,
+    iconStatus: APP_ICON_STATUS.FALLBACK,
+    source: EDITOR_SOURCE.CUSTOM
+  };
+}
+
+function findDemoCustomEditorIndex(id: string): number {
+  return demoCustomEditors.findIndex((editor) => editor.id === id);
+}
+
+function updateDemoCustomEditor(payload: {
+  id: string;
+  name: string;
+  cli?: string;
+  appPath?: string;
+  extensionsPath: string;
+  settingsPath: string;
+}): UpdateCustomEditorResult {
+  const index = findDemoCustomEditorIndex(payload.id);
+
+  if (index < 0) {
+    return {
+      success: false,
+      errorKey: RUNTIME_MESSAGE_KEY.CUSTOM_EDITOR_NOT_FOUND
+    };
+  }
+
+  const current = demoCustomEditors[index];
+  const nextEditor: ResolvedEditor = {
+    ...current,
+    name: payload.name.trim(),
+    displayName: payload.name.trim(),
+    cli: payload.cli?.trim() ?? "",
+    cliAvailable: Boolean(payload.cli?.trim()),
+    appPath: payload.appPath?.trim() || undefined,
+    extensionsPath: payload.extensionsPath.trim(),
+    settingsPath: payload.settingsPath.trim()
+  };
+
+  demoCustomEditors[index] = nextEditor;
+  const currentExtensions = demoEditorExtensionsBySlug.get(current.slug);
+  if (currentExtensions) {
+    demoEditorExtensionsBySlug.set(current.slug, {
+      ...currentExtensions,
+      editorName: nextEditor.displayName
+    });
+  }
+
+  return {
+    success: true,
+    editor: { ...nextEditor }
+  };
+}
+
+function deleteDemoCustomEditor(payload: { id: string }): DeleteCustomEditorResult {
+  const index = findDemoCustomEditorIndex(payload.id);
+
+  if (index < 0) {
+    return {
+      success: false,
+      id: payload.id,
+      errorKey: RUNTIME_MESSAGE_KEY.CUSTOM_EDITOR_NOT_FOUND
+    };
+  }
+
+  const [removed] = demoCustomEditors.splice(index, 1);
+  demoEditorExtensionsBySlug.delete(removed.slug);
+
+  return {
+    success: true,
+    id: payload.id,
+    slug: removed.slug,
+    displayName: removed.displayName
+  };
+}
+
 const defaultResponses: Record<SupportedCommand, unknown> = {
   [SUPPORTED_COMMAND.GET_MACHINE_IDENTITY]: demoMachineIdentity,
-  [SUPPORTED_COMMAND.DETECT_EDITORS]: demoEditors,
+  [SUPPORTED_COMMAND.DETECT_EDITORS]: builtInDemoEditors,
+  [SUPPORTED_COMMAND.PICK_CUSTOM_EDITOR_APP_PATH]: {
+    canceled: false,
+    appPath: "/Applications/Demo Editor.app",
+    suggestedName: "Demo Editor",
+    iconStatus: APP_ICON_STATUS.FALLBACK
+  } satisfies PickCustomEditorAppResult,
+  [SUPPORTED_COMMAND.PICK_CUSTOM_EDITOR_EXTENSIONS_PATH]: {
+    canceled: false,
+    path: "/Users/demo/.demo-editor/extensions"
+  } satisfies PickCustomEditorPathResult,
+  [SUPPORTED_COMMAND.PICK_CUSTOM_EDITOR_SETTINGS_PATH]: {
+    canceled: false,
+    path: "/Users/demo/.demo-editor/User/settings.json"
+  } satisfies PickCustomEditorPathResult,
+  [SUPPORTED_COMMAND.ADD_CUSTOM_EDITOR]: {
+    success: true,
+    editor: undefined
+  } satisfies AddCustomEditorResult,
+  [SUPPORTED_COMMAND.UPDATE_CUSTOM_EDITOR]: {
+    success: true,
+    editor: undefined
+  } satisfies UpdateCustomEditorResult,
+  [SUPPORTED_COMMAND.DELETE_CUSTOM_EDITOR]: {
+    success: true,
+    id: "demo-custom-editor"
+  } satisfies DeleteCustomEditorResult,
   [SUPPORTED_COMMAND.GET_EDITOR_EXTENSIONS]: getDemoEditorExtensions("cursor"),
   [SUPPORTED_COMMAND.SET_EDITOR_EXTENSION_DISABLED]: {
     action: EDITOR_EXTENSION_ACTION.DISABLE,
@@ -302,7 +490,7 @@ function isUninstallEditorExtensionPayload(value: unknown): value is JsonObject 
 }
 
 function getDemoEditorName(editorSlug: string): string {
-  return demoEditors.find((editor) => editor.slug === editorSlug)?.displayName ?? editorSlug;
+  return getDemoEditors().find((editor) => editor.slug === editorSlug)?.displayName ?? editorSlug;
 }
 
 function getDemoEditorExtensions(editorSlug: string): EditorExtensionsResult {
@@ -385,6 +573,33 @@ function uninstallDemoEditorExtension(params: { editorSlug: string; extensionId:
 }
 
 export function resolveDemoResponse<T>(command: string, payload?: unknown): T | undefined {
+  if (command === SUPPORTED_COMMAND.DETECT_EDITORS) {
+    return getDemoEditors() as T;
+  }
+
+  if (command === SUPPORTED_COMMAND.ADD_CUSTOM_EDITOR && isCustomEditorInputPayload(payload)) {
+    const nextEditor = createDemoCustomEditor(payload);
+    demoCustomEditors.push(nextEditor);
+    demoEditorExtensionsBySlug.set(nextEditor.slug, {
+      editorSlug: nextEditor.slug,
+      editorName: nextEditor.displayName,
+      items: []
+    });
+
+    return {
+      success: true,
+      editor: { ...nextEditor }
+    } as T;
+  }
+
+  if (command === SUPPORTED_COMMAND.UPDATE_CUSTOM_EDITOR && isUpdateCustomEditorInputPayload(payload)) {
+    return updateDemoCustomEditor(payload) as T;
+  }
+
+  if (command === SUPPORTED_COMMAND.DELETE_CUSTOM_EDITOR && isDeleteCustomEditorInputPayload(payload)) {
+    return deleteDemoCustomEditor(payload) as T;
+  }
+
   if (command === SUPPORTED_COMMAND.EXECUTE_SYNC && isSyncPayload(payload)) {
     const results: SyncResult[] = payload.actions.map((action) => ({
       action: typeof action.actionType === "string" ? action.actionType : "install",

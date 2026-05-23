@@ -1,36 +1,17 @@
 import { execFileSync } from "node:child_process";
-import { readFileSync, writeFileSync } from "node:fs";
 import { rm } from "node:fs/promises";
 import { join } from "node:path";
-import { hasStringProperty, isRecord } from "../../typeGuards";
+import { hasStringProperty } from "../../typeGuards";
 import { findExtensionDir } from "./extensionFs";
+import { isExtensionManifestEntry, readExtensionManifestEntries, writeExtensionManifestEntries, resolveManifestDirName } from "./manifestHelpers";
 
 interface DisabledExtensionRow {
   id: string;
   uuid?: string;
 }
 
-interface IExtensionIdentifier {
-  id: string;
-}
-
-interface ExtensionManifestEntry {
-  identifier: IExtensionIdentifier;
-  relativeLocation?: string;
-}
-
 function isDisabledExtensionRow(value: unknown): value is DisabledExtensionRow {
   return hasStringProperty(value, "id");
-}
-
-function isExtensionManifestEntry(value: unknown): value is ExtensionManifestEntry {
-  if (!isRecord(value)) {
-    return false;
-  }
-
-  const identifier = value.identifier;
-
-  return hasStringProperty(identifier, "id") && (value.relativeLocation === undefined || typeof value.relativeLocation === "string");
 }
 
 function parseDisabledExtensionRows(rawValue: string): DisabledExtensionRow[] {
@@ -77,32 +58,6 @@ function writeDisabledExtensionRows(stateDbPath: string, rows: DisabledExtension
   }
 }
 
-function readExtensionManifestEntries(extensionsPath: string): unknown[] {
-  try {
-    const manifestPath = join(extensionsPath, "extensions.json");
-    const parsed: unknown = JSON.parse(readFileSync(manifestPath, "utf-8"));
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-function writeExtensionManifestEntries(extensionsPath: string, entries: unknown[]) {
-  writeFileSync(join(extensionsPath, "extensions.json"), JSON.stringify(entries, null, 2));
-}
-
-function resolveManifestDirectoryName(entry: unknown): string | undefined {
-  if (!isRecord(entry) || !isExtensionManifestEntry(entry)) {
-    return undefined;
-  }
-
-  if (typeof entry.relativeLocation === "string" && entry.relativeLocation.length > 0) {
-    return entry.relativeLocation;
-  }
-
-  return undefined;
-}
-
 export function setEditorExtensionDisabled(params: { stateDbPath: string; extensionId: string; disabled: boolean }): boolean {
   const { stateDbPath, extensionId, disabled } = params;
   const currentRows = readDisabledExtensionRows(stateDbPath);
@@ -118,7 +73,7 @@ export async function uninstallEditorExtension(params: { extensionsPath: string;
   const manifestEntries = readExtensionManifestEntries(extensionsPath);
   const nextManifestEntries = manifestEntries.filter((entry) => !isExtensionManifestEntry(entry) || entry.identifier.id !== extensionId);
   const manifestEntry = manifestEntries.find((entry) => isExtensionManifestEntry(entry) && entry.identifier.id === extensionId);
-  const manifestDirName = resolveManifestDirectoryName(manifestEntry);
+  const manifestDirName = resolveManifestDirName(manifestEntry);
   const extensionDir = manifestDirName ? join(extensionsPath, manifestDirName) : await findExtensionDir(extensionsPath, extensionId);
 
   if (!extensionDir && nextManifestEntries.length === manifestEntries.length) {

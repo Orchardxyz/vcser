@@ -1,6 +1,5 @@
 import { execFile } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import { readFileSync, writeFileSync } from "node:fs";
 import { cp, readFile } from "node:fs/promises";
 import { basename, join } from "node:path";
 import { promisify } from "node:util";
@@ -8,34 +7,17 @@ import { RUNTIME_MESSAGE_KEY, type RuntimeMessageKey, type RuntimeMessageParams 
 import type { SyncResult } from "../../shared/types";
 import { hasStringProperty, isRecord } from "../../typeGuards";
 import { findExtensionDir } from "./extensionFs";
+import {
+  isExtensionManifestEntry,
+  readExtensionManifestEntries,
+  writeExtensionManifestEntries,
+  findExtensionManifestEntry,
+  resolveManifestDirName
+} from "./manifestHelpers";
 
 const execFilePromise = promisify(execFile);
 
-interface IExtensionIdentifier {
-  id: string;
-}
-
-interface ExtensionManifestEntry {
-  identifier: IExtensionIdentifier;
-  version?: string;
-  relativeLocation?: string;
-}
-
 type JsonObject = Record<string, unknown>;
-
-function isExtensionManifestEntry(value: unknown): value is ExtensionManifestEntry {
-  if (!isRecord(value)) {
-    return false;
-  }
-
-  const identifier = value.identifier;
-
-  return (
-    hasStringProperty(identifier, "id") &&
-    (value.version === undefined || typeof value.version === "string") &&
-    (value.relativeLocation === undefined || typeof value.relativeLocation === "string")
-  );
-}
 
 function isJsonObject(value: unknown): value is JsonObject {
   return isRecord(value);
@@ -65,36 +47,8 @@ function createInstallSyncResult(params: {
   };
 }
 
-function readExtensionManifestEntries(extensionsPath: string): unknown[] {
-  try {
-    const manifestPath = join(extensionsPath, "extensions.json");
-    const parsed: unknown = JSON.parse(readFileSync(manifestPath, "utf-8"));
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-function findExtensionManifestEntry(extensionsPath: string, extensionId: string): JsonObject | undefined {
-  return readExtensionManifestEntries(extensionsPath).find(
-    (entry): entry is JsonObject => isJsonObject(entry) && isExtensionManifestEntry(entry) && entry.identifier.id === extensionId
-  );
-}
-
 function cloneJsonObject<T extends JsonObject>(value: T): T {
   return structuredClone(value);
-}
-
-function resolveManifestDirName(entry: JsonObject | undefined, fallbackDirName?: string): string | undefined {
-  if (entry && typeof entry.relativeLocation === "string" && entry.relativeLocation.length > 0) {
-    return entry.relativeLocation;
-  }
-
-  if (entry && isJsonObject(entry.location) && typeof entry.location.path === "string" && entry.location.path.length > 0) {
-    return basename(entry.location.path);
-  }
-
-  return fallbackDirName;
 }
 
 function buildPatchedManifestEntry(params: {
@@ -200,7 +154,6 @@ export async function syncExtensionLocal(params: {
       await cp(sourceExtensionDir, targetDir, { recursive: true });
     }
 
-    const extJsonPath = join(targetExtensionsPath, "extensions.json");
     const entries = readExtensionManifestEntries(targetExtensionsPath);
 
     const version = await readExtensionVersion(sourceExtensionDir);
@@ -251,7 +204,7 @@ export async function syncExtensionLocal(params: {
       );
     }
 
-    writeFileSync(extJsonPath, JSON.stringify(normalizedEntries, null, 2));
+    writeExtensionManifestEntries(targetExtensionsPath, normalizedEntries);
 
     return createInstallSyncResult({
       extensionId,

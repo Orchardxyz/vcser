@@ -1,11 +1,10 @@
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join, resolve, sep } from "node:path";
-import type { Schema } from "type-fest";
 import type { EditorExtensionItem, ExtensionDiffResult, ExtensionPresence } from "../../shared/types";
 import { findExtensionDir } from "./extensionFs";
 import { mimeTypeForPath } from "../utils";
+import { isExtensionManifestEntry, readExtensionManifestEntries, type ExtensionManifestEntry } from "./manifestHelpers";
 
 interface EditorWithExtensions {
   name: string;
@@ -18,16 +17,6 @@ interface DisabledExtensionRow {
   uuid?: string;
 }
 
-interface IExtensionIdentifier {
-  id: string;
-}
-
-interface ExtensionManifestEntry {
-  identifier: IExtensionIdentifier;
-  version?: string;
-  relativeLocation?: string;
-}
-
 interface ExtensionPackageJson {
   icon?: string;
 }
@@ -36,26 +25,6 @@ interface InstalledExtensionMetadata {
   extensionId: string;
   version: string | null;
   relativeLocation?: string;
-}
-
-function isExtensionManifestEntry(value: unknown): value is ExtensionManifestEntry {
-  if (!value || typeof value !== "object") {
-    return false;
-  }
-
-  const entry = value as {
-    identifier?: Schema<IExtensionIdentifier, unknown>;
-    version?: unknown;
-    relativeLocation?: unknown;
-  };
-  const identifier = entry.identifier;
-
-  return (
-    !!identifier &&
-    typeof identifier.id === "string" &&
-    (entry.version === undefined || typeof entry.version === "string") &&
-    (entry.relativeLocation === undefined || typeof entry.relativeLocation === "string")
-  );
 }
 
 function isExtensionPackageJson(value: unknown): value is ExtensionPackageJson {
@@ -156,17 +125,11 @@ function addInstalledExtensionMetadata(byId: Map<string, InstalledExtensionMetad
 
 export function listInstalledExtensionMetadata(extensionsPath: string): InstalledExtensionMetadata[] {
   try {
-    const manifestPath = join(extensionsPath, "extensions.json");
-    const raw = readFileSync(manifestPath, "utf-8");
-    const parsed: unknown = JSON.parse(raw);
-
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
+    const entries = readExtensionManifestEntries(extensionsPath);
 
     const byId = new Map<string, InstalledExtensionMetadata>();
 
-    for (const entry of parsed) {
+    for (const entry of entries) {
       if (isExtensionManifestEntry(entry)) {
         addInstalledExtensionMetadata(byId, entry);
       }

@@ -22,7 +22,7 @@ function isExtensionPackage(value: unknown): value is ExtensionPackageContrib {
   return isRecord(value);
 }
 
-function extractConfigNamespaces(pkg: ExtensionPackageContrib): string[] {
+export function extractConfigNamespaces(pkg: ExtensionPackageContrib): string[] {
   const contrib = pkg.contributes?.configuration;
   if (!contrib) return [];
 
@@ -39,7 +39,7 @@ function extractConfigNamespaces(pkg: ExtensionPackageContrib): string[] {
   return Array.from(namespaces);
 }
 
-async function readExtensionNamespaces(extensionsPath: string, extensionId: string): Promise<string[]> {
+export async function readExtensionNamespaces(extensionsPath: string, extensionId: string): Promise<string[]> {
   try {
     const extensionDir = await findExtensionDir(extensionsPath, extensionId);
     if (!extensionDir) return [];
@@ -85,7 +85,7 @@ export interface ResolvedNamespaceMap {
   extensionIcons: Map<string, string>;
 }
 
-function deduplicateNamespaceRows(rows: NamespaceCacheRow[]): NamespaceCacheRow[] {
+export function deduplicateNamespaceRows(rows: NamespaceCacheRow[]): NamespaceCacheRow[] {
   const seen = new Set<string>();
   return rows.filter(({ extensionId, namespace }) => {
     const key = `${extensionId}::${namespace}`;

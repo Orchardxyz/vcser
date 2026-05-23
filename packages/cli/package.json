@@ -13,7 +13,9 @@
     "dev": "node ./scripts/build.mjs --watch",
     "smoke": "pnpm run build && node ./dist/bin.cjs --help",
     "start": "node ./dist/bin.cjs",
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@vcser/core": "workspace:*",

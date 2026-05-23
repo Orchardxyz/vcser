@@ -3,8 +3,8 @@
   "compilerOptions": {
     "composite": true,
     "lib": ["ES2022"],
-    "rootDir": "./src",
+    "rootDir": ".",
     "types": ["node"]
   },
-  "include": ["src/**/*.ts", "src/logger.ts"]
+  "include": ["src/**/*.ts", "src/logger.ts", "test/**/*.ts", "vitest.config.ts"]
 }

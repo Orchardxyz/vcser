@@ -129,6 +129,15 @@ export default tseslint.config(
     }
   },
 
+  {
+    files: ["vitest.config.ts", "packages/*/vitest.config.ts"],
+    ...tseslint.configs.disableTypeChecked,
+    languageOptions: {
+      ...tseslint.configs.disableTypeChecked.languageOptions,
+      globals: globals.node
+    }
+  },
+
   // Renderer (web)
   {
     files: ["apps/*/src/renderer/src/**/*.ts", "apps/*/src/renderer/src/**/*.tsx"],

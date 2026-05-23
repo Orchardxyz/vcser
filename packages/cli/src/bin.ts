@@ -1,7 +1,9 @@
 import { CliLoggerImpl } from "./logger";
-import { runCli } from "./cli";
+import { ensureNodeNativeModulesReady } from "./nativeRebuild";
 
 async function main(): Promise<void> {
+  ensureNodeNativeModulesReady();
+  const { runCli } = await import("./cli");
   process.exitCode = await runCli(process.argv);
 }
 

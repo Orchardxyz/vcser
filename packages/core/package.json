@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./customEditors": "./src/customEditors.ts",
     "./db": "./src/db.ts",
     "./editors/detect": "./src/editors/detect/index.ts",
     "./editors/detect/detect": "./src/editors/detect/detect.ts",

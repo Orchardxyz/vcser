@@ -6,11 +6,12 @@
   "type": "module",
   "main": "./out/main/index.js",
   "scripts": {
+    "predev": "node scripts/rebuild-native-modules.cjs",
     "dev": "electron-vite dev",
     "build": "tsc -b && electron-vite build",
     "preview": "electron-vite preview",
     "icons:generate": "bash scripts/generate-icons.sh",
-    "postinstall": "node scripts/ensure-electron-binary.cjs"
+    "postinstall": "node scripts/ensure-electron-binary.cjs && node scripts/rebuild-native-modules.cjs"
   },
   "build": {
     "appId": "com.vcser.app",

@@ -1,4 +1,5 @@
 import { dialog, ipcMain } from "electron";
+import { CustomEditorStoreError, appendDesktopCustomEditor, removeDesktopCustomEditor, updateDesktopCustomEditor } from "../customEditors/store";
 import { RUNTIME_MESSAGE_KEY } from "@vcser/core/i18n";
 import { SUPPORTED_COMMAND } from "@vcser/core/ipc";
 import {
@@ -12,7 +13,6 @@ import {
   type UpdateCustomEditorResult
 } from "@vcser/core/types";
 import { hasStringProperty, isRecord } from "@vcser/core/typeGuards";
-import { appendCustomEditor, CustomEditorStoreError, removeCustomEditor, updateCustomEditor } from "../customEditors/store";
 import { resolveAppBundleSelection } from "../editors/appBundle";
 import { resolveAllEditors } from "../editors/resolveAllEditors";
 
@@ -59,6 +59,10 @@ function normalizeOptionalString(value?: string) {
 
 function isStoreNotFoundError(error: unknown): error is CustomEditorStoreError {
   return error instanceof CustomEditorStoreError && error.code === "custom_editor_not_found";
+}
+
+function isStoreConflictError(error: unknown): error is CustomEditorStoreError {
+  return error instanceof CustomEditorStoreError && error.code === "custom_editor_already_exists";
 }
 
 function getAppFilters() {
@@ -203,10 +207,17 @@ export function registerCustomEditorHandlers() {
 
     try {
       logCustomEditorDebug("Persisting custom editor.");
-      const record = await appendCustomEditor(
-        normalized,
-        editors.map((editor) => editor.slug)
-      );
+      const record = await appendDesktopCustomEditor(normalized, {
+        reservedSlugs: editors.map((editor) => editor.slug),
+        reservedEditors: editors.map((editor) => ({
+          id: editor.id,
+          slug: editor.slug,
+          name: editor.name,
+          displayName: editor.displayName,
+          extensionsPath: editor.extensionsPath,
+          settingsPath: editor.settingsPath
+        }))
+      });
       logCustomEditorDebug("Persisted custom editor record.", record);
       const nextEditors = await resolveAllEditors();
       const created = nextEditors.find((editor) => editor.slug === record.slug);
@@ -220,6 +231,16 @@ export function registerCustomEditorHandlers() {
         editor: created
       } satisfies AddCustomEditorResult;
     } catch (error) {
+      if (isStoreConflictError(error)) {
+        return {
+          success: false,
+          errorKey: RUNTIME_MESSAGE_KEY.CUSTOM_EDITOR_ALREADY_EXISTS,
+          errorParams: {
+            editorName: error.conflict?.editorName ?? normalized.name
+          }
+        } satisfies AddCustomEditorResult;
+      }
+
       logCustomEditorDebug("Failed to add custom editor.", error);
       return {
         success: false,
@@ -278,7 +299,16 @@ export function registerCustomEditorHandlers() {
     }
 
     try {
-      const record = await updateCustomEditor(normalized);
+      const record = await updateDesktopCustomEditor(normalized, {
+        reservedEditors: editors.map((editor) => ({
+          id: editor.id,
+          slug: editor.slug,
+          name: editor.name,
+          displayName: editor.displayName,
+          extensionsPath: editor.extensionsPath,
+          settingsPath: editor.settingsPath
+        }))
+      });
       const nextEditors = await resolveAllEditors();
       const updated = nextEditors.find((editor) => editor.id === record.id);
 
@@ -287,6 +317,16 @@ export function registerCustomEditorHandlers() {
         editor: updated
       } satisfies UpdateCustomEditorResult;
     } catch (error) {
+      if (isStoreConflictError(error)) {
+        return {
+          success: false,
+          errorKey: RUNTIME_MESSAGE_KEY.CUSTOM_EDITOR_ALREADY_EXISTS,
+          errorParams: {
+            editorName: error.conflict?.editorName ?? normalized.name
+          }
+        } satisfies UpdateCustomEditorResult;
+      }
+
       if (isStoreNotFoundError(error)) {
         return {
           success: false,
@@ -314,7 +354,7 @@ export function registerCustomEditorHandlers() {
     const normalizedId = normalizeRequiredString(payload.id);
 
     try {
-      const record = await removeCustomEditor(normalizedId);
+      const record = await removeDesktopCustomEditor(normalizedId);
 
       return {
         success: true,

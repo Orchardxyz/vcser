@@ -14,6 +14,7 @@ const coreSrcPath = path.resolve(root, "../../packages/core/src");
 const nativeMainExternals = ["@prisma/adapter-better-sqlite3", "better-sqlite3", "bindings"];
 
 const coreAliases: Array<{ find: string; replacement: string }> = [
+  { find: "@vcser/core/customEditors", replacement: path.resolve(coreSrcPath, "customEditors.ts") },
   { find: "@vcser/core/db", replacement: path.resolve(coreSrcPath, "db.ts") },
   { find: "@vcser/core/editors", replacement: path.resolve(coreSrcPath, "editors") },
   { find: "@vcser/core/i18n", replacement: path.resolve(coreSrcPath, "shared/i18n.ts") },

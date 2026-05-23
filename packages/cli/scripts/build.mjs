@@ -1,9 +1,17 @@
+import path from "node:path";
 import { readFileSync } from "node:fs";
 import { chmod } from "node:fs/promises";
 import { build, context } from "esbuild";
+import { cac } from "cac";
 
 const packageJson = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
-const watchEnabled = process.argv.includes("--watch");
+const cli = cac("build");
+
+cli.option("--watch", "Rebuild on file changes");
+
+const parsed = cli.parse(process.argv, { run: false });
+const watchEnabled = Boolean(parsed.options.watch);
+const coreSrcPath = path.resolve(import.meta.dirname, "../../core/src");
 
 const buildOptions = {
   entryPoints: ["src/bin.ts"],
@@ -15,6 +23,16 @@ const buildOptions = {
   sourcemap: true,
   logLevel: "info",
   packages: "bundle",
+  alias: {
+    "@vcser/core/customEditors": path.resolve(coreSrcPath, "customEditors.ts"),
+    "@vcser/core/db": path.resolve(coreSrcPath, "db.ts"),
+    "@vcser/core/editors/detect/detect": path.resolve(coreSrcPath, "editors/detect/detect.ts"),
+    "@vcser/core/editors/extensions/extensions": path.resolve(coreSrcPath, "editors/extensions/extensions.ts"),
+    "@vcser/core/editors/extensions/extensionSync": path.resolve(coreSrcPath, "editors/extensions/extensionSync.ts"),
+    "@vcser/core/i18n": path.resolve(coreSrcPath, "shared/i18n.ts"),
+    "@vcser/core/typeGuards": path.resolve(coreSrcPath, "typeGuards.ts"),
+    "@vcser/core/types": path.resolve(coreSrcPath, "shared/types.ts")
+  },
   define: {
     __CLI_VERSION__: JSON.stringify(packageJson.version)
   },

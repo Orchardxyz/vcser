@@ -51,25 +51,23 @@
   ],
   "license": "Apache-2.0",
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
-    "@types/node": "^22.10.1",
-    "electron": "^33.0.0",
-    "eslint": "^10.3.0",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-react-hooks": "^7.1.1",
-    "eslint-plugin-react-refresh": "^0.5.2",
-    "globals": "^17.6.0",
-    "husky": "^9.1.7",
-    "lint-staged": "^16.4.0",
-    "prettier": "^3.8.3",
-    "prisma": "^7.7.0",
-    "typescript": "^5.7.0",
-    "typescript-eslint": "^8.59.2",
-    "vitest": "^3.2.4"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "better-sqlite3"
-    ]
+    "@eslint/js": "catalog:linting",
+    "@types/node": "catalog:typescript",
+    "electron": "catalog:electron33",
+    "eslint": "catalog:linting",
+    "eslint-config-prettier": "catalog:linting",
+    "eslint-plugin-pnpm": "catalog:linting",
+    "eslint-plugin-react-hooks": "catalog:linting",
+    "eslint-plugin-react-refresh": "catalog:linting",
+    "globals": "catalog:linting",
+    "husky": "catalog:repo-tools",
+    "jsonc-eslint-parser": "catalog:linting",
+    "lint-staged": "catalog:repo-tools",
+    "prettier": "catalog:repo-tools",
+    "prisma": "catalog:prisma7",
+    "typescript": "catalog:typescript",
+    "typescript-eslint": "catalog:linting",
+    "vitest": "catalog:testing",
+    "yaml-eslint-parser": "catalog:linting"
   }
 }

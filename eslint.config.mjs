@@ -4,6 +4,9 @@ import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 import prettierConfig from "eslint-config-prettier";
 import globals from "globals";
+import pnpm from "eslint-plugin-pnpm";
+import * as jsoncParser from "jsonc-eslint-parser";
+import * as yamlParser from "yaml-eslint-parser";
 
 const typedLanguageOptions = {
   parserOptions: {
@@ -190,6 +193,70 @@ export default tseslint.config(
     files: ["packages/cli/src/logger.ts"],
     rules: {
       "no-console": "off"
+    }
+  },
+
+  // package.json files — enforce pnpm catalog conventions
+  {
+    files: ["package.json", "**/package.json"],
+    languageOptions: {
+      parser: jsoncParser
+    },
+    plugins: {
+      pnpm
+    },
+    rules: {
+      "pnpm/json-enforce-catalog": [
+        "error",
+        {
+          ignores: [
+            "@hookform/resolvers",
+            "@radix-ui/react-dropdown-menu",
+            "@radix-ui/react-popover",
+            "@radix-ui/react-tooltip",
+            "@tailwindcss/vite",
+            "@types/prompts",
+            "@vitejs/plugin-react",
+            "cac",
+            "classnames",
+            "electron-icon-builder",
+            "esbuild",
+            "i18next",
+            "jsonc-parser",
+            "lucide-react",
+            "ora",
+            "picocolors",
+            "prompts",
+            "react-diff-viewer-continued",
+            "react-hook-form",
+            "react-i18next",
+            "react-router-dom",
+            "react-use",
+            "sonner",
+            "tailwindcss",
+            "vite",
+            "zod",
+            "zustand"
+          ]
+        }
+      ],
+      "pnpm/json-valid-catalog": "error",
+      "pnpm/json-prefer-workspace-settings": "error"
+    }
+  },
+
+  // pnpm-workspace.yaml — validate catalog definitions
+  {
+    files: ["pnpm-workspace.yaml"],
+    languageOptions: {
+      parser: yamlParser
+    },
+    plugins: {
+      pnpm
+    },
+    rules: {
+      "pnpm/yaml-no-unused-catalog-item": "error",
+      "pnpm/yaml-no-duplicate-catalog-item": "error"
     }
   },
 

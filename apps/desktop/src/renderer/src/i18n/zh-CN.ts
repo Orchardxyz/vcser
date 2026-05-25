@@ -285,6 +285,7 @@ export default {
       enableFailed: "启用扩展失败",
       disabled: "扩展已禁用",
       enabled: "扩展已启用",
+      restartRequiredDescription: "{{editor}} 中 {{extension}} 的保存状态已更新。需要完全退出并重新打开 {{editor}} 才会生效。",
       uninstallFailed: "卸载扩展失败",
       uninstalled: "扩展已卸载"
     }

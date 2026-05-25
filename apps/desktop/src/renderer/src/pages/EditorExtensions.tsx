@@ -105,7 +105,13 @@ export function EditorExtensions() {
         return;
       }
 
-      toast.success(disabled ? t("editorExtensions.toasts.disabled") : t("editorExtensions.toasts.enabled"), displayName(item.extensionId));
+      toast.success(
+        disabled ? t("editorExtensions.toasts.disabled") : t("editorExtensions.toasts.enabled"),
+        t("editorExtensions.toasts.restartRequiredDescription", {
+          editor: result.editorName || editor?.displayName || editor?.name || editorSlug,
+          extension: displayName(item.extensionId)
+        })
+      );
       await loadExtensions({ silent: true });
     } catch (error) {
       toast.error(

@@ -42,6 +42,7 @@ export const SUPPORTED_EDITORS: ReadonlyDeep<EditorRegistryEntry[]> = [
     cli: "code",
     badgeColor: "sky",
     macOSBundleName: "Visual Studio Code.app",
+    windowsSearchName: "Microsoft VS Code",
     extensionsPath: {
       mac: "~/.vscode/extensions",
       win: "~/.vscode/extensions"
@@ -61,6 +62,7 @@ export const SUPPORTED_EDITORS: ReadonlyDeep<EditorRegistryEntry[]> = [
     cli: "cursor",
     badgeColor: "magenta",
     macOSBundleName: "Cursor.app",
+    windowsSearchName: "Cursor",
     extensionsPath: {
       mac: "~/.cursor/extensions",
       win: "~/.cursor/extensions"
@@ -80,6 +82,7 @@ export const SUPPORTED_EDITORS: ReadonlyDeep<EditorRegistryEntry[]> = [
     cli: "windsurf",
     badgeColor: "blue",
     macOSBundleName: "Windsurf.app",
+    windowsSearchName: "Windsurf",
     extensionsPath: {
       mac: "~/.windsurf/extensions",
       win: "~/.windsurf/extensions"
@@ -99,6 +102,7 @@ export const SUPPORTED_EDITORS: ReadonlyDeep<EditorRegistryEntry[]> = [
     cli: "antigravity",
     badgeColor: "emerald",
     macOSBundleName: "Antigravity.app",
+    windowsSearchName: "Antigravity",
     extensionsPath: {
       mac: "~/.antigravity/extensions",
       win: "~/.antigravity/extensions"
@@ -118,6 +122,7 @@ export const SUPPORTED_EDITORS: ReadonlyDeep<EditorRegistryEntry[]> = [
     cli: "kiro",
     badgeColor: "orange",
     macOSBundleName: "Kiro.app",
+    windowsSearchName: "Kiro",
     extensionsPath: {
       mac: "~/.kiro/extensions",
       win: "~/.kiro/extensions"
@@ -137,6 +142,7 @@ export const SUPPORTED_EDITORS: ReadonlyDeep<EditorRegistryEntry[]> = [
     cli: "trae",
     badgeColor: "violet",
     macOSBundleName: "Trae.app",
+    windowsSearchName: "Trae",
     extensionsPath: {
       mac: "~/.trae/extensions",
       win: "~/.trae/extensions"
@@ -156,6 +162,7 @@ export const SUPPORTED_EDITORS: ReadonlyDeep<EditorRegistryEntry[]> = [
     cli: "trae-cn",
     badgeColor: "red",
     macOSBundleName: "Trae CN.app",
+    windowsSearchName: "Trae CN",
     extensionsPath: {
       mac: "~/.trae-cn/extensions",
       win: "~/.trae-cn/extensions"
@@ -175,6 +182,7 @@ export const SUPPORTED_EDITORS: ReadonlyDeep<EditorRegistryEntry[]> = [
     cli: "qoder",
     badgeColor: "amber",
     macOSBundleName: "Qoder.app",
+    windowsSearchName: "Qoder",
     extensionsPath: {
       mac: "~/.qoder/extensions",
       win: "~/.qoder/extensions"

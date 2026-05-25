@@ -35,6 +35,13 @@ Read these areas first for most core tasks:
   - `pnpm --filter @vcser/core db:generate`
   - `pnpm --filter @vcser/core db:migrate`
 - Be careful when changing `db.ts`; it intentionally tolerates Prisma unavailability and falls back when cache access is unavailable.
+- The SQLite database file is intentionally shared across CLI and desktop. Do not split the database by runtime just to work around native module issues.
+- `better-sqlite3` is runtime-specific even though the database is shared. A binary rebuilt for Electron will fail under host Node, and a binary rebuilt for host Node will fail under Electron.
+- When troubleshooting `NODE_MODULE_VERSION`, `ERR_DLOPEN_FAILED`, or `better_sqlite3.node` errors, assume an ABI mismatch before changing Prisma logic.
+- Rebuild the native module from the runtime entrypoint that owns the current process:
+  - desktop/Electron: use `apps/desktop/scripts/rebuild-native-modules.cjs` or the `@vcser/desktop` `predev` / `postinstall` scripts.
+  - CLI/host Node: let `packages/cli/src/nativeRebuild.ts` repair the host-Node ABI, or run `npm rebuild better-sqlite3` from `packages/core`.
+- Do not replace the Prisma-backed custom editor store with a JSON fallback to paper over ABI issues. The JSON file only exists as a legacy import source during storage initialization.
 
 ## Editor Logic
 

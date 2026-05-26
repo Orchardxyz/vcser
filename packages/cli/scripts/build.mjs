@@ -22,6 +22,9 @@ const buildOptions = {
   target: "node22",
   sourcemap: true,
   logLevel: "info",
+  logOverride: {
+    "empty-import-meta": "silent"
+  },
   packages: "bundle",
   alias: {
     "@vcser/core/customEditors": path.resolve(coreSrcPath, "customEditors.ts"),

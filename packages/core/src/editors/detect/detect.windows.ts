@@ -2,12 +2,17 @@ import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { win32 } from "node:path";
 import type { EditorRegistryEntry } from "../registry";
-import { APP_ICON_STATUS, type DetectedEditor } from "./detect";
+import { extractWindowsAppIcon } from "../windowsAppIcon";
+import { APP_ICON_STATUS, type AppIconStatus, type DetectedEditor } from "./detect";
 
 interface WindowsDetectionDependencies {
   env?: NodeJS.ProcessEnv;
   homeDir?: string;
   pathExists?: (path: string) => boolean;
+  extractAppIcon?: (appPath: string) => Promise<{
+    iconPayload?: string;
+    iconStatus: AppIconStatus;
+  }>;
 }
 
 const WINDOWS_EXECUTABLE_PATTERNS: Record<string, string[]> = {
@@ -66,7 +71,15 @@ function resolveExecutableCandidates(entry: EditorRegistryEntry, baseDirs: strin
   return baseDirs.flatMap((baseDir) => patterns.map((pattern) => win32.join(baseDir, ...pattern.split("/"))));
 }
 
-function createDetectedEditor(entry: EditorRegistryEntry, appPath: string, homeDir: string): DetectedEditor {
+function createDetectedEditor(
+  entry: EditorRegistryEntry,
+  appPath: string,
+  homeDir: string,
+  icon: {
+    iconPayload?: string;
+    iconStatus: AppIconStatus;
+  }
+): DetectedEditor {
   const extensionsPath = resolveTemplatePath(entry.extensionsPath.win, homeDir).replace("{slug}", entry.slug);
   const settingsPath = resolveTemplatePath(entry.settingsPath.win, homeDir);
   const stateDbPath = resolveTemplatePath(entry.stateDbPath.win, homeDir);
@@ -81,7 +94,8 @@ function createDetectedEditor(entry: EditorRegistryEntry, appPath: string, homeD
     extensionsPath,
     settingsPath,
     stateDbPath,
-    iconStatus: APP_ICON_STATUS.FALLBACK
+    iconPayload: icon.iconPayload,
+    iconStatus: icon.iconStatus
   };
 }
 
@@ -92,13 +106,16 @@ export async function detectWindowsEditors(
   const env = dependencies.env ?? process.env;
   const homeDir = dependencies.homeDir ?? homedir();
   const pathExists = dependencies.pathExists ?? existsSync;
+  const extractAppIcon = dependencies.extractAppIcon ?? extractWindowsAppIcon;
   const baseDirs = resolveWindowsBaseDirs(homeDir, env);
   const results: DetectedEditor[] = [];
 
   for (const entry of entries) {
     const candidateAppPaths = resolveExecutableCandidates(entry, baseDirs);
     const detectedAppPath = candidateAppPaths.find((candidatePath) => pathExists(candidatePath));
-    const editor = createDetectedEditor(entry, detectedAppPath ?? candidateAppPaths[0] ?? entry.displayName, homeDir);
+    const resolvedAppPath = detectedAppPath ?? candidateAppPaths[0] ?? entry.displayName;
+    const icon = detectedAppPath ? await extractAppIcon(detectedAppPath) : { iconStatus: APP_ICON_STATUS.FALLBACK };
+    const editor = createDetectedEditor(entry, resolvedAppPath, homeDir, icon);
 
     if (detectedAppPath || pathExists(editor.settingsPath) || pathExists(editor.extensionsPath)) {
       results.push(editor);

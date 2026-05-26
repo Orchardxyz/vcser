@@ -1,4 +1,5 @@
 import { inferCustomEditorNameFromAppPath, isUnsupportedCustomEditorApp } from "@vcser/core/customEditors";
+import { extractWindowsAppIcon } from "@vcser/core/editors/windowsAppIcon";
 import { APP_ICON_STATUS, type AppIconStatus } from "@vcser/core/types";
 import { extractMacOSAppIcon, inferMacOSAppDisplayName, inferMacOSBundleIdentifier } from "../../../../../packages/core/src/editors/macosAppBundle";
 
@@ -14,11 +15,15 @@ async function extractAppIcon(appPath: string): Promise<{
   iconPayload?: string;
   iconStatus: AppIconStatus;
 }> {
-  if (process.platform !== "darwin") {
-    return { iconStatus: APP_ICON_STATUS.FALLBACK };
+  if (process.platform === "darwin") {
+    return extractMacOSAppIcon(appPath);
   }
 
-  return extractMacOSAppIcon(appPath);
+  if (process.platform === "win32") {
+    return extractWindowsAppIcon(appPath);
+  }
+
+  return { iconStatus: APP_ICON_STATUS.FALLBACK };
 }
 
 function inferNameFromPath(appPath: string) {

@@ -26,12 +26,17 @@ describe("detectWindowsEditors", () => {
         "ProgramFiles(x86)": "C:\\Program Files (x86)"
       },
       homeDir: "C:\\Users\\tester",
-      pathExists: (path) => existingPaths.has(path)
+      pathExists: (path) => existingPaths.has(path),
+      extractAppIcon: async () => ({
+        iconPayload: "data:image/png;base64,icon",
+        iconStatus: "ready"
+      })
     });
 
     expect(editors).toHaveLength(1);
     expect(editors[0]?.appPath).toBe("C:\\Users\\tester\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe");
-    expect(editors[0]?.iconStatus).toBe("fallback");
+    expect(editors[0]?.iconStatus).toBe("ready");
+    expect(editors[0]?.iconPayload).toBe("data:image/png;base64,icon");
   });
 
   it("falls back to user data paths when the executable is missing", async () => {

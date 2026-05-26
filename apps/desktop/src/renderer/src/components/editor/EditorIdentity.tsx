@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import { Box } from "lucide-react";
 import type { ValueOf } from "type-fest";
 import type { ResolvedEditor } from "@/types";
@@ -26,9 +27,21 @@ function FallbackIcon({ className }: { className?: string }) {
   );
 }
 
+function isWindowsExecutableIcon(editor: ResolvedEditor) {
+  return editor.appPath?.toLowerCase().endsWith(".exe") ?? false;
+}
+
 function EditorImg({ editor, className }: { editor: ResolvedEditor; className?: string }) {
   if (editor.iconStatus === APP_ICON_STATUS.READY && editor.iconPayload) {
-    return <img src={editor.iconPayload} alt={editor.displayName ?? editor.name} className={["shrink-0 object-contain", className].join(" ")} />;
+    return (
+      <img
+        src={editor.iconPayload}
+        alt={editor.displayName ?? editor.name}
+        className={classNames("shrink-0 object-contain", className, {
+          "p-[12%]": isWindowsExecutableIcon(editor)
+        })}
+      />
+    );
   }
 
   return <FallbackIcon className={className} />;

@@ -285,6 +285,8 @@ export default {
       enableFailed: "Failed to enable extension",
       disabled: "Extension disabled",
       enabled: "Extension enabled",
+      restartRequiredDescription:
+        "{{extension}} was updated in {{editor}}'s saved state. Fully quit and reopen {{editor}} for the change to take effect.",
       uninstallFailed: "Failed to uninstall extension",
       uninstalled: "Extension uninstalled"
     }

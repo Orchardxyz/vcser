@@ -1,9 +1,9 @@
-import { execFileSync } from "node:child_process";
 import { rm } from "node:fs/promises";
 import { join } from "node:path";
 import { hasStringProperty } from "../../typeGuards";
 import { findExtensionDir } from "./extensionFs";
 import { isExtensionManifestEntry, readExtensionManifestEntries, writeExtensionManifestEntries, resolveManifestDirName } from "./manifestHelpers";
+import { readStateDatabaseValue, writeStateDatabaseValue } from "./stateDb";
 
 interface DisabledExtensionRow {
   id: string;
@@ -26,10 +26,7 @@ function parseDisabledExtensionRows(rawValue: string): DisabledExtensionRow[] {
 
 function readDisabledExtensionRows(stateDbPath: string): DisabledExtensionRow[] {
   try {
-    const rawValue = execFileSync("sqlite3", [stateDbPath, "SELECT value FROM ItemTable WHERE key = 'extensionsIdentifiers/disabled'"], {
-      encoding: "utf8"
-    }).trim();
-
+    const rawValue = readStateDatabaseValue(stateDbPath, "extensionsIdentifiers/disabled");
     if (!rawValue) {
       return [];
     }
@@ -40,19 +37,9 @@ function readDisabledExtensionRows(stateDbPath: string): DisabledExtensionRow[] 
   }
 }
 
-function escapeSqlString(value: string): string {
-  return value.replaceAll("'", "''");
-}
-
 function writeDisabledExtensionRows(stateDbPath: string, rows: DisabledExtensionRow[]) {
-  const serialized = escapeSqlString(JSON.stringify(rows));
-  const sql =
-    "INSERT INTO ItemTable(key, value) VALUES ('extensionsIdentifiers/disabled', '" +
-    serialized +
-    "') ON CONFLICT(key) DO UPDATE SET value = excluded.value";
-
   try {
-    execFileSync("sqlite3", [stateDbPath, sql], { encoding: "utf8" });
+    writeStateDatabaseValue(stateDbPath, "extensionsIdentifiers/disabled", JSON.stringify(rows));
   } catch (error) {
     throw new Error(error instanceof Error ? error.message : "Failed to write disabled extensions to state database", { cause: error });
   }

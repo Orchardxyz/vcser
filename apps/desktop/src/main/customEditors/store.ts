@@ -66,18 +66,40 @@ function resolveCodeBuddySeed() {
   };
 }
 
+function isLegacyCodeBuddySeed(editor: CustomEditorRecord) {
+  const seed = resolveCodeBuddySeed();
+
+  return (
+    editor.slug === seed.slug &&
+    editor.name === seed.name &&
+    editor.displayName === seed.displayName &&
+    editor.appPath === seed.appPath &&
+    editor.extensionsPath === seed.extensionsPath &&
+    editor.settingsPath === seed.settingsPath
+  );
+}
+
+async function cleanupLegacyCodeBuddySeed() {
+  const editor = await findCustomEditorByIdOrSlug("custom-codebuddy");
+  if (!editor || !isLegacyCodeBuddySeed(editor)) {
+    return;
+  }
+
+  await removeCustomEditor(editor.id);
+}
+
 async function ensureDesktopCustomEditorsInitialized(): Promise<void> {
   if (ensureInitializedPromise) {
     return ensureInitializedPromise;
   }
 
   ensureInitializedPromise = initializeCustomEditorStorage({
-    legacyEditors: readCustomEditorsFile().editors,
-    seedEditors: [resolveCodeBuddySeed()]
+    legacyEditors: readCustomEditorsFile().editors
   });
 
   try {
     await ensureInitializedPromise;
+    await cleanupLegacyCodeBuddySeed();
   } catch (error) {
     ensureInitializedPromise = null;
     throw error;

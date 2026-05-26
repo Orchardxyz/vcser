@@ -1,10 +1,10 @@
-import { execFileSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { join, resolve, sep } from "node:path";
 import type { EditorExtensionItem, ExtensionDiffResult, ExtensionPresence } from "../../shared/types";
 import { findExtensionDir } from "./extensionFs";
 import { mimeTypeForPath } from "../utils";
 import { isExtensionManifestEntry, readExtensionManifestEntries, type ExtensionManifestEntry } from "./manifestHelpers";
+import { readStateDatabaseValue } from "./stateDb";
 
 interface EditorWithExtensions {
   name: string;
@@ -58,12 +58,9 @@ function parseDisabledExtensionIds(rawValue: string): Set<string> {
   return ids;
 }
 
-function readDisabledExtensionIdsFromSqliteCli(stateDbPath: string): Set<string> {
+function readDisabledExtensionIdsFromStateDatabase(stateDbPath: string): Set<string> {
   try {
-    const rawValue = execFileSync("sqlite3", [stateDbPath, "SELECT value FROM ItemTable WHERE key = 'extensionsIdentifiers/disabled'"], {
-      encoding: "utf8"
-    }).trim();
-
+    const rawValue = readStateDatabaseValue(stateDbPath, "extensionsIdentifiers/disabled");
     if (!rawValue) {
       return new Set();
     }
@@ -175,7 +172,7 @@ export async function listEditorExtensions(params: {
  * Returns an empty set on any failure — this is best-effort.
  */
 function readDisabledExtensionIds(stateDbPath: string): Set<string> {
-  return readDisabledExtensionIdsFromSqliteCli(stateDbPath);
+  return readDisabledExtensionIdsFromStateDatabase(stateDbPath);
 }
 
 /**

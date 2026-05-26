@@ -39,6 +39,7 @@ DESIGN.md                Authoritative UI design reference
 - Reusable editor/runtime logic, shared contracts, and Prisma: `docs/agents/core.md`
 - Electron main, preload, desktop IPC, and desktop/runtime integration: `docs/agents/runtime.md`
 - Commands, environment, linting, formatting, dependency policy, and generated files: `docs/agents/repo.md`
+- Prisma/native module ABI behavior across CLI and desktop: `docs/agents/core.md` and `docs/agents/runtime.md`
 
 ## Universal Rules
 
@@ -53,6 +54,7 @@ DESIGN.md                Authoritative UI design reference
 - Do not use TypeScript `enum`; use the const-object plus `ValueOf` pattern instead.
 - Renderer-to-main calls should go through the renderer IPC abstraction.
 - Keep Prisma usage in `packages/core` and desktop main-process code, not the renderer.
+- Treat the SQLite database file as shared across CLI and desktop, but treat native module rebuilds as runtime-specific.
 - If docs conflict with source or config, trust the source or config.
 
 ## Guardrails

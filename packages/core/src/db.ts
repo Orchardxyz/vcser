@@ -1,7 +1,8 @@
 import { createRequire } from "node:module";
-import { mkdirSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { PrismaClient } from "./generated/prisma";
 
 type PrismaBetterSqlite3Ctor = new (options: { url: string }) => unknown;
@@ -24,15 +25,15 @@ type PrismaGlobal = typeof globalThis & {
 
 // The generated Prisma client is CJS; Electron's main process is ESM, so we use createRequire to bridge.
 const requireFromHere = createRequire(typeof __filename === "string" ? __filename : import.meta.url);
-const packageRoot = dirname(requireFromHere.resolve("@vcser/core/package.json"));
-const requireFromCorePackage = createRequire(join(packageRoot, "package.json"));
-const adapterPackagePath = requireFromCorePackage.resolve("@prisma/adapter-better-sqlite3");
-const requireFromAdapterPackage = createRequire(adapterPackagePath);
-const { PrismaBetterSqlite3 } = requireFromAdapterPackage("@prisma/adapter-better-sqlite3") as {
+const moduleDir = dirname(fileURLToPath(import.meta.url));
+const runtimeCorePaths = resolveRuntimeCorePaths();
+const requireFromCoreModules = resolveCoreModuleRequire();
+const requireFromAdapterPackage = createRequire(requireFromCoreModules.resolve("@prisma/adapter-better-sqlite3"));
+const { PrismaBetterSqlite3 } = requireFromCoreModules("@prisma/adapter-better-sqlite3") as {
   PrismaBetterSqlite3: PrismaBetterSqlite3Ctor;
 };
 const BetterSqlite3 = requireFromAdapterPackage("better-sqlite3") as BetterSqlite3Ctor;
-const { PrismaClient: PrismaClientCtor } = requireFromCorePackage(requireFromCorePackage.resolve("@vcser/core/generated/prisma")) as {
+const { PrismaClient: PrismaClientCtor } = requireFromHere(runtimeCorePaths.generatedPrismaClientPath) as {
   PrismaClient: new (opts: { adapter: unknown }) => PrismaClient;
 };
 
@@ -77,7 +78,51 @@ function resolveDatabasePathFromUrl(url: string): string | undefined {
 }
 
 function resolveMigrationsPath(): string {
-  return join(packageRoot, "prisma", "migrations");
+  return runtimeCorePaths.migrationsPath;
+}
+
+function resolveRuntimeCorePaths(): { generatedPrismaClientPath: string; migrationsPath: string } {
+  const processWithResourcesPath = process as NodeJS.Process & { resourcesPath?: string };
+  const candidates = [
+    {
+      generatedPrismaClientPath: join(moduleDir, "../../resources/runtime/core/generated/prisma/index.js"),
+      migrationsPath: join(moduleDir, "../../resources/runtime/core/prisma/migrations")
+    },
+    processWithResourcesPath.resourcesPath
+      ? {
+          generatedPrismaClientPath: join(processWithResourcesPath.resourcesPath, "core", "generated", "prisma", "index.js"),
+          migrationsPath: join(processWithResourcesPath.resourcesPath, "core", "prisma", "migrations")
+        }
+      : undefined,
+    {
+      generatedPrismaClientPath: join(moduleDir, "generated", "prisma", "index.js"),
+      migrationsPath: join(moduleDir, "..", "prisma", "migrations")
+    }
+  ];
+
+  for (const candidate of candidates) {
+    if (candidate && existsSync(candidate.generatedPrismaClientPath) && existsSync(candidate.migrationsPath)) {
+      return candidate;
+    }
+  }
+
+  throw new Error("Unable to resolve runtime Prisma assets");
+}
+
+function resolveCoreModuleRequire(): NodeJS.Require {
+  const candidates = [
+    join(moduleDir, "../package.json"),
+    join(moduleDir, "../../../../packages/core/package.json"),
+    join(moduleDir, "../../package.json")
+  ];
+
+  for (const candidate of candidates) {
+    if (existsSync(candidate)) {
+      return createRequire(candidate);
+    }
+  }
+
+  return requireFromHere;
 }
 
 function ensureDatabaseDirectory(url: string): void {

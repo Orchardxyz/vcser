@@ -9,6 +9,10 @@
     "predev": "node scripts/rebuild-native-modules.cjs",
     "dev": "electron-vite dev",
     "build": "tsc -b && electron-vite build",
+    "package:dir": "node scripts/sync-runtime-assets.cjs && electron-builder --dir",
+    "package:mac": "node scripts/sync-runtime-assets.cjs && electron-builder --mac",
+    "package:win": "node scripts/sync-runtime-assets.cjs && electron-builder --win",
+    "package:linux": "node scripts/sync-runtime-assets.cjs && electron-builder --linux",
     "preview": "electron-vite preview",
     "icons:generate": "bash scripts/generate-icons.sh",
     "postinstall": "node scripts/ensure-electron-binary.cjs && node scripts/rebuild-native-modules.cjs"
@@ -24,6 +28,14 @@
       {
         "from": "resources/icon-macos-1024.png",
         "to": "icon-macos-1024.png"
+      },
+      {
+        "from": "resources/runtime/core/prisma/migrations",
+        "to": "core/prisma/migrations"
+      },
+      {
+        "from": "resources/runtime/core/generated/prisma",
+        "to": "core/generated/prisma"
       }
     ],
     "mac": {
@@ -37,6 +49,9 @@
     }
   },
   "dependencies": {
+    "@prisma/adapter-better-sqlite3": "catalog:prisma7",
+    "@prisma/client": "catalog:prisma7",
+    "@prisma/client-runtime-utils": "catalog:prisma7",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-dropdown-menu": "^2.1.16",
     "@radix-ui/react-popover": "^1.1.15",

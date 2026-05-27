@@ -1,5 +1,7 @@
 import { createRequire } from "node:module";
+import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 type BetterSqlite3Statement = {
   get(...params: unknown[]): unknown;
@@ -14,11 +16,22 @@ type BetterSqlite3Database = {
 type BetterSqlite3Ctor = new (filename: string) => BetterSqlite3Database;
 
 const requireFromHere = createRequire(typeof __filename === "string" ? __filename : import.meta.url);
-const packageRoot = dirname(requireFromHere.resolve("@vcser/core/package.json"));
-const requireFromCorePackage = createRequire(join(packageRoot, "package.json"));
-const adapterPackagePath = requireFromCorePackage.resolve("@prisma/adapter-better-sqlite3");
-const requireFromAdapterPackage = createRequire(adapterPackagePath);
+const moduleDir = dirname(fileURLToPath(import.meta.url));
+const requireFromCoreModules = resolveCoreModuleRequire();
+const requireFromAdapterPackage = createRequire(requireFromCoreModules.resolve("@prisma/adapter-better-sqlite3"));
 const BetterSqlite3 = requireFromAdapterPackage("better-sqlite3") as BetterSqlite3Ctor;
+
+function resolveCoreModuleRequire(): NodeJS.Require {
+  const candidates = [join(moduleDir, "../../../package.json"), join(moduleDir, "../../../../packages/core/package.json")];
+
+  for (const candidate of candidates) {
+    if (existsSync(candidate)) {
+      return createRequire(candidate);
+    }
+  }
+
+  return requireFromHere;
+}
 
 function withStateDatabase<T>(stateDbPath: string, callback: (database: BetterSqlite3Database) => T): T {
   const database = new BetterSqlite3(stateDbPath);

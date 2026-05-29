@@ -16,13 +16,14 @@ type BetterSqlite3Database = {
 type BetterSqlite3Ctor = new (filename: string) => BetterSqlite3Database;
 
 const requireFromHere = createRequire(typeof __filename === "string" ? __filename : import.meta.url);
-const moduleDir = dirname(fileURLToPath(import.meta.url));
+const modulePath = typeof __filename === "string" ? __filename : fileURLToPath(import.meta.url);
+const moduleDir = dirname(modulePath);
 const requireFromCoreModules = resolveCoreModuleRequire();
 const requireFromAdapterPackage = createRequire(requireFromCoreModules.resolve("@prisma/adapter-better-sqlite3"));
 const BetterSqlite3 = requireFromAdapterPackage("better-sqlite3") as BetterSqlite3Ctor;
 
 function resolveCoreModuleRequire(): NodeJS.Require {
-  const candidates = [join(moduleDir, "../../../package.json"), join(moduleDir, "../../../../packages/core/package.json")];
+  const candidates = [join(moduleDir, "../../core/package.json"), join(moduleDir, "../../../package.json")];
 
   for (const candidate of candidates) {
     if (existsSync(candidate)) {

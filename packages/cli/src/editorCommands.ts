@@ -10,8 +10,8 @@ import {
   type CustomEditorConflictCandidate
 } from "@vcser/core/customEditors";
 import type { CustomEditorInput, UpdateCustomEditorInput } from "@vcser/core/types";
-import prompts from "prompts";
 import type { CliLogger } from "./logger";
+import { createPromptRunner, type PromptRunner } from "./prompt";
 import { pathExists, resolveCliEditors, type CliEditor } from "./editorResolution";
 
 export interface CliCommandOptions {
@@ -23,26 +23,12 @@ export interface CliCommandOptions {
   yes?: boolean;
 }
 
-export class PromptCancelledError extends Error {}
-
 interface CustomEditorPromptAnswers {
   name?: string;
   cli?: string;
   appPath?: string;
   extensionsPath?: string;
   settingsPath?: string;
-}
-
-type PromptRunner = <T extends object>(question: prompts.PromptObject<string>) => Promise<T>;
-
-export function createPromptRunner() {
-  return async function runPrompt<T extends object>(question: prompts.PromptObject<string>): Promise<T> {
-    return prompts(question, {
-      onCancel: () => {
-        throw new PromptCancelledError();
-      }
-    }) as Promise<T>;
-  };
 }
 
 function normalizeFlagValue(value?: string): string | undefined {

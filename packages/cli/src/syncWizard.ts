@@ -6,7 +6,7 @@ import type { EditorExtensionItem, SyncResult } from "@vcser/core/types";
 import ora from "ora";
 import type { CliLogger } from "./logger";
 import { canRunCommand, resolveCliEditors, type CliEditor } from "./editorResolution";
-import { createPromptRunner } from "./editorCommands";
+import { createPromptRunner } from "./prompt";
 
 interface SyncCandidate {
   extensionId: string;

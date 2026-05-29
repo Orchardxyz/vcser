@@ -22,6 +22,11 @@ Use this file for repository-wide commands, environment requirements, dependency
 - lint with fixes: `pnpm lint:fix`
 - format check: `pnpm format:check`
 - format write: `pnpm format`
+- preview release metadata: `pnpm release:plan`
+- apply version and changelog updates: `pnpm release:version`
+- enter repository-wide prerelease mode after previewing the current plan: `pnpm release:prerelease:enter`
+- exit desktop beta prerelease mode: `pnpm release:prerelease:exit`
+- preview the CLI publish tarball: `pnpm release:pack:cli`
 
 ## Workspace Commands
 
@@ -69,6 +74,7 @@ Use this file for repository-wide commands, environment requirements, dependency
 - Put deeper agent guidance under `docs/agents/`.
 - If docs conflict with source/config, trust the source/config.
 - Update agent docs when project structure, shared contracts, or build/runtime assumptions materially change.
+- Use `docs/release.md` as the authoritative phase-1 release operations guide.
 
 ## Practical Workflow
 

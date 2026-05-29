@@ -8,6 +8,7 @@
     "node": ">=22.13"
   },
   "scripts": {
+    "changeset": "changeset",
     "dev": "pnpm --filter @vcser/desktop dev",
     "build": "pnpm --filter @vcser/desktop build",
     "preview": "pnpm --filter @vcser/desktop preview",
@@ -30,6 +31,12 @@
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "prepare": "husky",
+    "release:pack:cli": "pnpm --filter @vcser/cli pack --dry-run",
+    "release:plan": "node ./scripts/release/preview-release.mjs",
+    "release:prerelease:enter": "node ./scripts/release/enter-prerelease.mjs",
+    "release:prerelease:exit": "changeset pre exit",
+    "release:status": "changeset status --verbose",
+    "release:version": "changeset version",
     "test": "vitest run",
     "test:core": "vitest run packages/core/test",
     "test:cli": "vitest run packages/cli/test"
@@ -55,6 +62,8 @@
   ],
   "license": "Apache-2.0",
   "devDependencies": {
+    "@changesets/changelog-git": "catalog:release",
+    "@changesets/cli": "catalog:release",
     "@eslint/js": "catalog:linting",
     "@types/node": "catalog:typescript",
     "electron": "catalog:electron33",
@@ -64,10 +73,10 @@
     "eslint-plugin-react-hooks": "catalog:linting",
     "eslint-plugin-react-refresh": "catalog:linting",
     "globals": "catalog:linting",
-    "husky": "catalog:repo-tools",
+    "husky": "catalog:other",
     "jsonc-eslint-parser": "catalog:linting",
-    "lint-staged": "catalog:repo-tools",
-    "prettier": "catalog:repo-tools",
+    "lint-staged": "catalog:other",
+    "prettier": "catalog:other",
     "prisma": "catalog:prisma7",
     "typescript": "catalog:typescript",
     "typescript-eslint": "catalog:linting",

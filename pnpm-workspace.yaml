@@ -38,7 +38,10 @@ catalogs:
     globals: ^17.6.0
     jsonc-eslint-parser: ^3.1.0
     yaml-eslint-parser: ^2.0.0
-  repo-tools:
+  other:
     prettier: ^3.8.3
     husky: ^9.1.7
     lint-staged: ^16.4.0
+  release:
+    "@changesets/changelog-git": 0.2.1
+    "@changesets/cli": 2.29.6

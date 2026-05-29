@@ -1,9 +1,24 @@
 {
   "name": "@vcser/cli",
   "version": "0.1.0",
-  "private": true,
   "description": "CLI to sync local extensions across VS Code-based editors",
+  "license": "Apache-2.0",
   "type": "module",
+  "homepage": "https://github.com/Orchardxyz/vcser/tree/main/packages/cli",
+  "bugs": {
+    "url": "https://github.com/Orchardxyz/vcser/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Orchardxyz/vcser.git",
+    "directory": "packages/cli"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist"
+  ],
   "bin": {
     "vscer": "./dist/bin.cjs"
   },

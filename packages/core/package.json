@@ -2,7 +2,18 @@
   "name": "@vcser/core",
   "version": "0.1.0",
   "private": true,
+  "description": "Reusable runtime core for vcser editor detection, sync, and persistence",
+  "license": "Apache-2.0",
   "type": "module",
+  "homepage": "https://github.com/Orchardxyz/vcser/tree/main/packages/core",
+  "bugs": {
+    "url": "https://github.com/Orchardxyz/vcser/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Orchardxyz/vcser.git",
+    "directory": "packages/core"
+  },
   "exports": {
     ".": "./src/index.ts",
     "./customEditors": "./src/customEditors.ts",

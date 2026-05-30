@@ -16,11 +16,12 @@ Phase 1 covers local release governance:
 
 Phase 2 adds branch-safe release automation:
 
+- `.github/workflows/version-packages.yml` creates or updates a `Version Packages` PR after changesets land on `main`
 - `.github/workflows/release.yml` resolves release metadata for pending plans and committed release bumps
 - npm publish runs through GitHub Actions OIDC provenance instead of a long-lived npm token
 - desktop builds are packaged on macOS, Windows, and Linux and uploaded as GitHub Release assets
 - one GitHub Release is created for npm-only, desktop-only, and combined releases
-- branch rehearsals run as dry-runs and cannot publish unless the workflow is running on `main`
+- branch rehearsals run as dry-runs and cannot publish
 
 ## Package Policy
 
@@ -105,10 +106,11 @@ Use this flow for normal stable `core` and `cli` releases while the repository i
 
 1. Add one or more changesets with `pnpm changeset`.
 2. Preview the release metadata with `pnpm release:plan`.
-3. Apply versions with `pnpm release:version`.
-4. Review the updated package versions and package-local changelogs.
-5. Open the `Release` workflow with `workflow_dispatch` on the branch, keep `dry_run` enabled, and use `metadata_mode: committed` after version files exist.
-6. Merge the release commit to `main` after the dry-run succeeds.
+3. Merge the feature PR to `main` after normal CI passes.
+4. Wait for the `Version Packages` workflow to create or update the `Version Packages` PR.
+5. Review the generated package versions and package-local changelogs in that PR.
+6. Merge the `Version Packages` PR when a maintainer decides to publish.
+7. The `Release` workflow publishes only after that `Version Packages` merge.
 
 If `@vcser/core` changes, `@vcser/cli` may also receive a patch bump because internal dependency updates are configured with `updateInternalDependencies: "patch"`.
 
@@ -119,10 +121,10 @@ Use this flow when preparing any beta cut on a dedicated prerelease branch. `des
 1. Add one or more changesets for the packages that should participate in the prerelease.
 2. Enter prerelease mode with `pnpm release:prerelease:enter`.
 3. Preview the beta output with `pnpm release:plan`.
-4. Apply versions with `pnpm release:version`.
-5. Confirm the affected package versions follow the expected `*-beta.n` pattern.
-6. Run the `Release` workflow on the branch with `dry_run` enabled. Use `metadata_mode: pending` before versioning or `metadata_mode: committed` after versioning.
-7. Exit prerelease mode with `pnpm release:prerelease:exit` after the prerelease line is complete.
+4. Merge the prerelease setup branch to `main` after normal CI passes.
+5. Review the generated `Version Packages` PR and confirm the affected package versions follow the expected `*-beta.n` pattern.
+6. Merge the `Version Packages` PR when a maintainer decides to publish the beta.
+7. Exit prerelease mode with `pnpm release:prerelease:exit` in a follow-up PR after the prerelease line is complete.
 
 Important constraints:
 
@@ -132,6 +134,13 @@ Important constraints:
 - While prerelease mode is active, `pnpm release:version` will warn before writing prerelease versions. That warning is expected.
 
 ## Automated Release Workflow
+
+The automated release process has two workflows:
+
+- `Version Packages`
+  Runs on pushes to `main` that are not already `Version Packages` merges. It uses `changesets/action` to create or update a `Version Packages` PR with version bumps and package-local changelogs.
+- `Release`
+  Runs on pushes to `main` and manual dispatch. Manual dispatch is dry-run only. Real publish jobs run only when the pushed commit is the `Version Packages` merge commit.
 
 The `Release` workflow has four jobs:
 
@@ -144,7 +153,7 @@ The `Release` workflow has four jobs:
 - `create-github-release`
   Runs only for real releases on `main` after publish/build jobs succeed. It creates one GitHub Release, marks prerelease versions as prereleases, and attaches desktop assets when present.
 
-Manual workflow runs are dry-runs by default. A manual real publish is only allowed on `main` with `dry_run: false`; branch runs can resolve metadata, build desktop packages, and generate notes, but they cannot publish npm packages or create GitHub Releases.
+Manual workflow runs are dry-runs only. Branch runs can resolve metadata, build desktop packages, and generate notes, but they cannot publish npm packages or create GitHub Releases.
 
 ## Validation Expectations
 

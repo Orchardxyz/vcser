@@ -20,7 +20,7 @@
     "dist"
   ],
   "bin": {
-    "vscer": "./dist/bin.cjs"
+    "vcser": "./dist/bin.cjs"
   },
   "scripts": {
     "build": "node ./scripts/build.mjs",

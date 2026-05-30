@@ -56,7 +56,7 @@ function isCustomEditorStoreError(error: unknown): boolean {
 }
 
 export async function runCli(argv = process.argv): Promise<number> {
-  const cli = cac("vscer");
+  const cli = cac("vcser");
   const version = readPackageVersion();
 
   cli.option("--no-color", "Disable color output");

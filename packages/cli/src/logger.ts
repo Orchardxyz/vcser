@@ -2,12 +2,12 @@ import pc from "picocolors";
 
 const BRAND_RGB = "76;29;149";
 const ASCII_BANNER_LINES = [
-  "__      _______  _____ ______ _____  ",
-  "\\ \\    / / ____|/ ____|  ____|  __ \\",
-  " \\ \\  / / (___ | |    | |__  | |__) |",
-  "  \\ \\/ / \\___ \\| |    |  __| |  _  / ",
-  "   \\  /  ____) | |____| |____| | \\ \\",
-  "    \\/  |_____/ \\_____|______|_|  \\_\\"
+  "__      __ _____  _____  ______  _____ ",
+  "\\ \\    / // ____|/ ____||  ____||  __ \\",
+  " \\ \\  / /| |    | (___  | |__   | |__) |",
+  "  \\ \\/ / | |     \\___ \\ |  __|  |  _  /",
+  "   \\  /  | |____ ____) || |____ | | \\ \\",
+  "    \\/    \\_____|_____/ |______||_|  \\_\\"
 ] as const;
 const DARK_GRADIENT_RGB = ["196;181;253", "167;139;250", "139;92;246", "124;58;237", BRAND_RGB, "91;33;182"] as const;
 const LIGHT_GRADIENT_RGB = [BRAND_RGB, "91;33;182", "109;40;217", "124;58;237", "91;33;182", BRAND_RGB] as const;
@@ -92,7 +92,7 @@ function resolveTerminalTheme(explicitTheme?: TerminalTheme): TerminalTheme {
     return explicitTheme;
   }
 
-  const envTheme = process.env.VSCER_THEME;
+  const envTheme = process.env.VCSER_THEME;
   if (envTheme === "dark" || envTheme === "light") {
     return envTheme;
   }

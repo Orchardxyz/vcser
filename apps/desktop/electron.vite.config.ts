@@ -10,6 +10,7 @@ type PreloadConfig = NonNullable<StaticElectronViteConfig["preload"]>;
 const root = import.meta.dirname;
 const rendererPath = path.resolve(root, "src/renderer/src");
 const assetsPath = path.resolve(root, "src/assets");
+const workspaceAssetsPath = path.resolve(root, "../../assets");
 const coreSrcPath = path.resolve(root, "../../packages/core/src");
 const nativeMainExternals = ["@prisma/adapter-better-sqlite3", "better-sqlite3", "bindings"];
 
@@ -58,7 +59,12 @@ export default defineConfig({
     clearScreen: false,
     plugins: [react(), tailwindcss()],
     resolve: {
-      alias: [...coreAliases, { find: "@", replacement: rendererPath }, { find: "@assets", replacement: assetsPath }]
+      alias: [
+        ...coreAliases,
+        { find: "@", replacement: rendererPath },
+        { find: "@assets", replacement: assetsPath },
+        { find: "@workspace-assets", replacement: workspaceAssetsPath }
+      ]
     }
   }
 });

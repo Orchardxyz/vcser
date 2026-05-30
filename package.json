@@ -22,7 +22,7 @@
     "cli:watch": "pnpm --filter @vcser/cli build:watch",
     "cli:start": "pnpm --filter @vcser/cli start",
     "cli:typecheck": "pnpm --filter @vcser/cli typecheck",
-    "icons:generate": "pnpm --filter @vcser/desktop icons:generate",
+    "icons:generate": "bash scripts/generate-icons.sh",
     "db:generate": "pnpm --filter @vcser/core db:generate",
     "db:migrate": "pnpm --filter @vcser/core db:migrate",
     "db:studio": "npx prisma studio",

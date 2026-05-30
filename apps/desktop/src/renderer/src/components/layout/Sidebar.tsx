@@ -3,7 +3,7 @@ import { LayoutDashboard, MonitorCog, Settings } from "lucide-react";
 import type { ValueOf } from "type-fest";
 import { useTranslation } from "react-i18next";
 import { NavLink, type NavLinkRenderProps } from "react-router-dom";
-import logoSvg from "@assets/logo.svg";
+import logoSvg from "@workspace-assets/logo.svg";
 import { invoke } from "@/ipc";
 import { APP_ROUTE } from "@/routes";
 import { useAppStore } from "@/store";

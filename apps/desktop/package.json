@@ -24,7 +24,7 @@
     "package:win": "node scripts/sync-runtime-assets.cjs && electron-builder --win",
     "package:linux": "node scripts/sync-runtime-assets.cjs && electron-builder --linux",
     "preview": "electron-vite preview",
-    "icons:generate": "bash scripts/generate-icons.sh",
+    "icons:generate": "bash ../../scripts/generate-icons.sh",
     "postinstall": "node scripts/ensure-electron-binary.cjs && node scripts/rebuild-native-modules.cjs"
   },
   "build": {

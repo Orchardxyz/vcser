@@ -1,5 +1,13 @@
 {
   "files": [],
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/renderer/src/*"],
+      "@assets/*": ["./src/assets/*"],
+      "@vcser/core": ["../../packages/core/src/index.ts"],
+      "@vcser/core/*": ["../../packages/core/src/*"]
+    }
+  },
   "references": [
     {
       "path": "../../packages/core"

@@ -1,10 +1,11 @@
 {
   "name": "@vcser/core",
-  "version": "0.1.0",
-  "private": true,
+  "version": "0.1.1-beta.1",
   "description": "Reusable runtime core for vcser editor detection, sync, and persistence",
   "license": "Apache-2.0",
   "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "homepage": "https://github.com/Orchardxyz/vcser/tree/main/packages/core",
   "bugs": {
     "url": "https://github.com/Orchardxyz/vcser/issues"
@@ -14,26 +15,72 @@
     "url": "git+https://github.com/Orchardxyz/vcser.git",
     "directory": "packages/core"
   },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "prisma/migrations",
+    "scripts/postinstall.mjs"
+  ],
   "exports": {
-    ".": "./src/index.ts",
-    "./customEditors": "./src/customEditors.ts",
-    "./dataPaths": "./src/dataPaths.ts",
-    "./db": "./src/db.ts",
-    "./editors/detect": "./src/editors/detect/index.ts",
-    "./editors/extensions": "./src/editors/extensions/index.ts",
-    "./editors/*": "./src/editors/*.ts",
-    "./generated/prisma": "./src/generated/prisma/index.js",
-    "./i18n": "./src/shared/i18n.ts",
-    "./ipc": "./src/shared/ipc.ts",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./customEditors": {
+      "types": "./dist/customEditors.d.ts",
+      "default": "./dist/customEditors.js"
+    },
+    "./dataPaths": {
+      "types": "./dist/dataPaths.d.ts",
+      "default": "./dist/dataPaths.js"
+    },
+    "./db": {
+      "types": "./dist/db.d.ts",
+      "default": "./dist/db.js"
+    },
+    "./editors/detect": {
+      "types": "./dist/editors/detect/index.d.ts",
+      "default": "./dist/editors/detect/index.js"
+    },
+    "./editors/extensions": {
+      "types": "./dist/editors/extensions/index.d.ts",
+      "default": "./dist/editors/extensions/index.js"
+    },
+    "./editors/*": {
+      "types": "./dist/editors/*.d.ts",
+      "default": "./dist/editors/*.js"
+    },
+    "./generated/prisma": {
+      "types": "./dist/generated/prisma/index.d.ts",
+      "default": "./dist/generated/prisma/index.js"
+    },
+    "./i18n": {
+      "types": "./dist/shared/i18n.d.ts",
+      "default": "./dist/shared/i18n.js"
+    },
+    "./ipc": {
+      "types": "./dist/shared/ipc.d.ts",
+      "default": "./dist/shared/ipc.js"
+    },
     "./package.json": "./package.json",
-    "./typeGuards": "./src/typeGuards.ts",
-    "./types": "./src/shared/types.ts"
+    "./typeGuards": {
+      "types": "./dist/typeGuards.d.ts",
+      "default": "./dist/typeGuards.js"
+    },
+    "./types": {
+      "types": "./dist/shared/types.d.ts",
+      "default": "./dist/shared/types.js"
+    }
   },
   "scripts": {
+    "build": "node ./scripts/build.mjs",
     "db:generate": "prisma generate --config ../../prisma.config.ts --schema prisma/schema.prisma",
     "db:migrate": "prisma migrate dev --config ../../prisma.config.ts --schema prisma/schema.prisma",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "postinstall": "prisma generate --config ../../prisma.config.ts --schema prisma/schema.prisma",
+    "prepack": "pnpm run build",
+    "postinstall": "node ./scripts/postinstall.mjs",
     "test": "vitest run",
     "test:watch": "vitest"
   },

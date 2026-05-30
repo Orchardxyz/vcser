@@ -53,7 +53,7 @@ if (statusCommand.status !== 0) {
 }
 
 const releasePlan = JSON.parse(readFileSync(statusPath, "utf8"));
-const releases = Array.isArray(releasePlan.releases) ? releasePlan.releases : [];
+const releases = Array.isArray(releasePlan.releases) ? releasePlan.releases.filter((release) => release.type !== "none") : [];
 const changesets = Array.isArray(releasePlan.changesets) ? releasePlan.changesets : [];
 const preState = releasePlan.preState ?? null;
 

@@ -1,6 +1,6 @@
 {
   "name": "@vcser/cli",
-  "version": "0.1.0",
+  "version": "0.1.1-beta.1",
   "description": "CLI to sync local extensions across VS Code-based editors",
   "license": "Apache-2.0",
   "type": "module",
@@ -17,7 +17,8 @@
     "access": "public"
   },
   "files": [
-    "dist"
+    "dist/bin.cjs",
+    "dist/bin.cjs.map"
   ],
   "bin": {
     "vcser": "./dist/bin.cjs"
@@ -26,6 +27,7 @@
     "build": "node ./scripts/build.mjs",
     "build:watch": "node ./scripts/build.mjs --watch",
     "dev": "node ./scripts/build.mjs --watch",
+    "prepack": "pnpm --filter @vcser/core build && pnpm run build",
     "smoke": "pnpm run build && node ./dist/bin.cjs --help",
     "start": "node ./dist/bin.cjs",
     "typecheck": "tsc --noEmit -p tsconfig.json",

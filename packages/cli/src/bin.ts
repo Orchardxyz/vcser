@@ -1,4 +1,5 @@
 import { CliLoggerImpl } from "./logger";
+import { CLI_SCOPE } from "./commandConstants";
 import { ensureNodeNativeModulesReady } from "./nativeRebuild";
 
 declare const __CLI_VERSION__: string;
@@ -8,7 +9,7 @@ function shouldPrintVersion(argv: string[]): boolean {
 }
 
 function shouldSkipNativeSetup(argv: string[]): boolean {
-  return shouldPrintVersion(argv) || argv.includes("-h") || argv.includes("--help") || argv[0] === "reset";
+  return shouldPrintVersion(argv) || argv.includes("-h") || argv.includes("--help") || argv[0] === CLI_SCOPE.RESET;
 }
 
 async function main(): Promise<void> {

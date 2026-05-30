@@ -1,5 +1,6 @@
 import { cac } from "cac";
 import type { CliCommandOptions } from "./editorCommands";
+import { CLI_EDITOR_ACTION, CLI_SCOPE } from "./commandConstants";
 import { createLogger } from "./logger";
 import { PromptCancelledError } from "./prompt";
 
@@ -84,7 +85,7 @@ export async function runCli(argv = process.argv): Promise<number> {
   const handleCancelled = () => logger.line(logger.palette.yellow("Cancelled."));
   const handleUnknownError = (message: string) => logger.error(logger.palette.red(message));
 
-  if (!scope || scope === "sync") {
+  if (!scope || scope === CLI_SCOPE.SYNC) {
     const { runWizard } = await import("./syncWizard");
     return runWithCliErrorHandling(
       () => runWizard(logger),
@@ -94,7 +95,7 @@ export async function runCli(argv = process.argv): Promise<number> {
     );
   }
 
-  if (scope === "reset") {
+  if (scope === CLI_SCOPE.RESET) {
     const { runResetCommand } = await import("./resetCommand");
     return runWithCliErrorHandling(
       () => runResetCommand({ yes: Boolean((parsed.options as CliOptions).yes) }, logger),
@@ -104,7 +105,7 @@ export async function runCli(argv = process.argv): Promise<number> {
     );
   }
 
-  if (scope !== "editor") {
+  if (scope !== CLI_SCOPE.EDITOR) {
     logger.error(logger.palette.red(`Unknown command: ${parsed.args.join(" ")}`));
     logger.line();
     cli.outputHelp();
@@ -115,15 +116,15 @@ export async function runCli(argv = process.argv): Promise<number> {
   const commandOptions = parsed.options as CliCommandOptions;
   const handleStoreError = (error: unknown) => editorCommands.printCustomEditorError(logger, error);
 
-  if (action === "list") {
+  if (action === CLI_EDITOR_ACTION.LIST) {
     return runWithCliErrorHandling(() => editorCommands.runEditorList(logger), handleCancelled, handleStoreError, handleUnknownError);
   }
 
-  if (action === "add") {
+  if (action === CLI_EDITOR_ACTION.ADD) {
     return runWithCliErrorHandling(() => editorCommands.runEditorAdd(commandOptions, logger), handleCancelled, handleStoreError, handleUnknownError);
   }
 
-  if (action === "update" && identifier) {
+  if (action === CLI_EDITOR_ACTION.UPDATE && identifier) {
     return runWithCliErrorHandling(
       () => editorCommands.runEditorUpdate(identifier, commandOptions, logger),
       handleCancelled,
@@ -132,7 +133,7 @@ export async function runCli(argv = process.argv): Promise<number> {
     );
   }
 
-  if (action === "remove" && identifier) {
+  if (action === CLI_EDITOR_ACTION.REMOVE && identifier) {
     return runWithCliErrorHandling(
       () => editorCommands.runEditorRemove(identifier, commandOptions, logger),
       handleCancelled,

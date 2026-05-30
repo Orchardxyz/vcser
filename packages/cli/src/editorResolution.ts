@@ -1,9 +1,9 @@
 import { execFile } from "node:child_process";
 import { access, constants } from "node:fs/promises";
 import { promisify } from "node:util";
-import { APP_ICON_STATUS, EDITOR_SOURCE, type ResolvedEditor } from "@vcser/core/types";
 import { listCustomEditors } from "@vcser/core/customEditors";
-import { detectEditors } from "@vcser/core/editors/detect/detect";
+import { detectEditors } from "@vcser/core/editors/detect";
+import { APP_ICON_STATUS, EDITOR_SOURCE, type ResolvedEditor } from "@vcser/core/types";
 import type { CliLogger } from "./logger";
 
 const execFilePromise = promisify(execFile);

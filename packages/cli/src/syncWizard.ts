@@ -1,6 +1,5 @@
 import { basename } from "node:path";
-import { listEditorExtensions } from "@vcser/core/editors/extensions/extensions";
-import { syncExtensionLocal } from "@vcser/core/editors/extensions/extensionSync";
+import { listEditorExtensions, syncExtensionLocal } from "@vcser/core/editors/extensions";
 import { RUNTIME_MESSAGE_KEY } from "@vcser/core/i18n";
 import type { EditorExtensionItem, SyncResult } from "@vcser/core/types";
 import ora from "ora";

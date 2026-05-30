@@ -54,6 +54,12 @@ jobs:
       - id: mode
         shell: bash
         run: |
+          is_version_packages_commit="false"
+
+          if [[ "${{ github.event_name }}" == "push" && "${{ github.event.head_commit.message }}" == *"Version Packages"* ]]; then
+            is_version_packages_commit="true"
+          fi
+
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             echo "metadata_mode=${{ inputs.metadata_mode }}" >> "$GITHUB_OUTPUT"
             echo "dry_run=${{ inputs.dry_run }}" >> "$GITHUB_OUTPUT"
@@ -62,9 +68,7 @@ jobs:
             echo "dry_run=false" >> "$GITHUB_OUTPUT"
           fi
 
-          if [[ "${{ github.ref }}" == "refs/heads/main" && "${{ github.event_name }}" != "workflow_dispatch" ]]; then
-            echo "is_real_release=true" >> "$GITHUB_OUTPUT"
-          elif [[ "${{ github.ref }}" == "refs/heads/main" && "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.dry_run }}" == "false" ]]; then
+          if [[ "${{ github.ref }}" == "refs/heads/main" && "$is_version_packages_commit" == "true" ]]; then
             echo "is_real_release=true" >> "$GITHUB_OUTPUT"
           else
             echo "is_real_release=false" >> "$GITHUB_OUTPUT"

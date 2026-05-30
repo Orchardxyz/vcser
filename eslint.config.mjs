@@ -6,7 +6,15 @@ import { sharedCandidateConfigs } from "./eslint/shared-candidates.mjs";
 
 export default tseslint.config(
   {
-    ignores: ["**/out/**", "**/dist/**", "**/dist-electron/**", "packages/core/dist-types/**", "packages/core/src/generated/**", "**/*.tsbuildinfo"]
+    ignores: [
+      "**/out/**",
+      "**/dist/**",
+      "**/dist-electron/**",
+      "apps/desktop/resources/runtime/**",
+      "packages/core/dist-types/**",
+      "packages/core/src/generated/**",
+      "**/*.tsbuildinfo"
+    ]
   },
   ...sharedCandidateConfigs,
   ...repoOverrideConfigs,

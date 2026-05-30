@@ -24,8 +24,9 @@ type PrismaGlobal = typeof globalThis & {
 };
 
 // The generated Prisma client is CJS; Electron's main process is ESM, so we use createRequire to bridge.
-const requireFromHere = createRequire(typeof __filename === "string" ? __filename : import.meta.url);
-const modulePath = typeof __filename === "string" ? __filename : fileURLToPath(import.meta.url);
+const moduleUrl = import.meta.url;
+const modulePath = moduleUrl ? fileURLToPath(moduleUrl) : __filename;
+const requireFromHere = createRequire(moduleUrl || modulePath);
 const moduleDir = dirname(modulePath);
 const runtimeCorePaths = resolveRuntimeCorePaths();
 const requireFromCoreModules = resolveCoreModuleRequire();

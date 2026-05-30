@@ -1,0 +1,10 @@
+{
+  "mode": "pre",
+  "tag": "beta",
+  "initialVersions": {
+    "@vcser/desktop": "0.1.0",
+    "@vcser/cli": "0.1.1-beta.0",
+    "@vcser/core": "0.1.1-beta.0"
+  },
+  "changesets": ["tidy-release-automation"]
+}

@@ -4,7 +4,7 @@ This document defines the phase-1 release foundation for `vcser`.
 
 ## Scope
 
-Phase 1 covers local release governance only:
+Phase 1 covers local release governance:
 
 - `@vcser/core`, `@vcser/cli`, and `@vcser/desktop` are all tracked by `changesets`
 - `@vcser/cli` is prepared as a publishable npm package
@@ -14,16 +14,22 @@ Phase 1 covers local release governance only:
 - GitHub Release content is previewed locally before any workflow automation exists
 - prerelease mode is available for any release plan, although `desktop` is the first expected consumer
 
-Phase 1 does not publish to npm or upload desktop assets.
+Phase 2 adds branch-safe release automation:
+
+- `.github/workflows/release.yml` resolves release metadata for pending plans and committed release bumps
+- npm publish runs through GitHub Actions OIDC provenance instead of a long-lived npm token
+- desktop builds are packaged on macOS, Windows, and Linux and uploaded as GitHub Release assets
+- one GitHub Release is created for npm-only, desktop-only, and combined releases
+- branch rehearsals run as dry-runs and cannot publish unless the workflow is running on `main`
 
 ## Package Policy
 
 ### `@vcser/core`
 
 - participates in `changesets`
-- remains `private: true` in phase 1
-- can still receive version and changelog updates
-- will need a dedicated runtime build surface before public npm release
+- publishes from `dist`
+- includes generated Prisma runtime assets and Prisma migrations needed by the runtime database bootstrap
+- uses `publishConfig.access: "public"`
 
 ### `@vcser/cli`
 
@@ -59,12 +65,16 @@ These files are created or updated by `pnpm release:version`.
   Show the current `changesets` release plan directly.
 - `pnpm release:plan`
   Output normalized release metadata plus a GitHub Release notes skeleton. If the workspace has unreleased package changes but no changeset files yet, it returns a non-fatal `pendingChangesWithoutChangesets` signal.
+- `pnpm release:resolve`
+  Resolve release metadata for automation. By default it compares committed package versions between `HEAD^` and `HEAD`. Use `pnpm release:resolve --mode pending` to rehearse a pending changesets plan on a branch.
 - `pnpm release:version`
   Apply version bumps and update package changelogs.
 - `pnpm release:prerelease:enter`
   Enter repository-wide prerelease mode with the `beta` tag after previewing the current release plan.
 - `pnpm release:prerelease:exit`
   Exit prerelease mode before resuming normal stable versioning.
+- `pnpm release:pack:core`
+  Preview the publish tarball for `@vcser/core`.
 - `pnpm release:pack:cli`
   Preview the publish tarball for `@vcser/cli`.
 
@@ -97,6 +107,8 @@ Use this flow for normal stable `core` and `cli` releases while the repository i
 2. Preview the release metadata with `pnpm release:plan`.
 3. Apply versions with `pnpm release:version`.
 4. Review the updated package versions and package-local changelogs.
+5. Open the `Release` workflow with `workflow_dispatch` on the branch, keep `dry_run` enabled, and use `metadata_mode: committed` after version files exist.
+6. Merge the release commit to `main` after the dry-run succeeds.
 
 If `@vcser/core` changes, `@vcser/cli` may also receive a patch bump because internal dependency updates are configured with `updateInternalDependencies: "patch"`.
 
@@ -109,7 +121,8 @@ Use this flow when preparing any beta cut on a dedicated prerelease branch. `des
 3. Preview the beta output with `pnpm release:plan`.
 4. Apply versions with `pnpm release:version`.
 5. Confirm the affected package versions follow the expected `*-beta.n` pattern.
-6. Exit prerelease mode with `pnpm release:prerelease:exit` after the prerelease line is complete.
+6. Run the `Release` workflow on the branch with `dry_run` enabled. Use `metadata_mode: pending` before versioning or `metadata_mode: committed` after versioning.
+7. Exit prerelease mode with `pnpm release:prerelease:exit` after the prerelease line is complete.
 
 Important constraints:
 
@@ -118,13 +131,32 @@ Important constraints:
 - Only the packages included in the current release plan should be present on that prerelease branch.
 - While prerelease mode is active, `pnpm release:version` will warn before writing prerelease versions. That warning is expected.
 
+## Automated Release Workflow
+
+The `Release` workflow has four jobs:
+
+- `resolve-release`
+  Produces `release_kind`, `should_publish_npm`, `should_publish_desktop`, `is_prerelease`, a release tag, metadata JSON, and a release notes markdown file.
+- `publish-npm`
+  Runs only for real releases on `main` when `@vcser/core` or `@vcser/cli` changed. It uses Node 24, upgrades npm to the latest CLI, verifies the npm Trusted Publishing baseline, installs dependencies, runs core and CLI typecheck plus build validation, then publishes with `changeset publish`, `id-token: write`, and `NPM_CONFIG_PROVENANCE=true`.
+- `publish-desktop`
+  Runs whenever `@vcser/desktop` changed, including branch dry-runs. It packages macOS, Windows, and Linux artifacts and uploads them as workflow artifacts. Signing and notarization are intentionally left as future slots.
+- `create-github-release`
+  Runs only for real releases on `main` after publish/build jobs succeed. It creates one GitHub Release, marks prerelease versions as prereleases, and attaches desktop assets when present.
+
+Manual workflow runs are dry-runs by default. A manual real publish is only allowed on `main` with `dry_run: false`; branch runs can resolve metadata, build desktop packages, and generate notes, but they cannot publish npm packages or create GitHub Releases.
+
 ## Validation Expectations
 
-Phase 1 should be validated locally with dry runs:
+Release planning should be validated locally with dry runs:
 
 1. a CLI-only changeset should classify as `npm-only`
 2. a desktop-only changeset should classify as `desktop-only`
 3. a combined `core` plus `desktop` changeset should classify as `combined`
 4. entering prerelease mode should surface the `beta` tag in `pnpm release:plan`
 5. `pnpm release:version` should write changelog updates into package-local `CHANGELOG.md` files
-6. `pnpm release:pack:cli` should show a tarball that contains only the CLI runtime artifact surface
+6. `pnpm release:pack:core` should show a tarball with core `dist`, generated Prisma runtime assets, and migrations
+7. `pnpm release:pack:cli` should show a tarball that contains only the CLI runtime artifact surface
+8. `pnpm release:resolve --mode pending` should generate branch-safe metadata before versioning
+9. `pnpm release:resolve` should detect committed package version bumps after versioning
+10. `pnpm --filter @vcser/core build` should emit runnable JS, declaration files, generated Prisma runtime assets, and packaged migrations

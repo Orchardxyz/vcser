@@ -1,0 +1,216 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Run release planning, builds, and notes generation without publishing."
+        required: true
+        type: boolean
+        default: true
+      metadata_mode:
+        description: "Use pending changesets for branch rehearsals or committed package versions for release commits."
+        required: true
+        type: choice
+        default: pending
+        options:
+          - pending
+          - committed
+
+concurrency:
+  group: release-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  resolve-release:
+    runs-on: ubuntu-latest
+    outputs:
+      dry_run: ${{ steps.mode.outputs.dry_run }}
+      is_real_release: ${{ steps.mode.outputs.is_real_release }}
+      release_kind: ${{ steps.metadata.outputs.release_kind }}
+      release_tag: ${{ steps.metadata.outputs.release_tag }}
+      release_name: ${{ steps.metadata.outputs.release_name }}
+      package_names: ${{ steps.metadata.outputs.package_names }}
+      should_publish_npm: ${{ steps.metadata.outputs.should_publish_npm }}
+      should_publish_desktop: ${{ steps.metadata.outputs.should_publish_desktop }}
+      is_prerelease: ${{ steps.metadata.outputs.is_prerelease }}
+      pending_changesets: ${{ steps.metadata.outputs.pending_changesets }}
+      pending_changes_without_changesets: ${{ steps.metadata.outputs.pending_changes_without_changesets }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.13.1
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - id: mode
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "metadata_mode=${{ inputs.metadata_mode }}" >> "$GITHUB_OUTPUT"
+            echo "dry_run=${{ inputs.dry_run }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "metadata_mode=committed" >> "$GITHUB_OUTPUT"
+            echo "dry_run=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          if [[ "${{ github.ref }}" == "refs/heads/main" && "${{ github.event_name }}" != "workflow_dispatch" ]]; then
+            echo "is_real_release=true" >> "$GITHUB_OUTPUT"
+          elif [[ "${{ github.ref }}" == "refs/heads/main" && "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.dry_run }}" == "false" ]]; then
+            echo "is_real_release=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_real_release=false" >> "$GITHUB_OUTPUT"
+          fi
+      - id: metadata
+        run: >
+          node ./scripts/release/resolve-release.mjs
+          --mode "${{ steps.mode.outputs.metadata_mode }}"
+          --metadata release-metadata/release.json
+          --notes release-metadata/release-notes.md
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-metadata
+          path: release-metadata/
+          if-no-files-found: error
+
+  publish-npm:
+    needs: resolve-release
+    if: needs.resolve-release.outputs.should_publish_npm == 'true' && needs.resolve-release.outputs.is_real_release == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: "https://registry.npmjs.org"
+      - name: Upgrade npm
+        run: |
+          npm install --global npm@latest
+          hash -r
+          which node
+          node --version
+          which npm
+          npm --version
+      - name: Verify npm CLI baseline
+        run: node ./scripts/release/verify-npm-baseline.mjs
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @vcser/core typecheck
+      - run: pnpm --filter @vcser/core build
+      - run: pnpm --filter @vcser/cli typecheck
+      - run: pnpm --filter @vcser/cli build
+      - run: pnpm exec changeset publish
+        env:
+          NPM_CONFIG_PROVENANCE: true
+
+  publish-desktop:
+    needs: resolve-release
+    if: needs.resolve-release.outputs.should_publish_desktop == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            package_script: package:mac
+            artifact_name: desktop-macos
+          - os: windows-latest
+            package_script: package:win
+            artifact_name: desktop-windows
+          - os: ubuntu-latest
+            package_script: package:linux
+            artifact_name: desktop-linux
+    runs-on: ${{ matrix.os }}
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.13.1
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm ${{ matrix.package_script }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: |
+            apps/desktop/dist/**/*.AppImage
+            apps/desktop/dist/**/*.blockmap
+            apps/desktop/dist/**/*.deb
+            apps/desktop/dist/**/*.dmg
+            apps/desktop/dist/**/*.exe
+            apps/desktop/dist/**/*.rpm
+            apps/desktop/dist/**/*.snap
+            apps/desktop/dist/**/*.yml
+            apps/desktop/dist/**/*.zip
+          if-no-files-found: error
+
+  create-github-release:
+    needs:
+      - resolve-release
+      - publish-npm
+      - publish-desktop
+    if: always() && needs.resolve-release.outputs.release_kind != 'none' && needs.resolve-release.outputs.is_real_release == 'true' && (needs.publish-npm.result == 'success' || needs.publish-npm.result == 'skipped') && (needs.publish-desktop.result == 'success' || needs.publish-desktop.result == 'skipped')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-metadata
+          path: release-metadata
+      - uses: actions/download-artifact@v4
+        if: needs.resolve-release.outputs.should_publish_desktop == 'true'
+        with:
+          pattern: desktop-*
+          path: release-assets
+          merge-multiple: true
+      - name: Append desktop asset list
+        if: needs.resolve-release.outputs.should_publish_desktop == 'true'
+        shell: bash
+        run: |
+          {
+            echo
+            echo "## release assets"
+            echo
+            find release-assets -type f -printf "- %f\n" | sort
+          } >> release-metadata/release-notes.md
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.resolve-release.outputs.release_tag }}
+          RELEASE_NAME: ${{ needs.resolve-release.outputs.release_name }}
+          IS_PRERELEASE: ${{ needs.resolve-release.outputs.is_prerelease }}
+          HAS_DESKTOP: ${{ needs.resolve-release.outputs.should_publish_desktop }}
+        shell: bash
+        run: |
+          args=(release create "$RELEASE_TAG" --title "$RELEASE_NAME" --notes-file release-metadata/release-notes.md --target "$GITHUB_SHA")
+
+          if [[ "$IS_PRERELEASE" == "true" ]]; then
+            args+=(--prerelease)
+          fi
+
+          if [[ "$HAS_DESKTOP" == "true" ]]; then
+            while IFS= read -r -d '' asset; do
+              args+=("$asset")
+            done < <(find release-assets -type f -print0)
+          fi
+
+          gh "${args[@]}"

@@ -28,6 +28,7 @@ const buildOptions = {
   packages: "bundle",
   alias: {
     "@vcser/core/customEditors": path.resolve(coreSrcPath, "customEditors.ts"),
+    "@vcser/core/dataPaths": path.resolve(coreSrcPath, "dataPaths.ts"),
     "@vcser/core/db": path.resolve(coreSrcPath, "db.ts"),
     "@vcser/core/editors/detect/detect": path.resolve(coreSrcPath, "editors/detect/detect.ts"),
     "@vcser/core/editors/extensions/extensions": path.resolve(coreSrcPath, "editors/extensions/extensions.ts"),

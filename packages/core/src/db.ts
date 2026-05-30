@@ -1,9 +1,9 @@
 import { createRequire } from "node:module";
 import { existsSync, mkdirSync, readFileSync, readdirSync } from "node:fs";
-import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { PrismaClient } from "./generated/prisma";
+import { resolveDatabasePathFromUrl, resolveDatabaseUrl } from "./dataPaths";
 
 type PrismaBetterSqlite3Ctor = new (options: { url: string }) => unknown;
 type BetterSqlite3Database = {
@@ -39,44 +39,6 @@ const { PrismaClient: PrismaClientCtor } = requireFromHere(runtimeCorePaths.gene
 };
 
 const prismaGlobal = globalThis as PrismaGlobal;
-
-function resolveDefaultDatabaseUrl(): string {
-  return toSqliteFileUrl(resolveDefaultDatabasePath());
-}
-
-function resolveDefaultDatabasePath(): string {
-  if (process.platform === "darwin") {
-    return join(homedir(), "Library", "Application Support", "vcser", "data.db");
-  }
-
-  if (process.platform === "win32") {
-    const appData = process.env.APPDATA?.trim();
-    return join(appData || join(homedir(), "AppData", "Roaming"), "vcser", "data.db");
-  }
-
-  return join(homedir(), ".local", "share", "vcser", "data.db");
-}
-
-function toSqliteFileUrl(filePath: string): string {
-  return `file:${filePath.replaceAll("\\", "/")}`;
-}
-
-function resolveDatabasePathFromUrl(url: string): string | undefined {
-  if (!url.startsWith("file:")) {
-    return undefined;
-  }
-
-  const normalized = url.slice("file:".length).split(/[?#]/, 1)[0];
-  if (!normalized) {
-    return undefined;
-  }
-
-  if (process.platform === "win32" && normalized.startsWith("/") && /^[A-Za-z]:\//.test(normalized.slice(1))) {
-    return normalized.slice(1);
-  }
-
-  return normalized;
-}
 
 function resolveMigrationsPath(): string {
   return runtimeCorePaths.migrationsPath;
@@ -197,10 +159,6 @@ function bootstrapDatabaseSchema(url: string): void {
   }
 
   applyPendingMigrations(databasePath);
-}
-
-export function resolveDatabaseUrl(): string {
-  return process.env.DATABASE_URL || resolveDefaultDatabaseUrl();
 }
 
 function summarizePrismaUnavailable(error: unknown): string {

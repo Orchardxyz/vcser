@@ -10,6 +10,7 @@ interface CliOptions {
   debug?: boolean;
   help?: boolean;
   version?: boolean;
+  yes?: boolean;
   [key: string]: unknown;
 }
 
@@ -59,6 +60,7 @@ export async function runCli(argv = process.argv): Promise<number> {
 
   cli.option("--no-color", "Disable color output");
   cli.option("--debug", "Print debug output");
+  cli.option("-y, --yes", "Skip confirmation prompts");
   cli.option("-v, --version", "Display version number");
   cli.help();
 
@@ -86,6 +88,16 @@ export async function runCli(argv = process.argv): Promise<number> {
     const { runWizard } = await import("./syncWizard");
     return runWithCliErrorHandling(
       () => runWizard(logger),
+      handleCancelled,
+      (error) => handleUnknownError(String(error)),
+      handleUnknownError
+    );
+  }
+
+  if (scope === "reset") {
+    const { runResetCommand } = await import("./resetCommand");
+    return runWithCliErrorHandling(
+      () => runResetCommand({ yes: Boolean((parsed.options as CliOptions).yes) }, logger),
       handleCancelled,
       (error) => handleUnknownError(String(error)),
       handleUnknownError

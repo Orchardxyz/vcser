@@ -8,7 +8,7 @@ function shouldPrintVersion(argv: string[]): boolean {
 }
 
 function shouldSkipNativeSetup(argv: string[]): boolean {
-  return shouldPrintVersion(argv) || argv.includes("-h") || argv.includes("--help");
+  return shouldPrintVersion(argv) || argv.includes("-h") || argv.includes("--help") || argv[0] === "reset";
 }
 
 async function main(): Promise<void> {

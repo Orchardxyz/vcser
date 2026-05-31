@@ -20,9 +20,9 @@
     "dev": "electron-vite dev",
     "build": "tsc -b && electron-vite build",
     "package:dir": "node scripts/sync-runtime-assets.cjs && electron-builder --dir",
-    "package:mac": "node scripts/sync-runtime-assets.cjs && electron-builder --mac",
-    "package:win": "node scripts/sync-runtime-assets.cjs && electron-builder --win",
-    "package:linux": "node scripts/sync-runtime-assets.cjs && electron-builder --linux",
+    "package:mac": "node scripts/sync-runtime-assets.cjs && electron-builder --mac --publish never",
+    "package:win": "node scripts/sync-runtime-assets.cjs && electron-builder --win --publish never",
+    "package:linux": "node scripts/sync-runtime-assets.cjs && electron-builder --linux --publish never",
     "preview": "electron-vite preview",
     "icons:generate": "bash ../../scripts/generate-icons.sh",
     "postinstall": "node scripts/ensure-electron-binary.cjs && node scripts/rebuild-native-modules.cjs"
@@ -56,6 +56,7 @@
     },
     "linux": {
       "icon": "resources/icons/png/512x512.png",
+      "maintainer": "Orchard <orchard@users.noreply.github.com>",
       "target": [
         "AppImage",
         "deb"

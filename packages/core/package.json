@@ -40,6 +40,10 @@
       "types": "./dist/db.d.ts",
       "default": "./dist/db.js"
     },
+    "./errors": {
+      "types": "./dist/errors.d.ts",
+      "default": "./dist/errors.js"
+    },
     "./editors/detect": {
       "types": "./dist/editors/detect/index.d.ts",
       "default": "./dist/editors/detect/index.js"

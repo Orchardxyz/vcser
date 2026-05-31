@@ -1,4 +1,5 @@
 import { cac } from "cac";
+import { isCustomEditorStoreError } from "@vcser/core/customEditors";
 import type { CliCommandOptions } from "./editorCommands";
 import { CLI_EDITOR_ACTION, CLI_SCOPE } from "./commandConstants";
 import { createLogger } from "./logger";
@@ -49,10 +50,6 @@ async function runWithCliErrorHandling(
     onUnknownError(message);
     return 1;
   }
-}
-
-function isCustomEditorStoreError(error: unknown): boolean {
-  return error instanceof Error && error.name === "CustomEditorStoreError" && typeof (error as { code?: unknown }).code === "string";
 }
 
 function registerCommands(cli: ReturnType<typeof cac>): void {

@@ -1,8 +1,10 @@
 import { basename } from "node:path";
 import {
   appendCustomEditor,
-  CustomEditorStoreError,
+  CUSTOM_EDITOR_STORE_ERROR_CODE,
   findCustomEditorByIdOrSlug,
+  hasCustomEditorStoreErrorCode,
+  isCustomEditorStoreError,
   isUnsupportedCustomEditorApp,
   removeCustomEditor,
   updateCustomEditor,
@@ -56,18 +58,18 @@ function toConflictCandidates(editors: CliEditor[]): CustomEditorConflictCandida
 }
 
 export function printCustomEditorError(logger: CliLogger, error: unknown): void {
-  if (!(error instanceof CustomEditorStoreError)) {
+  if (!isCustomEditorStoreError(error)) {
     const message = error instanceof Error ? error.message : "Unknown CLI error.";
     logger.error(logger.palette.red(message));
     return;
   }
 
-  if (error.code === "custom_editor_not_found") {
+  if (hasCustomEditorStoreErrorCode(error, CUSTOM_EDITOR_STORE_ERROR_CODE.NOT_FOUND)) {
     logger.error(logger.palette.red("The custom editor could not be found."));
     return;
   }
 
-  if (error.code === "custom_editor_already_exists") {
+  if (hasCustomEditorStoreErrorCode(error, CUSTOM_EDITOR_STORE_ERROR_CODE.ALREADY_EXISTS)) {
     logger.error(logger.palette.red(`A matching editor configuration already exists for ${error.conflict?.editorName ?? "another editor"}.`));
     return;
   }

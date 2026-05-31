@@ -1,5 +1,6 @@
 import { dialog, ipcMain } from "electron";
-import { CustomEditorStoreError, appendDesktopCustomEditor, removeDesktopCustomEditor, updateDesktopCustomEditor } from "../customEditors/store";
+import { appendDesktopCustomEditor, removeDesktopCustomEditor, updateDesktopCustomEditor } from "../customEditors/store";
+import { CUSTOM_EDITOR_STORE_ERROR_CODE, hasCustomEditorStoreErrorCode } from "@vcser/core/customEditors";
 import { RUNTIME_MESSAGE_KEY } from "@vcser/core/i18n";
 import { SUPPORTED_COMMAND } from "@vcser/core/ipc";
 import {
@@ -55,14 +56,6 @@ function normalizeRequiredString(value: string) {
 function normalizeOptionalString(value?: string) {
   const normalized = value?.trim();
   return normalized ? normalized : undefined;
-}
-
-function isStoreNotFoundError(error: unknown): error is CustomEditorStoreError {
-  return error instanceof CustomEditorStoreError && error.code === "custom_editor_not_found";
-}
-
-function isStoreConflictError(error: unknown): error is CustomEditorStoreError {
-  return error instanceof CustomEditorStoreError && error.code === "custom_editor_already_exists";
 }
 
 function getAppFilters() {
@@ -231,7 +224,7 @@ export function registerCustomEditorHandlers() {
         editor: created
       } satisfies AddCustomEditorResult;
     } catch (error) {
-      if (isStoreConflictError(error)) {
+      if (hasCustomEditorStoreErrorCode(error, CUSTOM_EDITOR_STORE_ERROR_CODE.ALREADY_EXISTS)) {
         return {
           success: false,
           errorKey: RUNTIME_MESSAGE_KEY.CUSTOM_EDITOR_ALREADY_EXISTS,
@@ -317,7 +310,7 @@ export function registerCustomEditorHandlers() {
         editor: updated
       } satisfies UpdateCustomEditorResult;
     } catch (error) {
-      if (isStoreConflictError(error)) {
+      if (hasCustomEditorStoreErrorCode(error, CUSTOM_EDITOR_STORE_ERROR_CODE.ALREADY_EXISTS)) {
         return {
           success: false,
           errorKey: RUNTIME_MESSAGE_KEY.CUSTOM_EDITOR_ALREADY_EXISTS,
@@ -327,7 +320,7 @@ export function registerCustomEditorHandlers() {
         } satisfies UpdateCustomEditorResult;
       }
 
-      if (isStoreNotFoundError(error)) {
+      if (hasCustomEditorStoreErrorCode(error, CUSTOM_EDITOR_STORE_ERROR_CODE.NOT_FOUND)) {
         return {
           success: false,
           errorKey: RUNTIME_MESSAGE_KEY.CUSTOM_EDITOR_NOT_FOUND
@@ -363,7 +356,7 @@ export function registerCustomEditorHandlers() {
         displayName: record.displayName
       } satisfies DeleteCustomEditorResult;
     } catch (error) {
-      if (isStoreNotFoundError(error)) {
+      if (hasCustomEditorStoreErrorCode(error, CUSTOM_EDITOR_STORE_ERROR_CODE.NOT_FOUND)) {
         return {
           success: false,
           id: normalizedId,

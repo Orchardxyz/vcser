@@ -1,6 +1,6 @@
 import type { UpdateCustomEditorInput, CustomEditorRecord } from "../shared/types.js";
 import type { CustomEditorConflictCandidate } from "./shared.js";
-import { CustomEditorStoreError, normalizeCustomEditorInput, toCustomEditorRecord } from "./shared.js";
+import { CUSTOM_EDITOR_STORE_ERROR_CODE, CustomEditorStoreError, normalizeCustomEditorInput, toCustomEditorRecord } from "./shared.js";
 import { appendCustomEditor, initializeCustomEditorStorage, listCustomEditors } from "./service.js";
 import { getPrismaClient } from "../db.js";
 
@@ -8,7 +8,7 @@ function requirePrismaClient() {
   const prisma = getPrismaClient();
 
   if (!prisma) {
-    throw new CustomEditorStoreError("custom_editor_store_unavailable", "Custom editor storage is unavailable.");
+    throw new CustomEditorStoreError(CUSTOM_EDITOR_STORE_ERROR_CODE.STORE_UNAVAILABLE, "Custom editor storage is unavailable.");
   }
 
   return prisma;
@@ -38,7 +38,7 @@ async function assertNoEditorConflict(params: {
   const conflict = findConflict(params.input, [...storedEditors, ...(params.reservedEditors ?? [])], params.ignoredId);
 
   if (conflict) {
-    throw new CustomEditorStoreError("custom_editor_already_exists", "A matching editor configuration already exists.", {
+    throw new CustomEditorStoreError(CUSTOM_EDITOR_STORE_ERROR_CODE.ALREADY_EXISTS, "A matching editor configuration already exists.", {
       conflict
     });
   }
@@ -59,7 +59,7 @@ export async function updateCustomEditor(
   });
 
   if (!existing) {
-    throw new CustomEditorStoreError("custom_editor_not_found", `Custom editor ${input.id} not found.`);
+    throw new CustomEditorStoreError(CUSTOM_EDITOR_STORE_ERROR_CODE.NOT_FOUND, `Custom editor ${input.id} not found.`);
   }
 
   const normalized = normalizeCustomEditorInput(input);
@@ -91,7 +91,7 @@ export async function removeCustomEditor(id: string): Promise<CustomEditorRecord
   });
 
   if (!existing) {
-    throw new CustomEditorStoreError("custom_editor_not_found", `Custom editor ${id} not found.`);
+    throw new CustomEditorStoreError(CUSTOM_EDITOR_STORE_ERROR_CODE.NOT_FOUND, `Custom editor ${id} not found.`);
   }
 
   const record = await prisma.customEditor.delete({

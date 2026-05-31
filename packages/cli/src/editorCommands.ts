@@ -4,7 +4,6 @@ import {
   CustomEditorStoreError,
   findCustomEditorByIdOrSlug,
   isUnsupportedCustomEditorApp,
-  listCustomEditors,
   removeCustomEditor,
   updateCustomEditor,
   type CustomEditorConflictCandidate
@@ -174,9 +173,9 @@ async function collectCustomEditorInput(
   return finalInput;
 }
 
-function printCustomEditorsList(editors: Awaited<ReturnType<typeof listCustomEditors>>, logger: CliLogger): void {
+function printEditorsList(editors: CliEditor[], logger: CliLogger): void {
   if (editors.length === 0) {
-    logger.line(logger.palette.yellow("No custom editors saved yet."));
+    logger.line(logger.palette.yellow("No editors detected."));
     return;
   }
 
@@ -225,7 +224,8 @@ function printCustomEditorsList(editors: Awaited<ReturnType<typeof listCustomEdi
   for (const [index, editor] of editors.entries()) {
     logger.line(logger.palette.brand(editor.displayName));
     logger.line(`  ${logger.palette.dim(editor.slug)}`);
-    printDetail("CLI", editor.cli ?? "-");
+    printDetail("Src", editor.source);
+    printDetail("CLI", editor.cli || "-");
     printDetail("App", editor.appPath ?? "-");
     printDetail("Ext", editor.extensionsPath);
     printDetail("Set", editor.settingsPath);
@@ -238,8 +238,8 @@ function printCustomEditorsList(editors: Awaited<ReturnType<typeof listCustomEdi
 }
 
 export async function runEditorList(logger: CliLogger): Promise<number> {
-  const editors = await listCustomEditors();
-  printCustomEditorsList(editors, logger);
+  const editors = await resolveCliEditors(logger);
+  printEditorsList(editors, logger);
   return 0;
 }
 

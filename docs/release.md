@@ -155,6 +155,13 @@ The `Release` workflow has four jobs:
 
 Manual workflow runs are dry-runs only. Branch runs can resolve metadata, build desktop packages, and generate notes, but they cannot publish npm packages or create GitHub Releases.
 
+### Required Repository Secrets
+
+- `VERSION_PACKAGES_TOKEN`
+  Used by the `Version Packages` workflow when `changesets/action` creates or updates the release PR. Configure this as either a GitHub App installation token or a bot personal access token with write access to repository contents and pull requests.
+
+Do not use the default `GITHUB_TOKEN` for the `Version Packages` PR. Pull requests and pushes created with the default workflow token do not trigger follow-up workflow runs, so required checks such as `lint`, `test`, and `typecheck` can remain pending on the generated release PR.
+
 ## Validation Expectations
 
 Release planning should be validated locally with dry runs:

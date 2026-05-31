@@ -5,10 +5,11 @@ import { fileURLToPath } from "node:url";
 
 const packageRoot = fileURLToPath(new URL("..", import.meta.url));
 const distDir = join(packageRoot, "dist");
+const pnpmCommand = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
 
 rmSync(distDir, { recursive: true, force: true });
 
-const compileCommand = spawnSync("pnpm", ["exec", "tsc", "-p", "tsconfig.build.json"], {
+const compileCommand = spawnSync(pnpmCommand, ["exec", "tsc", "-p", "tsconfig.build.json"], {
   cwd: packageRoot,
   stdio: "inherit"
 });

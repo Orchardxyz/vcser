@@ -1,20 +1,22 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
+import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 
 const packageRoot = fileURLToPath(new URL("..", import.meta.url));
+const requireFromPackage = createRequire(new URL("../package.json", import.meta.url));
+const prismaCliPath = requireFromPackage.resolve("prisma/build/index.js");
 const workspacePrismaConfig = join(packageRoot, "..", "..", "prisma.config.ts");
 const schemaPath = join(packageRoot, "prisma", "schema.prisma");
-const pnpmCommand = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
 
 if (!existsSync(workspacePrismaConfig) || !existsSync(schemaPath)) {
   process.exit(0);
 }
 
 const generateCommand = spawnSync(
-  pnpmCommand,
-  ["exec", "prisma", "generate", "--config", "../../prisma.config.ts", "--schema", "prisma/schema.prisma"],
+  process.execPath,
+  [prismaCliPath, "generate", "--config", "../../prisma.config.ts", "--schema", "prisma/schema.prisma"],
   {
     cwd: packageRoot,
     stdio: "inherit"
@@ -22,7 +24,7 @@ const generateCommand = spawnSync(
 );
 
 if (generateCommand.error) {
-  console.error(`[postinstall] Failed to run ${pnpmCommand}:`, generateCommand.error);
+  console.error("[postinstall] Failed to run Prisma generate:", generateCommand.error);
 }
 
 process.exit(generateCommand.status ?? 1);

@@ -1,5 +1,11 @@
 # @vcser/desktop
 
+## 0.1.1-beta.5
+
+### Patch Changes
+
+- 69c8c21: Fix Windows installs by invoking the pnpm command shim from the core postinstall script.
+
 ## 0.1.1-beta.4
 
 ### Patch Changes

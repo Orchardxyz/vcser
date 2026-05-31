@@ -1,5 +1,12 @@
 # @vcser/cli
 
+## 0.1.1-beta.5
+
+### Patch Changes
+
+- Updated dependencies [69c8c21]
+  - @vcser/core@0.1.1-beta.5
+
 ## 0.1.1-beta.4
 
 ### Patch Changes

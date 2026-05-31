@@ -14,11 +14,12 @@ jobs:
     if: ${{ !startsWith(github.event.head_commit.message, 'Version Packages') }}
     runs-on: ubuntu-latest
     permissions:
-      actions: write
       contents: write
       pull-requests: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: pnpm/action-setup@v4
         with:
           version: 10
@@ -34,11 +35,4 @@ jobs:
           commit: Version Packages
           title: Version Packages
         env:
-          GITHUB_TOKEN: ${{ github.token }}
-      - name: Run CI for Version Packages PR
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          if gh pr view changeset-release/main --json number >/dev/null 2>&1; then
-            gh workflow run ci.yml --ref changeset-release/main
-          fi
+          GITHUB_TOKEN: ${{ secrets.VERSION_PACKAGES_TOKEN }}

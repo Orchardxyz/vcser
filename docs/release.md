@@ -138,7 +138,7 @@ Important constraints:
 The automated release process has two workflows:
 
 - `Version Packages`
-  Runs on pushes to `main` that are not already `Version Packages` merges. It uses `changesets/action` to create or update a `Version Packages` PR with version bumps and package-local changelogs, then dispatches the `CI` workflow for the generated release branch so required checks are reported on the PR head commit.
+  Runs on pushes to `main` that are not already `Version Packages` merges. It uses `changesets/action` to create or update a `Version Packages` PR with version bumps and package-local changelogs.
 - `Release`
   Runs on pushes to `main` and manual dispatch. Manual dispatch is dry-run only. Real publish jobs run only when the pushed commit is the `Version Packages` merge commit.
 
@@ -155,9 +155,14 @@ The `Release` workflow has four jobs:
 
 Manual workflow runs are dry-runs only. Branch runs can resolve metadata, build desktop packages, and generate notes, but they cannot publish npm packages or create GitHub Releases.
 
-The `Version Packages` workflow explicitly dispatches `CI` after updating the release PR. This keeps the required `lint`, `test`, and `typecheck` checks attached to the generated release branch even when GitHub does not emit a normal pull request workflow event for the automated update.
-
 The workflow skips commits whose message starts with `Version Packages`, which prevents release PR merge commits from immediately opening a new release PR. Do not use a broader substring match here because ordinary maintenance commits may mention the workflow by name.
+
+### Required Repository Secrets
+
+- `VERSION_PACKAGES_TOKEN`
+  Used by the `Version Packages` workflow when `changesets/action` creates or updates the release PR. Configure this as a GitHub App installation token or a bot personal access token with repository write access for contents, pull requests, and issues.
+
+The workflow disables persisted `actions/checkout` credentials so the release branch push uses `VERSION_PACKAGES_TOKEN`, not the default `GITHUB_TOKEN`. This matters because pushes made with the default workflow token do not trigger follow-up `pull_request` CI, leaving required checks pending on the generated release PR.
 
 ## Validation Expectations
 

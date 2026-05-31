@@ -1,5 +1,11 @@
 # @vcser/core
 
+## 0.1.1-beta.7
+
+### Patch Changes
+
+- afd8fd8: Move the core TypeScript build info file outside the publishable dist directory.
+
 ## 0.1.1-beta.6
 
 ### Patch Changes

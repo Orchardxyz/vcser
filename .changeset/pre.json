@@ -6,5 +6,5 @@
     "@vcser/cli": "0.1.1-beta.0",
     "@vcser/core": "0.1.1-beta.0"
   },
-  "changesets": ["tidy-release-automation"]
+  "changesets": ["clever-insects-camp", "cli-editor-list-help", "release-pr-ci-checks", "tidy-release-automation", "tricky-buses-wonder"]
 }

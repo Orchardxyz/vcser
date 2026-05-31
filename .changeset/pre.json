@@ -15,6 +15,7 @@
     "tidy-release-automation",
     "tricky-buses-wonder",
     "windows-artifacts-release",
+    "windows-postinstall-pnpm-shim",
     "windows-release-packaging"
   ]
 }

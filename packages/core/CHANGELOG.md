@@ -1,5 +1,11 @@
 # @vcser/core
 
+## 0.1.1-beta.6
+
+### Patch Changes
+
+- e2ec94b: Fix Windows release installs by running the local Prisma CLI directly from core postinstall.
+
 ## 0.1.1-beta.5
 
 ### Patch Changes

@@ -13,6 +13,7 @@
     "release-desktop-publish",
     "release-pr-ci-checks",
     "tidy-release-automation",
-    "tricky-buses-wonder"
+    "tricky-buses-wonder",
+    "windows-artifacts-release"
   ]
 }

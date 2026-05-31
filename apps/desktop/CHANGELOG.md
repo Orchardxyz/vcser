@@ -1,5 +1,11 @@
 # @vcser/desktop
 
+## 0.1.1-beta.3
+
+### Patch Changes
+
+- a90de06: Stabilize desktop release artifact packaging across Windows and supported desktop targets.
+
 ## 0.1.1-beta.2
 
 ### Patch Changes

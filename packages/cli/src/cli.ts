@@ -55,6 +55,28 @@ function isCustomEditorStoreError(error: unknown): boolean {
   return error instanceof Error && error.name === "CustomEditorStoreError" && typeof (error as { code?: unknown }).code === "string";
 }
 
+function registerCommands(cli: ReturnType<typeof cac>): void {
+  cli.command(CLI_SCOPE.SYNC, "Start the interactive extension sync wizard");
+  cli.command(CLI_SCOPE.RESET, "Reset local vcser state");
+
+  cli
+    .command(`${CLI_SCOPE.EDITOR} <action> [identifier]`, "Manage detected and custom editors")
+    .option("--name <name>", "Editor display name")
+    .option("--cli <command>", "Editor CLI command")
+    .option("--app-path <path>", "Editor application path")
+    .option("--extensions-path <path>", "Editor extensions directory")
+    .option("--settings-path <path>", "Editor settings file");
+
+  cli.example((name) => `  ${name} ${CLI_SCOPE.EDITOR} ${CLI_EDITOR_ACTION.LIST}`);
+  cli.example((name) => `  ${name} ${CLI_SCOPE.EDITOR} ${CLI_EDITOR_ACTION.ADD}`);
+  cli.example((name) => `  ${name} ${CLI_SCOPE.EDITOR} ${CLI_EDITOR_ACTION.UPDATE} <identifier>`);
+  cli.example((name) => `  ${name} ${CLI_SCOPE.EDITOR} ${CLI_EDITOR_ACTION.REMOVE} <identifier>`);
+}
+
+function resolveCommandArgs(cli: ReturnType<typeof cac>, args: readonly string[]): readonly string[] {
+  return cli.matchedCommandName ? [cli.matchedCommandName, ...args] : args;
+}
+
 export async function runCli(argv = process.argv): Promise<number> {
   const cli = cac("vcser");
   const version = readPackageVersion();
@@ -63,6 +85,7 @@ export async function runCli(argv = process.argv): Promise<number> {
   cli.option("--debug", "Print debug output");
   cli.option("-y, --yes", "Skip confirmation prompts");
   cli.option("-v, --version", "Display version number");
+  registerCommands(cli);
   cli.help();
 
   const parsed = cli.parse(argv, { run: false });
@@ -81,7 +104,7 @@ export async function runCli(argv = process.argv): Promise<number> {
     return 0;
   }
 
-  const [scope, action, identifier] = parsed.args;
+  const [scope, action, identifier] = resolveCommandArgs(cli, parsed.args);
   const handleCancelled = () => logger.line(logger.palette.yellow("Cancelled."));
   const handleUnknownError = (message: string) => logger.error(logger.palette.red(message));
 

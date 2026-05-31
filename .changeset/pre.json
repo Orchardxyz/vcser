@@ -16,6 +16,7 @@
     "tricky-buses-wonder",
     "windows-artifacts-release",
     "windows-postinstall-pnpm-shim",
+    "windows-postinstall-prisma-bin",
     "windows-release-packaging"
   ]
 }

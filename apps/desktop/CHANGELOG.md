@@ -1,5 +1,11 @@
 # @vcser/desktop
 
+## 0.1.1-beta.4
+
+### Patch Changes
+
+- b0cf654: Fix Windows desktop packaging by generating Prisma assets from a Windows-safe postinstall path and publishing available desktop artifacts from partial matrix builds.
+
 ## 0.1.1-beta.3
 
 ### Patch Changes

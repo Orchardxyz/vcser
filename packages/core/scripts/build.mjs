@@ -1,15 +1,17 @@
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, extname, join, relative } from "node:path";
 import { spawnSync } from "node:child_process";
+import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 
 const packageRoot = fileURLToPath(new URL("..", import.meta.url));
 const distDir = join(packageRoot, "dist");
-const pnpmCommand = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
+const requireFromPackage = createRequire(new URL("../package.json", import.meta.url));
+const tscBinPath = requireFromPackage.resolve("typescript/bin/tsc");
 
 rmSync(distDir, { recursive: true, force: true });
 
-const compileCommand = spawnSync(pnpmCommand, ["exec", "tsc", "-p", "tsconfig.build.json"], {
+const compileCommand = spawnSync(process.execPath, [tscBinPath, "-p", "tsconfig.build.json"], {
   cwd: packageRoot,
   stdio: "inherit"
 });

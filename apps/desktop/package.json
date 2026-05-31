@@ -1,6 +1,6 @@
 {
   "name": "@vcser/desktop",
-  "version": "0.1.1-beta.1",
+  "version": "0.1.1-beta.2",
   "private": true,
   "description": "Desktop app to sync extensions and settings across VS Code-based editors",
   "license": "Apache-2.0",

@@ -1,5 +1,11 @@
 # @vcser/desktop
 
+## 0.1.1-beta.2
+
+### Patch Changes
+
+- 7c55ce8: Disable electron-builder auto publishing and fix packaged desktop artifacts.
+
 ## 0.1.1-beta.1
 
 ### Patch Changes

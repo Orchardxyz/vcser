@@ -9,6 +9,7 @@
   "changesets": [
     "clever-insects-camp",
     "cli-editor-list-help",
+    "desktop-artifacts-publish",
     "release-desktop-publish",
     "release-pr-ci-checks",
     "tidy-release-automation",

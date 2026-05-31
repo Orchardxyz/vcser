@@ -6,10 +6,13 @@ import { fileURLToPath } from "node:url";
 
 const packageRoot = fileURLToPath(new URL("..", import.meta.url));
 const distDir = join(packageRoot, "dist");
+const tsBuildInfoPath = join(packageRoot, ".tsbuildinfo");
+const legacyDistTsBuildInfoPath = join(distDir, ".tsbuildinfo");
 const requireFromPackage = createRequire(new URL("../package.json", import.meta.url));
 const tscBinPath = requireFromPackage.resolve("typescript/bin/tsc");
 
 rmSync(distDir, { recursive: true, force: true });
+rmSync(tsBuildInfoPath, { force: true });
 
 const compileCommand = spawnSync(process.execPath, [tscBinPath, "-p", "tsconfig.build.json"], {
   cwd: packageRoot,
@@ -22,7 +25,8 @@ if (compileCommand.status !== 0) {
 
 copyRuntimeAssets();
 rewriteModuleSpecifiers(distDir);
-rmSync(join(distDir, ".tsbuildinfo"), { force: true });
+rmSync(tsBuildInfoPath, { force: true });
+rmSync(legacyDistTsBuildInfoPath, { force: true });
 
 function rewriteModuleSpecifiers(rootDir) {
   for (const filePath of listFiles(rootDir)) {

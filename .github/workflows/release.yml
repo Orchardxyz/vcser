@@ -134,9 +134,6 @@ jobs:
           - os: windows-latest
             package_script: package:win
             artifact_name: desktop-windows
-          - os: ubuntu-latest
-            package_script: package:linux
-            artifact_name: desktop-linux
     runs-on: ${{ matrix.os }}
     env:
       CSC_IDENTITY_AUTO_DISCOVERY: false

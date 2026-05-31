@@ -1,5 +1,11 @@
 # @vcser/desktop
 
+## 0.1.1-beta.1
+
+### Patch Changes
+
+- 2ed33f1: Fix desktop release packaging and allow GitHub Releases when another publish channel succeeds.
+
 ## 0.1.1-beta.0
 
 ### Patch Changes

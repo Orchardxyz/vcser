@@ -170,7 +170,7 @@ jobs:
       - resolve-release
       - publish-npm
       - publish-desktop
-    if: always() && needs.resolve-release.outputs.release_kind != 'none' && needs.resolve-release.outputs.is_real_release == 'true' && ((needs.resolve-release.outputs.should_publish_npm == 'true' && needs.publish-npm.result == 'success') || (needs.resolve-release.outputs.should_publish_desktop == 'true' && needs.publish-desktop.result == 'success'))
+    if: always() && needs.resolve-release.outputs.release_kind != 'none' && needs.resolve-release.outputs.is_real_release == 'true' && ((needs.resolve-release.outputs.should_publish_npm == 'true' && needs.publish-npm.result == 'success') || (needs.resolve-release.outputs.should_publish_desktop == 'true' && (needs.publish-desktop.result == 'success' || needs.publish-desktop.result == 'failure')))
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -181,66 +181,20 @@ jobs:
           name: release-metadata
           path: release-metadata
       - uses: actions/download-artifact@v4
-        if: needs.publish-desktop.result == 'success'
+        if: needs.resolve-release.outputs.should_publish_desktop == 'true' && needs.publish-desktop.result != 'skipped' && needs.publish-desktop.result != 'cancelled'
+        continue-on-error: true
         with:
           pattern: desktop-*
           path: release-assets
           merge-multiple: true
-      - name: Append desktop asset list
-        if: needs.publish-desktop.result == 'success'
-        shell: bash
-        run: |
-          {
-            echo
-            echo "## release assets"
-            echo
-            find release-assets -type f -printf "- %f\n" | sort
-          } >> release-metadata/release-notes.md
-      - name: Append partial release status
-        env:
-          SHOULD_PUBLISH_NPM: ${{ needs.resolve-release.outputs.should_publish_npm }}
-          SHOULD_PUBLISH_DESKTOP: ${{ needs.resolve-release.outputs.should_publish_desktop }}
-          NPM_RESULT: ${{ needs.publish-npm.result }}
-          DESKTOP_RESULT: ${{ needs.publish-desktop.result }}
-        shell: bash
-        run: |
-          notes=()
-
-          if [[ "$SHOULD_PUBLISH_NPM" == "true" && "$NPM_RESULT" != "success" ]]; then
-            notes+=("- npm publish result: $NPM_RESULT")
-          fi
-
-          if [[ "$SHOULD_PUBLISH_DESKTOP" == "true" && "$DESKTOP_RESULT" != "success" ]]; then
-            notes+=("- desktop publish result: $DESKTOP_RESULT")
-          fi
-
-          if (( ${#notes[@]} > 0 )); then
-            {
-              echo
-              echo "## partial release status"
-              echo
-              printf "%s\n" "${notes[@]}"
-            } >> release-metadata/release-notes.md
-          fi
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ needs.resolve-release.outputs.release_tag }}
           RELEASE_NAME: ${{ needs.resolve-release.outputs.release_name }}
           IS_PRERELEASE: ${{ needs.resolve-release.outputs.is_prerelease }}
-          HAS_DESKTOP: ${{ needs.publish-desktop.result == 'success' }}
-        shell: bash
-        run: |
-          args=(release create "$RELEASE_TAG" --title "$RELEASE_NAME" --notes-file release-metadata/release-notes.md --target "$GITHUB_SHA")
-
-          if [[ "$IS_PRERELEASE" == "true" ]]; then
-            args+=(--prerelease)
-          fi
-
-          if [[ "$HAS_DESKTOP" == "true" ]]; then
-            while IFS= read -r -d '' asset; do
-              args+=("$asset")
-            done < <(find release-assets -type f -print0)
-          fi
-
-          gh "${args[@]}"
+          SHOULD_PUBLISH_NPM: ${{ needs.resolve-release.outputs.should_publish_npm }}
+          SHOULD_PUBLISH_DESKTOP: ${{ needs.resolve-release.outputs.should_publish_desktop }}
+          NPM_RESULT: ${{ needs.publish-npm.result }}
+          DESKTOP_RESULT: ${{ needs.publish-desktop.result }}
+        run: node ./scripts/release/create-github-release.mjs

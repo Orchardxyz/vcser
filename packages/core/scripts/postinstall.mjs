@@ -1,8 +1,9 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 
-const packageRoot = new URL("..", import.meta.url).pathname;
+const packageRoot = fileURLToPath(new URL("..", import.meta.url));
 const workspacePrismaConfig = join(packageRoot, "..", "..", "prisma.config.ts");
 const schemaPath = join(packageRoot, "prisma", "schema.prisma");
 

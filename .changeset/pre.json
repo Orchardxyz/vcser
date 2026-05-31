@@ -14,6 +14,7 @@
     "release-pr-ci-checks",
     "tidy-release-automation",
     "tricky-buses-wonder",
-    "windows-artifacts-release"
+    "windows-artifacts-release",
+    "windows-release-packaging"
   ]
 }

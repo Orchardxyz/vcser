@@ -55,7 +55,11 @@
       "icon": "resources/icons/win/icon.ico"
     },
     "linux": {
-      "icon": "resources/icons/png/512x512.png"
+      "icon": "resources/icons/png/512x512.png",
+      "target": [
+        "AppImage",
+        "deb"
+      ]
     }
   },
   "dependencies": {

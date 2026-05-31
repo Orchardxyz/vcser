@@ -1,8 +1,9 @@
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, extname, join, relative } from "node:path";
 import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 
-const packageRoot = new URL("..", import.meta.url).pathname;
+const packageRoot = fileURLToPath(new URL("..", import.meta.url));
 const distDir = join(packageRoot, "dist");
 
 rmSync(distDir, { recursive: true, force: true });

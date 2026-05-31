@@ -157,6 +157,8 @@ Manual workflow runs are dry-runs only. Branch runs can resolve metadata, build 
 
 The `Version Packages` workflow explicitly dispatches `CI` after updating the release PR. This keeps the required `lint`, `test`, and `typecheck` checks attached to the generated release branch even when GitHub does not emit a normal pull request workflow event for the automated update.
 
+The workflow skips commits whose message starts with `Version Packages`, which prevents release PR merge commits from immediately opening a new release PR. Do not use a broader substring match here because ordinary maintenance commits may mention the workflow by name.
+
 ## Validation Expectations
 
 Release planning should be validated locally with dry runs:

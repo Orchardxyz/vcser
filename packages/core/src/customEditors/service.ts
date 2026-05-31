@@ -1,7 +1,9 @@
 import { getPrismaClient, getPrismaUnavailableReason } from "../db.js";
+import { hasErrorCode, NODE_ERROR_CODE } from "../errors.js";
 import type { CustomEditorInput, CustomEditorRecord } from "../shared/types.js";
 import {
   createUniqueCustomSlug,
+  CUSTOM_EDITOR_STORE_ERROR_CODE,
   CustomEditorStoreError,
   type CustomEditorConflictCandidate,
   type CustomEditorSeedInput,
@@ -27,18 +29,17 @@ function logCustomEditorStore(message: string, details?: unknown) {
 }
 
 function isSqliteBindingUnavailable(error: unknown): boolean {
-  if (!(error instanceof Error) && (!error || typeof error !== "object" || !("code" in error))) {
+  if (!(error instanceof Error)) {
     return false;
   }
 
-  const message = error instanceof Error ? error.message : "";
-  const code = typeof error === "object" && error !== null && "code" in error ? String(error.code) : "";
+  const message = error.message;
 
   return (
     message.includes("Could not locate the bindings file") ||
     message.includes("better_sqlite3.node") ||
     message.includes("NODE_MODULE_VERSION") ||
-    code === "ERR_DLOPEN_FAILED"
+    hasErrorCode(error, NODE_ERROR_CODE.ERR_DLOPEN_FAILED)
   );
 }
 
@@ -59,7 +60,7 @@ function requirePrismaClient() {
     logCustomEditorStore("Prisma client is unavailable when custom editor storage is required.");
     const reason = getPrismaUnavailableReason();
     throw new CustomEditorStoreError(
-      "custom_editor_store_unavailable",
+      CUSTOM_EDITOR_STORE_ERROR_CODE.STORE_UNAVAILABLE,
       reason ? `Custom editor storage is unavailable. ${reason}` : "Custom editor storage is unavailable."
     );
   }
@@ -204,7 +205,7 @@ async function assertNoEditorConflict(params: {
     return;
   }
 
-  throw new CustomEditorStoreError("custom_editor_already_exists", "A matching editor configuration already exists.", {
+  throw new CustomEditorStoreError(CUSTOM_EDITOR_STORE_ERROR_CODE.ALREADY_EXISTS, "A matching editor configuration already exists.", {
     conflict
   });
 }
@@ -237,7 +238,7 @@ export async function listCustomEditors(): Promise<CustomEditorRecord[]> {
     return editors.map(toCustomEditorRecord);
   } catch (error) {
     if (handleUnavailablePrisma(error)) {
-      throw new CustomEditorStoreError("custom_editor_store_unavailable", "Custom editor storage is unavailable.");
+      throw new CustomEditorStoreError(CUSTOM_EDITOR_STORE_ERROR_CODE.STORE_UNAVAILABLE, "Custom editor storage is unavailable.");
     }
 
     throw error;
@@ -275,7 +276,7 @@ export async function appendCustomEditor(
     return toCustomEditorRecord(record);
   } catch (error) {
     if (handleUnavailablePrisma(error)) {
-      throw new CustomEditorStoreError("custom_editor_store_unavailable", "Custom editor storage is unavailable.");
+      throw new CustomEditorStoreError(CUSTOM_EDITOR_STORE_ERROR_CODE.STORE_UNAVAILABLE, "Custom editor storage is unavailable.");
     }
 
     throw error;

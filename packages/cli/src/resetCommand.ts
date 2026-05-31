@@ -1,5 +1,6 @@
 import { existsSync } from "node:fs";
 import { rm } from "node:fs/promises";
+import { hasErrorCode, NODE_ERROR_CODE } from "@vcser/core/errors";
 import type { CliLogger } from "./logger";
 import { createPromptRunner, PromptCancelledError } from "./prompt";
 
@@ -38,7 +39,7 @@ async function removeDatabaseFiles(databasePath: string): Promise<number> {
         removedCount += 1;
       }
     } catch (error) {
-      if (!(error instanceof Error) || !("code" in error) || error.code !== "ENOENT") {
+      if (!hasErrorCode(error, NODE_ERROR_CODE.ENOENT)) {
         throw error;
       }
     }

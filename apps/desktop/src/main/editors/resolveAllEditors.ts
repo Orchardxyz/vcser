@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
-import { listDesktopCustomEditors, CustomEditorStoreError } from "../customEditors/store";
+import { listDesktopCustomEditors } from "../customEditors/store";
+import { CUSTOM_EDITOR_STORE_ERROR_CODE, hasCustomEditorStoreErrorCode } from "@vcser/core/customEditors";
 import { detectEditors, type DetectedEditor } from "@vcser/core/editors/detect";
 import { APP_ICON_STATUS, EDITOR_SOURCE, type CustomEditorRecord, type ResolvedEditor } from "@vcser/core/types";
 import { resolveAppBundleSelection } from "./appBundle";
@@ -78,7 +79,7 @@ export async function resolveAllEditors(): Promise<ResolvedDesktopEditor[]> {
   try {
     custom = await listDesktopCustomEditors();
   } catch (error) {
-    if (!(error instanceof CustomEditorStoreError) || error.code !== "custom_editor_store_unavailable") {
+    if (!hasCustomEditorStoreErrorCode(error, CUSTOM_EDITOR_STORE_ERROR_CODE.STORE_UNAVAILABLE)) {
       throw error;
     }
 

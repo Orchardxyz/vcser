@@ -1,9 +1,17 @@
 import { existsSync } from "node:fs";
 import { basename, extname } from "node:path";
+import type { ValueOf } from "type-fest";
+import { hasErrorCode, isCodedError, type CodedError } from "../errors.js";
 import { hasStringProperty, isRecord } from "../typeGuards.js";
 import type { CustomEditorInput, CustomEditorRecord } from "../shared/types.js";
 
-export type CustomEditorStoreErrorCode = "custom_editor_already_exists" | "custom_editor_not_found" | "custom_editor_store_unavailable";
+export const CUSTOM_EDITOR_STORE_ERROR_CODE = {
+  ALREADY_EXISTS: "custom_editor_already_exists",
+  NOT_FOUND: "custom_editor_not_found",
+  STORE_UNAVAILABLE: "custom_editor_store_unavailable"
+} as const;
+
+export type CustomEditorStoreErrorCode = ValueOf<typeof CUSTOM_EDITOR_STORE_ERROR_CODE>;
 
 export interface CustomEditorConflictCandidate {
   id?: string;
@@ -43,7 +51,7 @@ export interface NormalizedCustomEditorInput {
   settingsPath: string;
 }
 
-export class CustomEditorStoreError extends Error {
+export class CustomEditorStoreError extends Error implements CodedError<CustomEditorStoreErrorCode> {
   readonly code: CustomEditorStoreErrorCode;
   readonly conflict?: CustomEditorStoreConflict;
 
@@ -53,6 +61,24 @@ export class CustomEditorStoreError extends Error {
     this.code = code;
     this.conflict = options?.conflict;
   }
+}
+
+export function isCustomEditorStoreErrorCode(code: string): code is CustomEditorStoreErrorCode {
+  return (Object.values(CUSTOM_EDITOR_STORE_ERROR_CODE) as string[]).includes(code);
+}
+
+export function isCustomEditorStoreError(error: unknown): error is CustomEditorStoreError {
+  return (
+    error instanceof CustomEditorStoreError ||
+    (isCodedError(error) && error.name === "CustomEditorStoreError" && isCustomEditorStoreErrorCode(error.code))
+  );
+}
+
+export function hasCustomEditorStoreErrorCode<Code extends CustomEditorStoreErrorCode>(
+  error: unknown,
+  code: Code
+): error is CustomEditorStoreError & CodedError<Code> {
+  return isCustomEditorStoreError(error) && hasErrorCode(error, code);
 }
 
 export function normalizeRequiredString(value: string) {

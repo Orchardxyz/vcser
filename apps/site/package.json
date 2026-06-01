@@ -17,10 +17,10 @@
   },
   "devDependencies": {
     "@astrojs/check": "catalog:site",
-    "@iconify-json/mdi": "1.1.4",
-    "@iconify-json/tabler": "1.2.16",
+    "@iconify-json/mdi": "catalog:site",
+    "@iconify-json/tabler": "catalog:site",
     "astro": "catalog:site",
-    "astro-icon": "1.1.5",
+    "astro-icon": "catalog:site",
     "typescript": "catalog:typescript"
   }
 }

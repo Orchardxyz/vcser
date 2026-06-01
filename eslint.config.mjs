@@ -10,6 +10,7 @@ export default tseslint.config(
       "**/out/**",
       "**/dist/**",
       "**/dist-electron/**",
+      "apps/site/.astro/**",
       "apps/desktop/resources/runtime/**",
       "packages/core/dist-types/**",
       "packages/core/src/generated/**",

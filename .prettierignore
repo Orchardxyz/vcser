@@ -1,8 +1,10 @@
 out/
 dist/
 dist-electron/
+apps/site/.astro/
 node_modules/
 src/generated/
+packages/core/src/generated/
 .pnpm-store/
 coverage/
 *.tsbuildinfo

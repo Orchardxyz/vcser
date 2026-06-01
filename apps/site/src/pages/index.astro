@@ -1,0 +1,124 @@
+---
+import { Icon } from "astro-icon/components";
+import cliPreviewUrl from "../../../../assets/cli.png?url";
+
+import SiteLayout from "../layouts/SiteLayout.astro";
+
+const npmHref = "https://www.npmjs.com/package/@vcser/cli";
+const releasesHref = "https://github.com/Orchardxyz/vcser/releases";
+---
+
+<SiteLayout title="vcser">
+  <section class="section section--hero">
+    <div class="container hero-stack">
+      <div class="hero-copy">
+        <p class="eyebrow">Local extension sync</p>
+        <h1>
+          <span class="hero-copy__headline-accent">Sync extensions</span> across <span class="hero-copy__headline-cut">VS Code-based editors</span>
+          on the <span class="hero-copy__headline-note">same machine.</span>
+        </h1>
+      </div>
+
+      <aside class="preview-panel" aria-label="Product preview">
+        <div class="preview-panel__header">
+          <div class="preview-panel__status">
+            <span class="pill pill--recommended">Recommended</span>
+            <p class="preview-panel__label">CLI is the default path</p>
+          </div>
+          <span class="preview-panel__view">CLI</span>
+        </div>
+
+        <section class="preview-content" aria-label="CLI preview">
+          <div class="preview-stack">
+            <div class="preview-copy">
+              <p class="preview-copy__eyebrow">Install via npm</p>
+              <div class="terminal-list" aria-label="CLI install commands">
+                <div class="terminal-block terminal-block--compact">
+                  <p class="terminal-block__prompt">$ npx vcser</p>
+                  <button class="copy-button" type="button" data-copy-value="npx vcser" aria-label="Copy npx vcser">
+                    <Icon class="copy-button__icon" name="mdi:content-copy" />
+                    <span>Copy</span>
+                  </button>
+                </div>
+                <div class="terminal-block terminal-block--compact">
+                  <p class="terminal-block__prompt">$ npm install -g @vcser/cli</p>
+                  <button
+                    class="copy-button"
+                    type="button"
+                    data-copy-value="npm install -g @vcser/cli"
+                    aria-label="Copy npm install -g @vcser/cli"
+                  >
+                    <Icon class="copy-button__icon" name="mdi:content-copy" />
+                    <span>Copy</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="preview-copy__actions">
+                <a class="button button--secondary" href={npmHref} target="_blank" rel="noreferrer">Open npm package</a>
+              </div>
+            </div>
+
+            <figure class="preview-figure">
+              <img src={cliPreviewUrl} alt="CLI preview showing vcser command output" loading="eager" />
+            </figure>
+          </div>
+        </section>
+
+        <div class="preview-panel__footer" aria-label="Desktop beta release link">
+          <div class="preview-panel__footer-copy">
+            <span class="pill pill--subtle">Desktop beta</span>
+            <p>Desktop stays gated for now, but release builds are still available from GitHub.</p>
+          </div>
+          <a class="button button--secondary button--with-icon" href={releasesHref} target="_blank" rel="noreferrer">
+            <Icon class="button__icon" name="mdi:download" />
+            <span>Browse releases</span>
+          </a>
+        </div>
+      </aside>
+    </div>
+  </section>
+</SiteLayout>
+
+<script is:inline>
+  (() => {
+    const copyButtons = Array.from(document.querySelectorAll("[data-copy-value]"));
+
+    for (const button of copyButtons) {
+      if (!(button instanceof HTMLButtonElement)) {
+        continue;
+      }
+
+      button.addEventListener("click", async () => {
+        const copyValue = button.dataset.copyValue;
+
+        if (!copyValue) {
+          return;
+        }
+
+        try {
+          await navigator.clipboard.writeText(copyValue);
+          const label = button.querySelector("span");
+
+          if (label instanceof HTMLSpanElement) {
+            const previous = label.textContent;
+            label.textContent = "Copied";
+            window.setTimeout(() => {
+              label.textContent = previous;
+            }, 1200);
+          }
+        } catch {
+          const label = button.querySelector("span");
+
+          if (label instanceof HTMLSpanElement) {
+            const previous = label.textContent;
+            label.textContent = "Failed";
+            window.setTimeout(() => {
+              label.textContent = previous;
+            }, 1200);
+          }
+        }
+      });
+    }
+  })();
+</script>

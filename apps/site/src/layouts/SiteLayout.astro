@@ -1,0 +1,105 @@
+---
+import { Icon } from "astro-icon/components";
+import logoUrl from "../../../../assets/logo.svg?url";
+
+import "../styles/global.css";
+import { resolveBaseHref } from "../utils/basePath";
+
+interface Props {
+  description?: string;
+  title: string;
+}
+
+const { description = "Sync extensions across VS Code-based editors on the same machine.", title } = Astro.props;
+const baseHref = resolveBaseHref();
+const githubHref = "https://github.com/Orchardxyz/vcser";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href={logoUrl} />
+    <script is:inline>
+      (() => {
+        const storageKey = "vcser-site-theme";
+        const root = document.documentElement;
+        const preferredTheme = (() => {
+          const storedTheme = window.localStorage.getItem(storageKey);
+
+          if (storedTheme === "light" || storedTheme === "dark") {
+            return storedTheme;
+          }
+
+          return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        })();
+
+        root.dataset.theme = preferredTheme;
+        root.style.colorScheme = preferredTheme;
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="site-header">
+        <div class="container site-header__inner">
+          <a class="brand-mark" href={baseHref} aria-label="vcser home">
+            <img src={logoUrl} alt="vcser logo" width="36" height="36" />
+            <span>vcser</span>
+          </a>
+
+          <div class="header-actions" aria-label="Site controls">
+            <button class="theme-switch" type="button" data-theme-toggle aria-label="Toggle theme" aria-pressed="false">
+              <span class="theme-switch__track" aria-hidden="true">
+                <Icon class="icon theme-switch__icon theme-switch__icon--sun" name="tabler:sun-high" />
+                <span class="theme-switch__thumb"></span>
+                <Icon class="icon theme-switch__icon theme-switch__icon--moon" name="tabler:moon-stars" />
+              </span>
+            </button>
+
+            <a class="icon-link" href={githubHref} target="_blank" rel="noreferrer" aria-label="Open GitHub repository">
+              <Icon class="icon icon--github" name="mdi:github" />
+              <span class="visually-hidden">GitHub</span>
+            </a>
+          </div>
+        </div>
+      </header>
+
+      <main>
+        <slot />
+      </main>
+    </div>
+
+    <script is:inline>
+      (() => {
+        const storageKey = "vcser-site-theme";
+        const root = document.documentElement;
+        const toggle = document.querySelector("[data-theme-toggle]");
+
+        if (!(toggle instanceof HTMLButtonElement)) {
+          return;
+        }
+
+        const applyTheme = (theme) => {
+          root.dataset.theme = theme;
+          root.style.colorScheme = theme;
+          toggle.setAttribute("aria-pressed", String(theme === "dark"));
+          toggle.dataset.theme = theme;
+        };
+
+        const currentTheme = root.dataset.theme === "dark" ? "dark" : "light";
+
+        applyTheme(currentTheme);
+
+        toggle.addEventListener("click", () => {
+          const nextTheme = root.dataset.theme === "dark" ? "light" : "dark";
+          window.localStorage.setItem(storageKey, nextTheme);
+          applyTheme(nextTheme);
+        });
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "name": "@vcser/site",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Marketing site for vcser",
+  "type": "module",
+  "homepage": "https://vcser.oryz.work/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Orchardxyz/vcser.git",
+    "directory": "apps/site"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview"
+  },
+  "devDependencies": {
+    "@astrojs/check": "catalog:site",
+    "@iconify-json/mdi": "catalog:site",
+    "@iconify-json/tabler": "catalog:site",
+    "astro": "catalog:site",
+    "astro-icon": "catalog:site",
+    "typescript": "catalog:typescript"
+  }
+}

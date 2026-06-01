@@ -1,5 +1,12 @@
+type ImportMetaWithBaseUrl = ImportMeta & {
+  readonly env?: {
+    readonly BASE_URL?: string;
+  };
+};
+
 export function resolveBaseHref(path = ""): string {
-  const baseHref = import.meta.env.BASE_URL;
+  const meta = import.meta as ImportMetaWithBaseUrl;
+  const baseHref = typeof meta.env?.BASE_URL === "string" ? meta.env.BASE_URL : "/";
   const normalizedBaseHref = baseHref.endsWith("/") ? baseHref : `${baseHref}/`;
   const normalizedPath = path.replace(/^\//u, "");
 

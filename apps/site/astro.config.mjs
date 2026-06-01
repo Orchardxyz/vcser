@@ -2,8 +2,8 @@ import { defineConfig } from "astro/config";
 import icon from "astro-icon";
 
 export default defineConfig({
-  site: "https://orchardxyz.github.io",
-  base: "/vcser",
+  site: "https://vcser.oryz.work",
+  base: "/",
   output: "static",
   integrations: [
     icon({

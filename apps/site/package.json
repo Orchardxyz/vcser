@@ -2,9 +2,9 @@
   "name": "@vcser/site",
   "private": true,
   "version": "0.0.0",
-  "description": "GitHub Pages site for vcser",
+  "description": "Marketing site for vcser",
   "type": "module",
-  "homepage": "https://orchardxyz.github.io/vcser/",
+  "homepage": "https://vcser.oryz.work/",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Orchardxyz/vcser.git",

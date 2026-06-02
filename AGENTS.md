@@ -4,12 +4,12 @@ This file is for AI coding agents working in `vcser`. Prefer the current source 
 
 ## Project Overview
 
-`vcser` is a `pnpm workspace` monorepo. It currently ships a desktop Electron app and a reusable runtime/core package for future non-desktop entrypoints.
+`vcser` is a `pnpm workspace` monorepo. It currently includes desktop, site, CLI, and reusable core packages.
 
 ## Project Snapshot
 
 - Package manager: `pnpm`
-- Workspace packages: `apps/desktop` and `packages/core`
+- Workspace packages: `apps/desktop`, `apps/site`, `packages/cli`, and `packages/core`
 - Desktop runtime and build: `Electron` v33 + `electron-vite` v5
 - Renderer: `React 18` + `TypeScript` + `Tailwind CSS v4` + `Zustand` v5
 - Core persistence: `Prisma 7` + `SQLite` via `@prisma/adapter-better-sqlite3`
@@ -24,6 +24,8 @@ apps/desktop/            Desktop app package
 	src/renderer/src/      React renderer
 	src/assets/            Renderer assets
 	resources/             Desktop packaging resources and icons
+apps/site/               Marketing/documentation site package
+packages/cli/            CLI package
 packages/core/           Reusable runtime/core package
 	src/editors/           Editor detection, diff, and sync logic
 	src/shared/            Shared contracts and runtime message keys
@@ -39,6 +41,7 @@ DESIGN.md                Authoritative UI design reference
 - Reusable editor/runtime logic, shared contracts, and Prisma: `docs/agents/core.md`
 - Electron main, preload, desktop IPC, and desktop/runtime integration: `docs/agents/runtime.md`
 - Commands, environment, linting, formatting, dependency policy, and generated files: `docs/agents/repo.md`
+- Site or CLI work without a dedicated agent guide yet: inspect the target package source and `package.json` first, then use `docs/agents/repo.md` for repo-wide rules
 - Prisma/native module ABI behavior across CLI and desktop: `docs/agents/core.md` and `docs/agents/runtime.md`
 
 ## Universal Rules
@@ -48,33 +51,19 @@ DESIGN.md                Authoritative UI design reference
 - Do not add or remove comments unless explicitly asked.
 - Prefer existing abstractions over introducing new patterns.
 - Keep cross-platform behavior extensible for macOS and Windows.
-- Use strict TypeScript style.
-- Do not introduce `any` unless explicitly unavoidable.
-- Reuse exports from `packages/core/src/shared/` and the desktop renderer type layer before creating new ones.
-- Do not use TypeScript `enum`; use the const-object plus `ValueOf` pattern instead.
-- Renderer-to-main calls should go through the renderer IPC abstraction.
-- Keep Prisma usage in `packages/core` and desktop main-process code, not the renderer.
-- Treat the SQLite database file as shared across CLI and desktop, but treat native module rebuilds as runtime-specific.
 - If docs conflict with source or config, trust the source or config.
 
 ## Guardrails
 
 - Never manually edit `packages/core/src/generated/prisma/`.
 - Never manually edit `pnpm-lock.yaml`.
-- Do not change the Prisma client output path in `packages/core/prisma/schema.prisma`; it must remain `../src/generated/prisma`.
-- Do not restructure `apps/desktop/electron.vite.config.ts` without a clear task requirement.
-- Do not remove the demo fallback in the renderer IPC layer unless the task explicitly requires it.
-- Do not add new UI frameworks or styling systems.
 - Do not add new dependencies unless the task clearly requires them.
 - Do not install or upgrade to a dependency version published within the last 7 days.
-- Do not weaken Electron security defaults such as `contextIsolation: true` and `nodeIntegration: false`.
-- Do not reintroduce direct desktop-to-core source coupling through old root aliases such as `@shared/*`.
 
-## Practical Defaults For Agents
+## Completion Checklist
 
 - Before ending a task, run the narrowest relevant validation aligned with `package.json` guardrails such as `eslint`, `tsc`, or the staged-file checks implied by `lint-staged`; do not assume commit hooks will catch avoidable issues later.
-- For UI work, inspect `apps/desktop/src/renderer/src/`, `apps/desktop/src/renderer/src/components/`, and `apps/desktop/src/renderer/src/pages/` first.
-- For shared contracts and reusable runtime logic, inspect `packages/core/src/shared/` and `packages/core/src/editors/` first.
-- For desktop runtime work, inspect `apps/desktop/src/main/`, `apps/desktop/src/preload/`, and then the relevant `packages/core/src/` modules.
-- For styling decisions, treat `DESIGN.md` and `apps/desktop/src/renderer/src/styles.css` as the source of truth.
+- After any code change, explicitly decide whether a `changeset` is required.
+- If the affected package, release scope, or version bump level is unclear, ask the user before finishing and prefer the more conservative path over silently skipping the `changeset`.
+- Use `docs/agents/repo.md` and `docs/release.md` when making or explaining `changeset` decisions.
 - Keep this root file short; put deeper task-specific guidance in `docs/agents/`.

@@ -53,8 +53,8 @@ function resolveRuntimeCorePaths(): { generatedPrismaClientPath: string; migrati
       migrationsPath: join(moduleDir, "../../resources/runtime/core/prisma/migrations")
     },
     {
-      generatedPrismaClientPath: join(moduleDir, "../../core/src/generated/prisma/index.js"),
-      migrationsPath: join(moduleDir, "../../core/prisma/migrations")
+      generatedPrismaClientPath: join(moduleDir, "../../../../packages/core/src/generated/prisma/index.js"),
+      migrationsPath: join(moduleDir, "../../../../packages/core/prisma/migrations")
     },
     processWithResourcesPath.resourcesPath
       ? {
@@ -78,7 +78,11 @@ function resolveRuntimeCorePaths(): { generatedPrismaClientPath: string; migrati
 }
 
 function resolveCoreModuleRequire(): NodeJS.Require {
-  const candidates = [join(moduleDir, "../../core/package.json"), join(moduleDir, "../package.json"), join(moduleDir, "../../package.json")];
+  const candidates = [
+    join(moduleDir, "../../../../packages/core/package.json"),
+    join(moduleDir, "../package.json"),
+    join(moduleDir, "../../package.json")
+  ];
 
   for (const candidate of candidates) {
     if (existsSync(candidate)) {

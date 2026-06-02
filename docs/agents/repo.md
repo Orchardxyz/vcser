@@ -6,8 +6,7 @@ Use this file for repository-wide commands, environment requirements, dependency
 
 - Package manager: `pnpm`
 - Required Node version: `>=22.13` from `package.json`
-- Workspace layout: `apps/desktop` + `packages/core`
-- Runtime/build stack: Electron + electron-vite
+- Workspace layout: `apps/*` + `packages/*`
 - Do not trust older prose docs over `package.json`, source, and build config
 
 ## Canonical Commands
@@ -16,6 +15,14 @@ Use this file for repository-wide commands, environment requirements, dependency
 - start desktop app: `pnpm dev`
 - build desktop app: `pnpm build`
 - preview desktop app: `pnpm preview`
+- start site locally: `pnpm site:dev`
+- serve site on `127.0.0.1`: `pnpm site:serve`
+- build site: `pnpm site:build`
+- preview site: `pnpm site:preview`
+- build CLI: `pnpm cli:build`
+- start CLI dev flow: `pnpm cli:dev`
+- smoke test CLI: `pnpm cli:smoke`
+- typecheck CLI: `pnpm cli:typecheck`
 - generate Prisma client: `pnpm db:generate`
 - run Prisma migration: `pnpm db:migrate`
 - lint: `pnpm lint`
@@ -32,6 +39,11 @@ Use this file for repository-wide commands, environment requirements, dependency
 
 - desktop dev directly: `pnpm --filter @vcser/desktop dev`
 - desktop build directly: `pnpm --filter @vcser/desktop build`
+- site dev directly: `pnpm --filter @vcser/site dev`
+- site build directly: `pnpm --filter @vcser/site build`
+- CLI dev directly: `pnpm --filter @vcser/cli dev`
+- CLI build directly: `pnpm --filter @vcser/cli build`
+- CLI typecheck directly: `pnpm --filter @vcser/cli typecheck`
 - core Prisma generate directly: `pnpm --filter @vcser/core db:generate`
 - core Prisma migrate directly: `pnpm --filter @vcser/core db:migrate`
 - core typecheck directly: `pnpm --filter @vcser/core typecheck`
@@ -68,6 +80,16 @@ Use this file for repository-wide commands, environment requirements, dependency
 - Reuse exports from `packages/core/src/shared/` and the desktop renderer type layer before creating new ones.
 - Put renderer-to-main communication behind the renderer IPC abstraction.
 
+## Changeset Rules
+
+- After any code change, decide whether a `changeset` is required before finishing the task.
+- Default to considering a `changeset` for user-visible features, defect fixes, behavioral changes, package surface changes, release-note-worthy refactors, and desktop or CLI changes that should appear in release metadata.
+- A `changeset` is often unnecessary for purely internal refactors, tests, local-only tooling, CI-only adjustments, or documentation-only edits that do not change shipped behavior.
+- If the correct package, release scope, or bump level is unclear, ask the user instead of guessing silently.
+- When uncertain, prefer the more conservative path: pause and clarify rather than skipping release metadata.
+- Use `pnpm changeset` to create the file and `pnpm release:plan` to sanity-check the pending release shape.
+- Follow `docs/release.md` for release policy, package participation, prerelease flow, and package-local changelog expectations.
+
 ## Documentation Rules
 
 - Keep root `AGENTS.md` short and routing-focused.
@@ -81,7 +103,7 @@ Use this file for repository-wide commands, environment requirements, dependency
 For repository-level tasks:
 
 1. Check root `package.json` scripts and `apps/desktop/electron.vite.config.ts` first.
-2. Confirm whether the task touches `apps/desktop`, `packages/core`, or both.
+2. Confirm which workspace package or packages the task actually touches before editing shared docs or config.
 3. Update the smallest authoritative doc or config that matches the change.
 4. Avoid copying stale instructions from `README.md` or older notes into agent docs.
 5. If the task is mainly UI, desktop runtime, or reusable core logic, also read `docs/agents/ui.md`, `docs/agents/runtime.md`, or `docs/agents/core.md`.
@@ -92,4 +114,5 @@ For repository-level tasks:
 - manual generated-client edits
 - dependency churn without clear need
 - repo-wide structural changes that are larger than the task requires
+- skipping the explicit `changeset` decision after code changes
 - duplicating commands or requirements in multiple docs unless they truly need to be repeated

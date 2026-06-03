@@ -154,15 +154,12 @@ jobs:
         with:
           name: ${{ matrix.artifact_name }}
           path: |
-            apps/desktop/dist/**/*.AppImage
-            apps/desktop/dist/**/*.blockmap
-            apps/desktop/dist/**/*.deb
-            apps/desktop/dist/**/*.dmg
-            apps/desktop/dist/**/*.exe
-            apps/desktop/dist/**/*.rpm
-            apps/desktop/dist/**/*.snap
-            apps/desktop/dist/**/*.yml
-            apps/desktop/dist/**/*.zip
+            apps/desktop/dist/*.AppImage
+            apps/desktop/dist/*.deb
+            apps/desktop/dist/*.dmg
+            apps/desktop/dist/*.exe
+            apps/desktop/dist/*.rpm
+            apps/desktop/dist/*.snap
           if-no-files-found: error
 
   create-github-release:

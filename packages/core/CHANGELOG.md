@@ -1,5 +1,11 @@
 # @vcser/core
 
+## 0.1.1-beta.8
+
+### Patch Changes
+
+- bf182da: Move custom editor storage to a shared JSON file, add an explicit CLI migration for legacy Prisma rows, and stop requiring Prisma-native startup work in the CLI.
+
 ## 0.1.1-beta.7
 
 ### Patch Changes

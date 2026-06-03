@@ -4,12 +4,14 @@
   "initialVersions": {
     "@vcser/desktop": "0.1.0",
     "@vcser/cli": "0.1.1-beta.0",
-    "@vcser/core": "0.1.1-beta.0"
+    "@vcser/core": "0.1.1-beta.0",
+    "@vcser/site": "0.0.0"
   },
   "changesets": [
     "clever-insects-camp",
     "cli-editor-list-help",
     "core-pack-tsbuildinfo",
+    "custom-editor-json-store",
     "desktop-artifacts-publish",
     "release-desktop-publish",
     "release-pr-ci-checks",

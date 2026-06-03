@@ -1,31 +1,17 @@
 import type { UpdateCustomEditorInput, CustomEditorRecord } from "../shared/types.js";
 import type { CustomEditorConflictCandidate } from "./shared.js";
-import { CUSTOM_EDITOR_STORE_ERROR_CODE, CustomEditorStoreError, normalizeCustomEditorInput, toCustomEditorRecord } from "./shared.js";
+import {
+  listStoredCustomEditors,
+  runCustomEditorStoreMutation,
+  toConflictCandidates,
+  updateStoredCustomEditorRecord,
+  writeStoredCustomEditors
+} from "./store.js";
+import { CUSTOM_EDITOR_STORE_ERROR_CODE, CustomEditorStoreError, normalizeCustomEditorInput } from "./shared.js";
 import { appendCustomEditor, initializeCustomEditorStorage, listCustomEditors } from "./service.js";
-import { getPrismaClient } from "../db.js";
-
-function requirePrismaClient() {
-  const prisma = getPrismaClient();
-
-  if (!prisma) {
-    throw new CustomEditorStoreError(CUSTOM_EDITOR_STORE_ERROR_CODE.STORE_UNAVAILABLE, "Custom editor storage is unavailable.");
-  }
-
-  return prisma;
-}
 
 async function loadConflictCandidates(ignoredId?: string): Promise<CustomEditorConflictCandidate[]> {
-  const editors = await listCustomEditors();
-  return editors
-    .filter((editor) => !ignoredId || editor.id !== ignoredId)
-    .map((editor) => ({
-      id: editor.id,
-      slug: editor.slug,
-      name: editor.name,
-      displayName: editor.displayName,
-      extensionsPath: editor.extensionsPath,
-      settingsPath: editor.settingsPath
-    }));
+  return toConflictCandidates(await listCustomEditors(), ignoredId);
 }
 
 async function assertNoEditorConflict(params: {
@@ -48,73 +34,50 @@ export async function updateCustomEditor(
   input: UpdateCustomEditorInput,
   options?: { reservedEditors?: CustomEditorConflictCandidate[] }
 ): Promise<CustomEditorRecord> {
-  const prisma = requirePrismaClient();
-
   await initializeCustomEditorStorage();
 
-  const existing = await prisma.customEditor.findUnique({
-    where: {
-      id: input.id
+  return runCustomEditorStoreMutation(async () => {
+    const editors = await listStoredCustomEditors();
+    const existing = editors.find((editor) => editor.id === input.id);
+
+    if (!existing) {
+      throw new CustomEditorStoreError(CUSTOM_EDITOR_STORE_ERROR_CODE.NOT_FOUND, `Custom editor ${input.id} not found.`);
     }
+
+    const normalized = normalizeCustomEditorInput(input);
+    await assertNoEditorConflict({
+      input: normalized,
+      ignoredId: input.id,
+      reservedEditors: options?.reservedEditors
+    });
+
+    const record = updateStoredCustomEditorRecord(existing, normalized);
+    await writeStoredCustomEditors(editors.map((editor) => (editor.id === input.id ? record : editor)));
+    return record;
   });
-
-  if (!existing) {
-    throw new CustomEditorStoreError(CUSTOM_EDITOR_STORE_ERROR_CODE.NOT_FOUND, `Custom editor ${input.id} not found.`);
-  }
-
-  const normalized = normalizeCustomEditorInput(input);
-  await assertNoEditorConflict({
-    input: normalized,
-    ignoredId: input.id,
-    reservedEditors: options?.reservedEditors
-  });
-
-  const record = await prisma.customEditor.update({
-    where: {
-      id: input.id
-    },
-    data: normalized
-  });
-
-  return toCustomEditorRecord(record);
 }
 
 export async function removeCustomEditor(id: string): Promise<CustomEditorRecord> {
-  const prisma = requirePrismaClient();
-
   await initializeCustomEditorStorage();
 
-  const existing = await prisma.customEditor.findUnique({
-    where: {
-      id
+  return runCustomEditorStoreMutation(async () => {
+    const editors = await listStoredCustomEditors();
+    const existing = editors.find((editor) => editor.id === id);
+
+    if (!existing) {
+      throw new CustomEditorStoreError(CUSTOM_EDITOR_STORE_ERROR_CODE.NOT_FOUND, `Custom editor ${id} not found.`);
     }
+
+    await writeStoredCustomEditors(editors.filter((editor) => editor.id !== id));
+    return existing;
   });
-
-  if (!existing) {
-    throw new CustomEditorStoreError(CUSTOM_EDITOR_STORE_ERROR_CODE.NOT_FOUND, `Custom editor ${id} not found.`);
-  }
-
-  const record = await prisma.customEditor.delete({
-    where: {
-      id
-    }
-  });
-
-  return toCustomEditorRecord(record);
 }
 
 export async function findCustomEditorByIdOrSlug(identifier: string): Promise<CustomEditorRecord | undefined> {
-  const prisma = requirePrismaClient();
-
   await initializeCustomEditorStorage();
 
-  const editor = await prisma.customEditor.findFirst({
-    where: {
-      OR: [{ id: identifier }, { slug: identifier }]
-    }
-  });
-
-  return editor ? toCustomEditorRecord(editor) : undefined;
+  const editors = await listStoredCustomEditors();
+  return editors.find((editor) => editor.id === identifier || editor.slug === identifier);
 }
 
 export { appendCustomEditor };

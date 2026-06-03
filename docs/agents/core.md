@@ -1,6 +1,6 @@
 # Core Agent Guide
 
-Use this file for reusable editor/runtime logic, shared contracts, and Prisma-backed cache logic in `packages/core`.
+Use this file for reusable editor/runtime logic, shared contracts, the JSON-backed custom editor store, and Prisma-backed cache logic in `packages/core`.
 
 ## Start Here
 
@@ -35,13 +35,15 @@ Read these areas first for most core tasks:
   - `pnpm --filter @vcser/core db:generate`
   - `pnpm --filter @vcser/core db:migrate`
 - Be careful when changing `db.ts`; it intentionally tolerates Prisma unavailability and falls back when cache access is unavailable.
-- The SQLite database file is intentionally shared across CLI and desktop. Do not split the database by runtime just to work around native module issues.
-- `better-sqlite3` is runtime-specific even though the database is shared. A binary rebuilt for Electron will fail under host Node, and a binary rebuilt for host Node will fail under Electron.
+- Desktop-only Prisma/cache features still use the vcser SQLite database. Do not change that database path or runtime wiring just to work around custom editor storage changes.
+- `better-sqlite3` is still runtime-specific for desktop Prisma/cache features. A binary rebuilt for Electron will fail under host Node, and a binary rebuilt for host Node will fail under Electron.
 - When troubleshooting `NODE_MODULE_VERSION`, `ERR_DLOPEN_FAILED`, or `better_sqlite3.node` errors, assume an ABI mismatch before changing Prisma logic.
 - Rebuild the native module from the runtime entrypoint that owns the current process:
   - desktop/Electron: use `apps/desktop/scripts/rebuild-native-modules.cjs` or the `@vcser/desktop` `predev` / `postinstall` scripts.
-  - CLI/host Node: let `packages/cli/src/nativeRebuild.ts` repair the host-Node ABI, or run `npm rebuild better-sqlite3` from `packages/core`.
-- Do not replace the Prisma-backed custom editor store with a JSON fallback to paper over ABI issues. The JSON file only exists as a legacy import source during storage initialization.
+- Custom editors now persist in `~/.vcser/custom-editors.json` through `packages/core/src/customEditors/`.
+- Treat a missing custom editor JSON file as an empty store, and treat invalid/corrupt JSON as `STORE_UNAVAILABLE` without overwriting user data.
+- Do not reintroduce CLI dependencies on `packages/core/src/db.ts`, the generated Prisma client, or vcser's SQLite database for custom editor operations.
+- Legacy Prisma `CustomEditor` data must be migrated explicitly through `vcser migrate custom-editors`; do not auto-import it during normal startup.
 
 ## Editor Logic
 

@@ -1,5 +1,6 @@
 import { existsSync } from "node:fs";
-import { basename, extname } from "node:path";
+import { homedir } from "node:os";
+import { basename, extname, join } from "node:path";
 import type { ValueOf } from "type-fest";
 import { hasErrorCode, isCodedError, type CodedError } from "../errors.js";
 import { hasStringProperty, isRecord } from "../typeGuards.js";
@@ -10,6 +11,8 @@ export const CUSTOM_EDITOR_STORE_ERROR_CODE = {
   NOT_FOUND: "custom_editor_not_found",
   STORE_UNAVAILABLE: "custom_editor_store_unavailable"
 } as const;
+
+export const CUSTOM_EDITOR_STORE_VERSION = 1;
 
 export type CustomEditorStoreErrorCode = ValueOf<typeof CUSTOM_EDITOR_STORE_ERROR_CODE>;
 
@@ -40,6 +43,11 @@ export interface CustomEditorStoreConflict {
 export interface InitializeCustomEditorStorageOptions {
   legacyEditors?: CustomEditorRecord[];
   seedEditors?: CustomEditorSeedInput[];
+}
+
+export interface CustomEditorsStoreData {
+  version: typeof CUSTOM_EDITOR_STORE_VERSION;
+  editors: CustomEditorRecord[];
 }
 
 export interface NormalizedCustomEditorInput {
@@ -113,6 +121,10 @@ export function normalizeSeedEditor(seed: CustomEditorSeedInput): CustomEditorSe
     extensionsPath: normalizeRequiredString(seed.extensionsPath),
     settingsPath: normalizeRequiredString(seed.settingsPath)
   };
+}
+
+export function resolveCustomEditorStorePath(homeDirectory = homedir()) {
+  return join(homeDirectory, ".vcser", "custom-editors.json");
 }
 
 export function slugifyName(name: string) {
@@ -214,6 +226,18 @@ export function isCustomEditorRecord(value: unknown): value is CustomEditorRecor
     hasStringProperty(value, "settingsPath") &&
     hasStringProperty(value, "createdAt")
   );
+}
+
+export function isCustomEditorsStoreData(value: unknown): value is CustomEditorsStoreData {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  if (value.version !== CUSTOM_EDITOR_STORE_VERSION || !Array.isArray(value.editors)) {
+    return false;
+  }
+
+  return value.editors.every((editor) => isCustomEditorRecord(editor));
 }
 
 export function inferCustomEditorNameFromAppPath(appPath: string): string {

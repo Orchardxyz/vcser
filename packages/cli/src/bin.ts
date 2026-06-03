@@ -1,15 +1,9 @@
 import { CliLoggerImpl } from "./logger";
-import { CLI_SCOPE } from "./commandConstants";
-import { ensureNodeNativeModulesReady } from "./nativeRebuild";
 
 declare const __CLI_VERSION__: string;
 
 function shouldPrintVersion(argv: string[]): boolean {
   return argv.includes("-v") || argv.includes("--version");
-}
-
-function shouldSkipNativeSetup(argv: string[]): boolean {
-  return shouldPrintVersion(argv) || argv.includes("-h") || argv.includes("--help") || argv[0] === CLI_SCOPE.RESET;
 }
 
 async function main(): Promise<void> {
@@ -22,10 +16,6 @@ async function main(): Promise<void> {
     });
     logger.line(__CLI_VERSION__);
     return;
-  }
-
-  if (!shouldSkipNativeSetup(argv)) {
-    ensureNodeNativeModulesReady();
   }
 
   const { runCli } = await import("./cli");

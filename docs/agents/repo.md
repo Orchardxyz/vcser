@@ -23,6 +23,7 @@ Use this file for repository-wide commands, environment requirements, dependency
 - start CLI dev flow: `pnpm cli:dev`
 - smoke test CLI: `pnpm cli:smoke`
 - typecheck CLI: `pnpm cli:typecheck`
+- migrate legacy Prisma custom editors into the shared JSON store: `pnpm cli:start -- migrate custom-editors`
 - generate Prisma client: `pnpm db:generate`
 - run Prisma migration: `pnpm db:migrate`
 - lint: `pnpm lint`
@@ -52,6 +53,7 @@ Use this file for repository-wide commands, environment requirements, dependency
 ## Install and Build Notes
 
 - Workspace package `postinstall` hooks run Prisma generation for `packages/core` and the Electron binary check for `apps/desktop`.
+- The CLI no longer rebuilds or initializes Prisma/native SQLite modules during normal startup; custom editor data lives in `~/.vcser/custom-editors.json`, and the legacy Prisma `CustomEditor` table is only touched by the explicit migration command.
 - If install or runtime setup seems wrong, inspect `package.json` scripts before adding workaround instructions to docs.
 - Prefer existing project scripts over ad hoc local commands.
 - Do not edit `pnpm-lock.yaml` manually.

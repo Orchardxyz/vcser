@@ -51,9 +51,9 @@ Read these areas first for most runtime tasks:
 - The core database layer bridges ESM runtime code to the generated CommonJS Prisma client via `createRequire()`.
 - Be careful when changing Prisma initialization; the current code intentionally tolerates Prisma unavailability and falls back when cache access is unavailable.
 - Keep database/cache concerns in `packages/core` and call them from desktop main-process code.
-- The SQLite database file is shared with the CLI. Do not introduce a desktop-only database path or desktop-only storage fork to solve native module problems.
+- Custom editors no longer use the vcser Prisma database. Desktop now reads and writes custom editors through the shared JSON store at `~/.vcser/custom-editors.json`, while desktop-only Prisma/cache features remain in the vcser database.
 - Electron must use an Electron-ABI rebuild of `better-sqlite3`. The desktop entrypoints rely on `apps/desktop/scripts/rebuild-native-modules.cjs`, and `@vcser/desktop` runs it from `predev` and `postinstall`.
-- If desktop works but the CLI starts failing, or vice versa, the likely cause is that one runtime rebuilt `better-sqlite3` for its own ABI. Fix the rebuild path rather than changing Prisma schema, changing the database location, or adding a new fallback store.
+- If desktop Prisma/cache features start failing after a native rebuild, assume an Electron ABI mismatch before changing database paths or custom editor storage.
 
 ## Editor Logic
 

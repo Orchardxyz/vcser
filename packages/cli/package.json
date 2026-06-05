@@ -36,13 +36,13 @@
   },
   "dependencies": {
     "@vcser/core": "workspace:*",
-    "cac": "^6.7.14",
-    "ora": "^8.2.0",
-    "picocolors": "^1.1.1",
-    "prompts": "^2.4.2"
+    "cac": "catalog:cli-tooling",
+    "ora": "catalog:cli-tooling",
+    "picocolors": "catalog:cli-tooling",
+    "prompts": "catalog:cli-tooling"
   },
   "devDependencies": {
-    "@types/prompts": "^2.4.9",
-    "esbuild": "^0.24.2"
+    "@types/prompts": "catalog:cli-tooling",
+    "esbuild": "catalog:cli-tooling"
   }
 }

@@ -1,8 +1,17 @@
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { diffSettings, groupSettingsByNamespace, namespaceOf, readSettingsJson } from "../../src/editors/settings";
+import {
+  diffSettings,
+  filterSettingsDiffsByExtensionNamespaces,
+  groupSettingsByNamespace,
+  namespaceOf,
+  orientSettingsDiffsForSourceTargetSync,
+  readSettingsJson,
+  readSettingsJsonFile,
+  syncSettingsValues
+} from "../../src/editors/settings";
 import { CHANGE_TYPE } from "../../src/shared/types";
 
 describe("readSettingsJson", () => {
@@ -138,5 +147,166 @@ describe("groupSettingsByNamespace", () => {
     expect(workbenchGroup!.totalCount).toBe(2);
     expect(workbenchGroup!.identicalCount).toBe(0);
     expect(workbenchGroup!.diffs).toHaveLength(2);
+  });
+});
+
+describe("filterSettingsDiffsByExtensionNamespaces", () => {
+  it("keeps only diffs whose namespaces belong to the selected extensions", () => {
+    const diffs = [
+      { key: "python.analysis.typeCheckingMode", changeType: CHANGE_TYPE.UPDATE, sourceValue: "basic", targetValue: "off" },
+      { key: "prettier.printWidth", changeType: CHANGE_TYPE.ADD, sourceValue: 100, targetValue: undefined },
+      { key: "editor.fontSize", changeType: CHANGE_TYPE.UPDATE, sourceValue: 14, targetValue: 12 }
+    ];
+
+    const filtered = filterSettingsDiffsByExtensionNamespaces({
+      diffs,
+      extensionIds: ["ms-python.python"],
+      namespaceToExtension: new Map([
+        ["python", "ms-python.python"],
+        ["prettier", "esbenp.prettier-vscode"]
+      ])
+    });
+
+    expect(filtered).toEqual([diffs[0]]);
+  });
+});
+
+describe("orientSettingsDiffsForSourceTargetSync", () => {
+  it("flips add and delete semantics for source-to-target sync application", () => {
+    const diffs = orientSettingsDiffsForSourceTargetSync([
+      { key: "python.analysis.typeCheckingMode", changeType: CHANGE_TYPE.UPDATE, sourceValue: "basic", targetValue: "off" },
+      { key: "prettier.printWidth", changeType: CHANGE_TYPE.ADD, sourceValue: undefined, targetValue: 100 },
+      { key: "python.analysis.autoImportCompletions", changeType: CHANGE_TYPE.DELETE, sourceValue: false, targetValue: undefined }
+    ]);
+
+    expect(diffs).toEqual([
+      { key: "python.analysis.typeCheckingMode", changeType: CHANGE_TYPE.UPDATE, sourceValue: "basic", targetValue: "off" },
+      { key: "prettier.printWidth", changeType: CHANGE_TYPE.DELETE, sourceValue: undefined, targetValue: 100 },
+      { key: "python.analysis.autoImportCompletions", changeType: CHANGE_TYPE.ADD, sourceValue: false, targetValue: undefined }
+    ]);
+  });
+});
+
+describe("readSettingsJsonFile", () => {
+  it("can treat a missing file as an empty settings object", () => {
+    const result = readSettingsJsonFile(join(tmpdir(), `vcser-missing-${Date.now()}.json`), { missingAsEmpty: true });
+
+    expect(result).toEqual({
+      success: true,
+      exists: false,
+      settings: {}
+    });
+  });
+});
+
+describe("syncSettingsValues", () => {
+  let tmpDir: string;
+  let settingsPath: string;
+
+  beforeEach(() => {
+    tmpDir = mkdtempSync(join(tmpdir(), "vcser-settings-sync-test-"));
+    settingsPath = join(tmpDir, "settings.json");
+  });
+
+  afterEach(() => {
+    rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  it("applies add, update, and delete diffs while preserving unrelated settings", () => {
+    writeFileSync(
+      settingsPath,
+      `{
+  // Keep comment
+  "python.analysis.typeCheckingMode": "off",
+  "python.analysis.autoImportCompletions": false,
+  "window.zoomLevel": 1
+}\n`
+    );
+
+    const result = syncSettingsValues({
+      targetSettingsPath: settingsPath,
+      diffs: [
+        {
+          key: "python.analysis.typeCheckingMode",
+          changeType: CHANGE_TYPE.UPDATE,
+          sourceValue: "basic",
+          targetValue: "off"
+        },
+        {
+          key: "python.analysis.extraPaths",
+          changeType: CHANGE_TYPE.ADD,
+          sourceValue: ["src"],
+          targetValue: undefined
+        },
+        {
+          key: "python.analysis.autoImportCompletions",
+          changeType: CHANGE_TYPE.DELETE,
+          sourceValue: undefined,
+          targetValue: false
+        }
+      ]
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.appliedCount).toBe(3);
+    expect(result.backupPath).toBeDefined();
+    expect(existsSync(result.backupPath!)).toBe(true);
+    expect(readFileSync(result.backupPath!, "utf-8")).toContain('"python.analysis.autoImportCompletions": false');
+
+    const updatedText = readFileSync(settingsPath, "utf-8");
+    expect(updatedText).toContain("// Keep comment");
+
+    const updated = readSettingsJson(settingsPath);
+    expect(updated).toEqual({
+      "python.analysis.typeCheckingMode": "basic",
+      "python.analysis.extraPaths": ["src"],
+      "window.zoomLevel": 1
+    });
+  });
+
+  it("creates a missing target settings file without a backup", () => {
+    const missingTargetPath = join(tmpDir, "missing-settings.json");
+
+    const result = syncSettingsValues({
+      targetSettingsPath: missingTargetPath,
+      diffs: [
+        {
+          key: "prettier.printWidth",
+          changeType: CHANGE_TYPE.ADD,
+          sourceValue: 100,
+          targetValue: undefined
+        }
+      ]
+    });
+
+    expect(result).toMatchObject({
+      success: true,
+      appliedCount: 1,
+      backupPath: undefined
+    });
+    expect(readSettingsJson(missingTargetPath)).toEqual({
+      "prettier.printWidth": 100
+    });
+  });
+
+  it("fails without clobbering the target when the target JSONC is invalid", () => {
+    writeFileSync(settingsPath, "{ invalid json }");
+    const original = readFileSync(settingsPath, "utf-8");
+
+    const result = syncSettingsValues({
+      targetSettingsPath: settingsPath,
+      diffs: [
+        {
+          key: "python.analysis.typeCheckingMode",
+          changeType: CHANGE_TYPE.UPDATE,
+          sourceValue: "basic",
+          targetValue: "off"
+        }
+      ]
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.appliedCount).toBe(0);
+    expect(readFileSync(settingsPath, "utf-8")).toBe(original);
   });
 });

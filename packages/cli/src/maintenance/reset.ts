@@ -2,8 +2,8 @@ import { existsSync } from "node:fs";
 import { rm } from "node:fs/promises";
 import { resolveCustomEditorStorePath } from "@vcser/core/customEditors";
 import { hasErrorCode, NODE_ERROR_CODE } from "@vcser/core/errors";
-import type { CliLogger } from "./logger";
-import { createPromptRunner, PromptCancelledError } from "./prompt";
+import type { CliLogger } from "../logger";
+import { createPromptRunner, PromptCancelledError } from "../prompt";
 
 export interface ResetCommandOptions {
   yes?: boolean;

@@ -3,9 +3,10 @@ import { listEditorExtensions, syncExtensionLocal } from "@vcser/core/editors/ex
 import { RUNTIME_MESSAGE_KEY } from "@vcser/core/i18n";
 import type { EditorExtensionItem, SyncResult } from "@vcser/core/types";
 import ora from "ora";
-import type { CliLogger } from "./logger";
-import { canRunCommand, resolveCliEditors, type CliEditor } from "./editorResolution";
-import { createPromptRunner } from "./prompt";
+import type { CliLogger } from "../logger";
+import { canRunCommand, resolveCliEditors, type CliEditor } from "../editor/resolution";
+import { createPromptRunner } from "../prompt";
+import { maybeSyncSettings } from "./settings";
 
 interface SyncCandidate {
   extensionId: string;
@@ -348,6 +349,21 @@ export async function runWizard(logger: CliLogger): Promise<number> {
         message: formatSyncFailure(result)
       }))
   });
+
+  const successfulExtensionIds = selectedCandidates.filter((_candidate, index) => results[index]?.success).map((candidate) => candidate.extensionId);
+
+  const settingsResult = await maybeSyncSettings({
+    logger,
+    prompt,
+    sourceEditor,
+    targetEditor,
+    sourceItems,
+    successfulExtensionIds
+  });
+
+  if (settingsResult.exitCode !== undefined) {
+    return settingsResult.exitCode;
+  }
 
   return failed > 0 ? 1 : 0;
 }

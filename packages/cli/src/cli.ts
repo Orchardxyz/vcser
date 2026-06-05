@@ -1,6 +1,6 @@
 import { cac } from "cac";
 import { isCustomEditorStoreError } from "@vcser/core/customEditors";
-import type { CliCommandOptions } from "./editorCommands";
+import type { CliCommandOptions } from "./editor/commands";
 import { CLI_EDITOR_ACTION, CLI_MIGRATION_TARGET, CLI_SCOPE } from "./commandConstants";
 import { createLogger } from "./logger";
 import { PromptCancelledError } from "./prompt";
@@ -117,7 +117,7 @@ export async function runCli(argv = process.argv): Promise<number> {
   const handleUnknownError = (message: string) => logger.error(logger.palette.red(message));
 
   if (!scope || scope === CLI_SCOPE.SYNC) {
-    const { runWizard } = await import("./syncWizard");
+    const { runWizard } = await import("./sync/wizard");
     return runWithCliErrorHandling(
       () => runWizard(logger),
       handleCancelled,
@@ -127,7 +127,7 @@ export async function runCli(argv = process.argv): Promise<number> {
   }
 
   if (scope === CLI_SCOPE.RESET) {
-    const { runResetCommand } = await import("./resetCommand");
+    const { runResetCommand } = await import("./maintenance/reset");
     return runWithCliErrorHandling(
       () => runResetCommand({ yes: Boolean((parsed.options as CliOptions).yes) }, logger),
       handleCancelled,
@@ -144,7 +144,7 @@ export async function runCli(argv = process.argv): Promise<number> {
       return 1;
     }
 
-    const { runMigrateCustomEditorsCommand } = await import("./migrateCustomEditorsCommand");
+    const { runMigrateCustomEditorsCommand } = await import("./maintenance/migrateCustomEditors");
     return runWithCliErrorHandling(
       () => runMigrateCustomEditorsCommand(logger),
       handleCancelled,
@@ -153,7 +153,7 @@ export async function runCli(argv = process.argv): Promise<number> {
     );
   }
 
-  const editorCommands = await import("./editorCommands");
+  const editorCommands = await import("./editor/commands");
   const commandOptions = parsed.options as CliCommandOptions;
   const handleStoreError = (error: unknown) => editorCommands.printCustomEditorError(logger, error);
 

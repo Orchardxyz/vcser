@@ -71,7 +71,7 @@
   "devDependencies": {
     "@changesets/changelog-git": "catalog:release",
     "@changesets/cli": "catalog:release",
-    "@eslint/js": "catalog:linting",
+    "@oryz/eslint-config": "catalog:linting",
     "@types/node": "catalog:typescript",
     "electron": "catalog:electron33",
     "eslint": "catalog:linting",
@@ -87,7 +87,6 @@
     "prettier-plugin-astro": "catalog:site",
     "prisma": "catalog:prisma7",
     "typescript": "catalog:typescript",
-    "typescript-eslint": "catalog:linting",
     "vitest": "catalog:testing",
     "yaml-eslint-parser": "catalog:linting"
   }

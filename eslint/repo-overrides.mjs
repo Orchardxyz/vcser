@@ -32,36 +32,6 @@ const scriptFiles = [
 
 const reactRefreshAllowedExports = ["BADGE_SIZE", "BADGE_VARIANT", "BUTTON_SIZE", "BUTTON_VARIANT", "EDITOR_IDENTITY_MODE", "PAGE"];
 
-const catalogIgnorePackages = [
-  "@hookform/resolvers",
-  "@radix-ui/react-dropdown-menu",
-  "@radix-ui/react-popover",
-  "@radix-ui/react-tooltip",
-  "@tailwindcss/vite",
-  "@types/prompts",
-  "@vitejs/plugin-react",
-  "cac",
-  "classnames",
-  "electron-icon-builder",
-  "esbuild",
-  "i18next",
-  "jsonc-parser",
-  "lucide-react",
-  "ora",
-  "picocolors",
-  "prompts",
-  "react-diff-viewer-continued",
-  "react-hook-form",
-  "react-i18next",
-  "react-router-dom",
-  "react-use",
-  "sonner",
-  "tailwindcss",
-  "vite",
-  "zod",
-  "zustand"
-];
-
 export const repoOverrideConfigs = [
   {
     files: ["**/*.ts"],
@@ -149,12 +119,7 @@ export const repoOverrideConfigs = [
       pnpm
     },
     rules: {
-      "pnpm/json-enforce-catalog": [
-        "error",
-        {
-          ignores: catalogIgnorePackages
-        }
-      ],
+      "pnpm/json-enforce-catalog": "error",
       "pnpm/json-valid-catalog": "error",
       "pnpm/json-prefer-workspace-settings": "error"
     }

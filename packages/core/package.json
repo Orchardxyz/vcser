@@ -92,7 +92,7 @@
     "@prisma/adapter-better-sqlite3": "catalog:prisma7",
     "@prisma/client": "catalog:prisma7",
     "@prisma/client-runtime-utils": "catalog:prisma7",
-    "jsonc-parser": "^3.3.1",
+    "jsonc-parser": "catalog:shared-runtime",
     "type-fest": "catalog:shared-runtime"
   },
   "devDependencies": {

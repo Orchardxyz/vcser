@@ -74,6 +74,17 @@ Use this file for repository-wide commands, environment requirements, dependency
 - Reuse existing packages such as `type-fest`, `react-use`, `lucide-react`, and current Radix dependencies before adding alternatives.
 - If a package version choice is needed, prefer one compatible with the current repo configuration.
 
+## Catalog Policy
+
+- Shared third-party dependency versions belong in the named `catalogs:` section in `pnpm-workspace.yaml`.
+- Reuse an existing catalog whenever its purpose already fits; do not create new catalogs based only on workspace package boundaries such as `desktop` or `cli`.
+- Prefer responsibility-based catalog names such as `ui-primitives`, `forms-validation`, `frontend-build`, or `cli-tooling`.
+- Keep `other` for loose repo-level tools or one-off dependencies that do not yet justify a dedicated responsibility-based catalog.
+- If a proposed catalog would contain only one dependency, first check whether it should join an existing catalog or `other` instead.
+- Keep workspace-internal packages on `workspace:*`; do not move internal package links into catalogs.
+- Keep catalog names alphabetized, and alphabetize package entries within each catalog.
+- After changing catalog definitions or `catalog:<name>` references, refresh `pnpm-lock.yaml` via `pnpm install --lockfile-only --ignore-scripts`; never edit the lockfile by hand.
+
 ## TypeScript and Shared Contracts
 
 - Use strict TypeScript style.

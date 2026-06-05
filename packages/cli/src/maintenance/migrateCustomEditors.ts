@@ -17,7 +17,7 @@ import {
 import { hasErrorCode, NODE_ERROR_CODE } from "@vcser/core/errors";
 import type { CustomEditorRecord } from "@vcser/core/types";
 import { resolveDatabasePathFromUrl, resolveDatabaseUrl } from "@vcser/core/dataPaths";
-import type { CliLogger } from "./logger";
+import type { CliLogger } from "../logger";
 
 const execFilePromise = promisify(execFile);
 

@@ -11,9 +11,9 @@ import {
   type CustomEditorConflictCandidate
 } from "@vcser/core/customEditors";
 import type { CustomEditorInput, UpdateCustomEditorInput } from "@vcser/core/types";
-import type { CliLogger } from "./logger";
-import { createPromptRunner, type PromptRunner } from "./prompt";
-import { pathExists, resolveCliEditors, type CliEditor } from "./editorResolution";
+import type { CliLogger } from "../logger";
+import { createPromptRunner, type PromptRunner } from "../prompt";
+import { pathExists, resolveCliEditors, type CliEditor } from "./resolution";
 
 export interface CliCommandOptions {
   name?: string;

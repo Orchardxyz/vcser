@@ -16,6 +16,12 @@ const FALLBACK_THEME = "dark";
 type TextFormatter = (value: string) => string;
 type TerminalTheme = "dark" | "light";
 
+export interface CliTableColumn {
+  key: string;
+  label: string;
+  maxWidth?: number;
+}
+
 export interface CliPalette {
   brand: TextFormatter;
   cyan: TextFormatter;
@@ -49,6 +55,8 @@ export interface CliLogger {
       message: string;
     }>;
   }): void;
+  table(params: { columns: readonly CliTableColumn[]; rows: readonly Record<string, string>[] }): void;
+  settingsSyncApplied(params: { appliedCount: number; backupPath?: string }): void;
 }
 
 interface CliLoggerOptions {
@@ -67,6 +75,22 @@ function writeStderr(message: string): void {
 
 function applyRgb(rgb: string, value: string): string {
   return `\u001B[38;2;${rgb}m${value}\u001B[39m`;
+}
+
+function truncateCell(value: string, maxWidth: number): string {
+  if (value.length <= maxWidth) {
+    return value;
+  }
+
+  if (maxWidth <= 3) {
+    return value.slice(0, maxWidth);
+  }
+
+  return `${value.slice(0, maxWidth - 3)}...`;
+}
+
+function repeatTableRule(width: number): string {
+  return "─".repeat(width + 2);
 }
 
 function parseColorFgBgTheme(value: string | undefined): TerminalTheme | undefined {
@@ -195,6 +219,49 @@ export class CliLoggerImpl implements CliLogger {
 
     for (const failure of params.failures) {
       this.line(`${this.palette.red(failure.extensionId)}: ${failure.message}`);
+    }
+  }
+
+  public table(params: Parameters<CliLogger["table"]>[0]): void {
+    if (params.rows.length === 0) {
+      return;
+    }
+
+    const widths = params.columns.map((column) => {
+      const contentWidth = Math.max(column.label.length, ...params.rows.map((row) => row[column.key]?.length ?? 0));
+      return Math.min(contentWidth, column.maxWidth ?? contentWidth);
+    });
+
+    const renderRow = (row: Record<string, string>): string =>
+      `│ ${params.columns
+        .map((column, index) =>
+          truncateCell(row[column.key] ?? "", widths[index] ?? column.maxWidth ?? 0).padEnd(widths[index] ?? column.maxWidth ?? 0)
+        )
+        .join(" │ ")} │`;
+
+    const renderBorder = (left: string, join: string, right: string): string =>
+      `${left}${widths.map((width) => repeatTableRule(width)).join(join)}${right}`;
+
+    const header = Object.fromEntries(params.columns.map((column) => [column.key, column.label]));
+
+    this.line(renderBorder("┌", "┬", "┐"));
+    this.line(renderRow(header));
+    this.line(renderBorder("├", "┼", "┤"));
+
+    for (const row of params.rows) {
+      this.line(renderRow(row));
+    }
+
+    this.line(renderBorder("└", "┴", "┘"));
+
+    this.line();
+  }
+
+  public settingsSyncApplied(params: Parameters<CliLogger["settingsSyncApplied"]>[0]): void {
+    this.line(`Settings applied: ${params.appliedCount}`);
+
+    if (params.backupPath) {
+      this.line(`Backup: ${params.backupPath}`);
     }
   }
 

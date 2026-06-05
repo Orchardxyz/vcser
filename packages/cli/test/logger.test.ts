@@ -88,4 +88,37 @@ describe("syncSummary", () => {
     expect(calls.some((line) => typeof line === "string" && line.includes("bad.ext") && line.includes("network error"))).toBe(true);
     spy.mockRestore();
   });
+
+  it("renders a generic table with the provided columns and rows", () => {
+    const spy = vi.spyOn(console, "log").mockImplementation(() => {});
+    const logger = createLogger({ colorEnabled: false, debugEnabled: false });
+
+    logger.table({
+      columns: [
+        {
+          key: "sourceExtension",
+          label: "Source extension",
+          maxWidth: 28
+        },
+        {
+          key: "targetExtension",
+          label: "Target extension",
+          maxWidth: 28
+        }
+      ],
+      rows: [
+        {
+          sourceExtension: "ms-python.python@1.0.0",
+          targetExtension: "ms-python.python@1.0.0"
+        }
+      ]
+    });
+
+    const calls = spy.mock.calls.map((call) => String(call[0] ?? ""));
+    expect(calls.some((line) => line.includes("┌") && line.includes("┬") && line.includes("┐"))).toBe(true);
+    expect(calls.some((line) => line.includes("├") && line.includes("┼") && line.includes("┤"))).toBe(true);
+    expect(calls.some((line) => line.includes("Source extension") && line.includes("Target extension"))).toBe(true);
+    expect(calls.some((line) => line.includes("ms-python.python@1.0.0"))).toBe(true);
+    spy.mockRestore();
+  });
 });

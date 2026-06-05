@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { CliLogger } from "../src/logger";
 import { resolveCustomEditorStorePath } from "@vcser/core/customEditors";
-import { runMigrateCustomEditorsCommand } from "../src/migrateCustomEditorsCommand";
+import { runMigrateCustomEditorsCommand } from "../src/maintenance/migrateCustomEditors";
 
 const { execFileMock, execFilePromiseMock } = vi.hoisted(() => ({
   execFileMock: vi.fn(),
@@ -67,7 +67,9 @@ function createTestLogger() {
     },
     debug() {},
     inventorySummary() {},
-    syncSummary() {}
+    syncSummary() {},
+    table() {},
+    settingsSyncApplied() {}
   } satisfies CliLogger;
 
   return { logger, lines, errors };

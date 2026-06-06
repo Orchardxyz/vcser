@@ -1,11 +1,10 @@
 import globals from "globals";
+import { createDisableTypeCheckedConfig, maxLinesRuleOptions, typedLanguageOptions } from "@oryz/eslint-config";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 import pnpm from "eslint-plugin-pnpm";
 import * as jsoncParser from "jsonc-eslint-parser";
 import * as yamlParser from "yaml-eslint-parser";
-
-import { createDisableTypeCheckedConfig, maxLinesRuleOptions, typedLanguageOptions } from "./shared-candidates.mjs";
 
 const nodeTypeScriptFiles = [
   "*.ts",

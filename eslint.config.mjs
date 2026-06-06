@@ -1,10 +1,9 @@
 import prettierConfig from "eslint-config-prettier";
-import tseslint from "typescript-eslint";
+import { base, typed } from "@oryz/eslint-config";
 
 import { repoOverrideConfigs } from "./eslint/repo-overrides.mjs";
-import { sharedCandidateConfigs } from "./eslint/shared-candidates.mjs";
 
-export default tseslint.config(
+export default [
   {
     ignores: [
       "**/out/**",
@@ -17,7 +16,8 @@ export default tseslint.config(
       "**/*.tsbuildinfo"
     ]
   },
-  ...sharedCandidateConfigs,
+  ...base,
+  ...typed,
   ...repoOverrideConfigs,
   prettierConfig
-);
+];

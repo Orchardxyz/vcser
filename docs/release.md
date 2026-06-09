@@ -110,7 +110,7 @@ Use this flow for normal stable `core` and `cli` releases while the repository i
 4. Wait for the `Version Packages` workflow to create or update the `Version Packages` PR.
 5. Review the generated package versions and package-local changelogs in that PR.
 6. Merge the `Version Packages` PR when a maintainer decides to publish.
-7. The `Release` workflow publishes only after that `Version Packages` merge.
+7. Merging the `Version Packages` PR creates the committed package version bumps on `main` that the `Release` workflow detects and publishes.
 
 If `@vcser/core` changes, `@vcser/cli` may also receive a patch bump because internal dependency updates are configured with `updateInternalDependencies: "patch"`.
 
@@ -140,7 +140,7 @@ The automated release process has two workflows:
 - `Version Packages`
   Runs on pushes to `main` that are not already `Version Packages` merges. It uses `changesets/action` to create or update a `Version Packages` PR with version bumps and package-local changelogs.
 - `Release`
-  Runs on pushes to `main` and manual dispatch. Manual dispatch is dry-run only. Real publish jobs run only when the pushed commit is the `Version Packages` merge commit.
+  Runs on pushes to `main` and manual dispatch. Manual dispatch is dry-run only. Real publish jobs run only when a push to `main` produces committed package version bumps in the tracked release packages.
 
 The `Release` workflow has four jobs:
 

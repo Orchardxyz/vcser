@@ -19,7 +19,7 @@ Phase 2 adds branch-safe release automation:
 - `.github/workflows/version-packages.yml` creates or updates a `Version Packages` PR after changesets land on `main`
 - `.github/workflows/release.yml` resolves release metadata for pending plans and committed release bumps
 - npm publish runs through GitHub Actions OIDC provenance instead of a long-lived npm token
-- desktop builds are packaged on macOS, Windows, and Linux and uploaded as GitHub Release assets
+- desktop builds are packaged on macOS and Windows for every release and uploaded as GitHub Release assets
 - one GitHub Release is created for npm-only, desktop-only, and combined releases
 - branch rehearsals run as dry-runs and cannot publish
 
@@ -145,13 +145,13 @@ The automated release process has two workflows:
 The `Release` workflow has four jobs:
 
 - `resolve-release`
-  Produces `release_kind`, `should_publish_npm`, `should_publish_desktop`, `is_prerelease`, a release tag, metadata JSON, and a release notes markdown file.
+  Produces `release_kind`, `should_publish_npm`, `should_publish_desktop`, `should_build_desktop`, `is_prerelease`, a release tag, metadata JSON, and a release notes markdown file.
 - `publish-npm`
   Runs only for real releases on `main` when `@vcser/core` or `@vcser/cli` changed. It uses Node 24, upgrades npm to the latest CLI, verifies the npm Trusted Publishing baseline, installs dependencies, runs core and CLI typecheck plus build validation, then publishes with `changeset publish`, `id-token: write`, and `NPM_CONFIG_PROVENANCE=true`.
 - `publish-desktop`
-  Runs whenever `@vcser/desktop` changed, including branch dry-runs. It packages macOS, Windows, and Linux artifacts and uploads them as workflow artifacts. Signing and notarization are intentionally left as future slots.
+  Runs for every resolved release, including npm-only releases and branch dry-runs. It packages macOS and Windows artifacts and uploads them as workflow artifacts so each GitHub Release can carry fresh desktop installers even when `@vcser/desktop` itself is not version-bumped. Signing and notarization are intentionally left as future slots.
 - `create-github-release`
-  Runs only for real releases on `main` after publish/build jobs succeed. It creates one GitHub Release, marks prerelease versions as prereleases, and attaches desktop assets when present.
+  Runs only for real releases on `main` after publish/build jobs succeed. It creates one GitHub Release, marks prerelease versions as prereleases, and attaches any desktop assets built for that release.
 
 Manual workflow runs are dry-runs only. Branch runs can resolve metadata, build desktop packages, and generate notes, but they cannot publish npm packages or create GitHub Releases.
 

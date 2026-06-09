@@ -10,14 +10,14 @@ const releaseAssetsDir = env.RELEASE_ASSETS_DIR ?? "release-assets";
 const releaseTag = requireEnv("RELEASE_TAG");
 const releaseName = requireEnv("RELEASE_NAME");
 const shouldPublishNpm = parseBoolean(env.SHOULD_PUBLISH_NPM);
-const shouldPublishDesktop = parseBoolean(env.SHOULD_PUBLISH_DESKTOP);
+const shouldBuildDesktop = parseBoolean(env.SHOULD_BUILD_DESKTOP);
 const isPrerelease = parseBoolean(env.IS_PRERELEASE);
 const npmResult = env.NPM_RESULT ?? "skipped";
 const desktopResult = env.DESKTOP_RESULT ?? "skipped";
 const targetSha = env.GITHUB_SHA ?? "HEAD";
 const dryRun = parseBoolean(env.RELEASE_DRY_RUN);
 
-const desktopAssets = shouldPublishDesktop ? await listFiles(releaseAssetsDir) : [];
+const desktopAssets = shouldBuildDesktop ? await listFiles(releaseAssetsDir) : [];
 
 appendDesktopAssetList(desktopAssets);
 verifyReleasableAssets(desktopAssets);
@@ -74,7 +74,7 @@ function appendDesktopAssetList(assets) {
 
 function verifyReleasableAssets(assets) {
   const hasNpmRelease = shouldPublishNpm && npmResult === "success";
-  const hasDesktopAssets = shouldPublishDesktop && assets.length > 0;
+  const hasDesktopAssets = shouldBuildDesktop && assets.length > 0;
 
   if (!hasNpmRelease && !hasDesktopAssets) {
     console.error("No npm release or desktop assets are available for this release.");
@@ -89,7 +89,7 @@ function appendPartialReleaseStatus() {
     notes.push(`- npm publish result: ${npmResult}`);
   }
 
-  if (shouldPublishDesktop && desktopResult !== "success") {
+  if (shouldBuildDesktop && desktopResult !== "success") {
     notes.push(`- desktop publish result: ${desktopResult}`);
   }
 

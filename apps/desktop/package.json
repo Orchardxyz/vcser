@@ -5,7 +5,7 @@
   "description": "Desktop app to sync extensions and settings across VS Code-based editors",
   "license": "Apache-2.0",
   "type": "module",
-  "homepage": "https://github.com/Orchardxyz/vcser/tree/main/apps/desktop",
+  "homepage": "https://vcser.oryz.work/",
   "bugs": {
     "url": "https://github.com/Orchardxyz/vcser/issues"
   },

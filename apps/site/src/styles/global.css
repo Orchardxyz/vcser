@@ -122,9 +122,10 @@ main {
   letter-spacing: 0.01em;
 }
 
-.brand-mark img {
-  border-radius: 10px;
-  box-shadow: var(--shadow-xs);
+.brand-mark__word {
+  font-size: 1.4rem;
+  letter-spacing: 0.04em;
+  line-height: 1;
 }
 
 .header-actions {

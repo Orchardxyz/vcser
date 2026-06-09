@@ -65,7 +65,11 @@ rm -rf "$mac_tmp_dir"
 # Derive pure logo SVG (no background, no border, tight viewBox)
 logo_out="$workspace_root/assets/logo.svg"
 perl -0777 -ne '
-  my ($path) = /(<path[^>]+fill-rule[^>]*\/>)\s*<\/svg>/s;
-  print qq{<svg xmlns="http://www.w3.org/2000/svg" viewBox="21.412 14.86 85.176 98.28">\n$path\n</svg>\n} if $path;
+  my ($d, $fill) = /<path[^>]+fill-rule="evenodd"[^>]+d="([^"]+)"[^>]+fill="([^"]+)"[^>]*\/>/s;
+  my ($outer, $inner) = split /Z\s*(?=M)/, $d // "", 2;
+  if (defined $outer && defined $inner) {
+    $outer .= "Z";
+    print qq{<svg xmlns="http://www.w3.org/2000/svg" viewBox="21.412 14.86 85.176 98.28">\n<path d="$outer" fill="$fill"/>\n<path d="$inner" fill="#F5F5F7"/>\n</svg>\n};
+  }
 ' "$logo_svg" > "$logo_out"
 echo "Generated: $logo_out"

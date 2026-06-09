@@ -1,6 +1,6 @@
 {
   "name": "@vcser/desktop",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "Desktop app to sync extensions and settings across Visual Studio Code-based editors",
   "license": "Apache-2.0",

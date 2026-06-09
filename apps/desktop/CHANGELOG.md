@@ -1,5 +1,11 @@
 # @vcser/desktop
 
+## 1.0.1
+
+### Patch Changes
+
+- e804ecb: Use the full "Visual Studio Code" product name in user-facing labels and copy instead of abbreviated VS Code variants.
+
 ## 1.0.0
 
 ### Major Changes

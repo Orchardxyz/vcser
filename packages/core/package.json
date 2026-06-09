@@ -6,7 +6,7 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "homepage": "https://github.com/Orchardxyz/vcser/tree/main/packages/core",
+  "homepage": "https://vcser.oryz.work/",
   "bugs": {
     "url": "https://github.com/Orchardxyz/vcser/issues"
   },

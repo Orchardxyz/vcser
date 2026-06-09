@@ -1,6 +1,6 @@
 {
   "name": "@vcser/cli",
-  "version": "0.1.1-beta.8",
+  "version": "0.1.1-beta.9",
   "description": "CLI to sync local extensions across VS Code-based editors",
   "license": "Apache-2.0",
   "type": "module",

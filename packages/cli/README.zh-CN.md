@@ -8,7 +8,7 @@
   <a href="README.md">English</a> · <a href="README.zh-CN.md">简体中文</a>
 </p>
 
-用于在同一台机器上同步不同 VS Code 系编辑器扩展的 CLI。
+用于在同一台机器上同步不同 Visual Studio Code 系编辑器扩展的 CLI。
 
 `@vcser/cli` 是目前使用 `vcser` 的推荐方式。
 
@@ -29,7 +29,7 @@ vcser
 
 ## 能做什么
 
-- 检测受支持的 VS Code 系编辑器
+- 检测受支持的 Visual Studio Code 系编辑器
 - 比较本地扩展状态
 - 将扩展从一个编辑器同步到另一个编辑器
 - 在 CLI 中管理自定义编辑器

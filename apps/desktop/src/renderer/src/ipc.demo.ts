@@ -54,8 +54,8 @@ const builtInDemoEditors: ResolvedEditor[] = [
     source: EDITOR_SOURCE.DETECTED
   },
   {
-    name: "VS Code",
-    displayName: "VSCode",
+    name: "Visual Studio Code",
+    displayName: "Visual Studio Code",
     slug: "vscode",
     cli: "code",
     badgeColor: "sky",
@@ -105,7 +105,7 @@ const demoEditorExtensionsBySlug = new Map<string, EditorExtensionsResult>([
     "vscode",
     {
       editorSlug: "vscode",
-      editorName: "VSCode",
+      editorName: "Visual Studio Code",
       items: createDemoItems([
         { extensionId: "bradlc.vscode-tailwindcss", version: "0.14.25", disabled: true },
         { extensionId: "dbaeumer.vscode-eslint", version: "3.0.10", disabled: false },
@@ -313,80 +313,80 @@ const defaultResponses: Record<SupportedCommand, unknown> = {
     success: true
   } as EditorExtensionMutationResult,
   [SUPPORTED_COMMAND.COMPUTE_EXTENSION_DIFF]: {
-    editorNames: ["Cursor", "Windsurf", "VS Code"],
+    editorNames: ["Cursor", "Windsurf", "Visual Studio Code"],
     all: [
       {
         extensionId: "bradlc.vscode-tailwindcss",
-        presence: { Cursor: true, Windsurf: true, "VS Code": true },
-        disabled: { Cursor: false, Windsurf: false, "VS Code": true },
+        presence: { Cursor: true, Windsurf: true, "Visual Studio Code": true },
+        disabled: { Cursor: false, Windsurf: false, "Visual Studio Code": true },
         versions: {
           Cursor: "0.14.26",
           Windsurf: "0.14.26",
-          "VS Code": "0.14.25"
+          "Visual Studio Code": "0.14.25"
         },
         hasVersionMismatch: true
       },
       {
         extensionId: "dbaeumer.vscode-eslint",
-        presence: { Cursor: true, Windsurf: false, "VS Code": true },
-        disabled: { Cursor: true, Windsurf: false, "VS Code": false },
-        versions: { Cursor: "3.0.10", Windsurf: null, "VS Code": "3.0.10" },
+        presence: { Cursor: true, Windsurf: false, "Visual Studio Code": true },
+        disabled: { Cursor: true, Windsurf: false, "Visual Studio Code": false },
+        versions: { Cursor: "3.0.10", Windsurf: null, "Visual Studio Code": "3.0.10" },
         hasVersionMismatch: false
       },
       {
         extensionId: "github.copilot-chat",
-        presence: { Cursor: true, Windsurf: false, "VS Code": false },
-        disabled: { Cursor: false, Windsurf: false, "VS Code": false },
+        presence: { Cursor: true, Windsurf: false, "Visual Studio Code": false },
+        disabled: { Cursor: false, Windsurf: false, "Visual Studio Code": false },
         versions: {
           Cursor: "0.27.2025050801",
           Windsurf: null,
-          "VS Code": null
+          "Visual Studio Code": null
         },
         hasVersionMismatch: false
       },
       {
         extensionId: "ms-python.python",
-        presence: { Cursor: false, Windsurf: true, "VS Code": true },
-        disabled: { Cursor: false, Windsurf: false, "VS Code": false },
-        versions: { Cursor: null, Windsurf: "2026.4.1", "VS Code": "2026.4.1" },
+        presence: { Cursor: false, Windsurf: true, "Visual Studio Code": true },
+        disabled: { Cursor: false, Windsurf: false, "Visual Studio Code": false },
+        versions: { Cursor: null, Windsurf: "2026.4.1", "Visual Studio Code": "2026.4.1" },
         hasVersionMismatch: false
       }
     ],
     onlyDiffs: [
       {
         extensionId: "bradlc.vscode-tailwindcss",
-        presence: { Cursor: true, Windsurf: true, "VS Code": true },
-        disabled: { Cursor: false, Windsurf: false, "VS Code": true },
+        presence: { Cursor: true, Windsurf: true, "Visual Studio Code": true },
+        disabled: { Cursor: false, Windsurf: false, "Visual Studio Code": true },
         versions: {
           Cursor: "0.14.26",
           Windsurf: "0.14.26",
-          "VS Code": "0.14.25"
+          "Visual Studio Code": "0.14.25"
         },
         hasVersionMismatch: true
       },
       {
         extensionId: "dbaeumer.vscode-eslint",
-        presence: { Cursor: true, Windsurf: false, "VS Code": true },
-        disabled: { Cursor: true, Windsurf: false, "VS Code": false },
-        versions: { Cursor: "3.0.10", Windsurf: null, "VS Code": "3.0.10" },
+        presence: { Cursor: true, Windsurf: false, "Visual Studio Code": true },
+        disabled: { Cursor: true, Windsurf: false, "Visual Studio Code": false },
+        versions: { Cursor: "3.0.10", Windsurf: null, "Visual Studio Code": "3.0.10" },
         hasVersionMismatch: false
       },
       {
         extensionId: "github.copilot-chat",
-        presence: { Cursor: true, Windsurf: false, "VS Code": false },
-        disabled: { Cursor: false, Windsurf: false, "VS Code": false },
+        presence: { Cursor: true, Windsurf: false, "Visual Studio Code": false },
+        disabled: { Cursor: false, Windsurf: false, "Visual Studio Code": false },
         versions: {
           Cursor: "0.27.2025050801",
           Windsurf: null,
-          "VS Code": null
+          "Visual Studio Code": null
         },
         hasVersionMismatch: false
       },
       {
         extensionId: "ms-python.python",
-        presence: { Cursor: false, Windsurf: true, "VS Code": true },
-        disabled: { Cursor: false, Windsurf: false, "VS Code": false },
-        versions: { Cursor: null, Windsurf: "2026.4.1", "VS Code": "2026.4.1" },
+        presence: { Cursor: false, Windsurf: true, "Visual Studio Code": true },
+        disabled: { Cursor: false, Windsurf: false, "Visual Studio Code": false },
+        versions: { Cursor: null, Windsurf: "2026.4.1", "Visual Studio Code": "2026.4.1" },
         hasVersionMismatch: false
       }
     ]

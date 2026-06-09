@@ -38,7 +38,7 @@ export interface EditorRegistryEntry {
 export const SUPPORTED_EDITORS: ReadonlyDeep<EditorRegistryEntry[]> = [
   {
     slug: "vscode",
-    displayName: "VSCode",
+    displayName: "Visual Studio Code",
     cli: "code",
     badgeColor: "sky",
     macOSBundleName: "Visual Studio Code.app",

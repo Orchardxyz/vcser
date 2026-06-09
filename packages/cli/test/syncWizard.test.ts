@@ -67,8 +67,8 @@ vi.mock("ora", () => ({
 
 function createEditor(overrides: Partial<CliEditor>): CliEditor {
   return {
-    name: overrides.name ?? "Code",
-    displayName: overrides.displayName ?? "VS Code",
+    name: overrides.name ?? "Visual Studio Code",
+    displayName: overrides.displayName ?? "Visual Studio Code",
     slug: overrides.slug ?? "vscode",
     cli: overrides.cli ?? "code",
     badgeColor: overrides.badgeColor ?? "blue",
@@ -143,7 +143,7 @@ describe("runWizard settings follow-up", () => {
   beforeEach(() => {
     canRunCommandMock.mockResolvedValue(true);
     resolveCliEditorsMock.mockResolvedValue([
-      createEditor({ slug: "vscode", displayName: "VS Code", name: "Code" }),
+      createEditor({ slug: "vscode", displayName: "Visual Studio Code", name: "Visual Studio Code" }),
       createEditor({ slug: "cursor", displayName: "Cursor", name: "Cursor" })
     ]);
     listEditorExtensionsMock.mockReset();
@@ -353,7 +353,7 @@ describe("runWizard settings follow-up", () => {
     );
 
     resolveCliEditorsMock.mockResolvedValue([
-      createEditor({ slug: "vscode", displayName: "VS Code", name: "Code" }),
+      createEditor({ slug: "vscode", displayName: "Visual Studio Code", name: "Visual Studio Code" }),
       createEditor({ slug: "cursor", displayName: "Cursor", name: "Cursor", settingsExist: false })
     ]);
     listEditorExtensionsMock

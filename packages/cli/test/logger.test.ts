@@ -60,7 +60,7 @@ describe("inventorySummary", () => {
     const logger = createLogger({ colorEnabled: false, debugEnabled: false });
     expect(() =>
       logger.inventorySummary({
-        sourceLabel: "VSCode",
+        sourceLabel: "Visual Studio Code",
         sourceCount: 10,
         targetLabel: "Cursor",
         targetCount: 8,

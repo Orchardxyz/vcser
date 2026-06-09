@@ -1,6 +1,6 @@
 {
   "name": "@vcser/core",
-  "version": "0.1.1-beta.9",
+  "version": "1.0.0",
   "description": "Reusable runtime core for vcser editor detection, sync, and persistence",
   "license": "Apache-2.0",
   "type": "module",

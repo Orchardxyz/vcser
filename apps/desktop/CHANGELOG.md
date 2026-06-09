@@ -1,5 +1,23 @@
 # @vcser/desktop
 
+## 1.0.0
+
+### Major Changes
+
+- 05fa8cd: Graduate the desktop, CLI, and core packages from beta and prepare the first stable 1.0.0 release.
+
+### Patch Changes
+
+- 1090681: refactor(core): extract shared error utilities and replace magic error codes
+- bf182da: Move custom editor storage to a shared JSON file, add an explicit CLI migration for legacy Prisma rows, and stop requiring Prisma-native startup work in the CLI.
+- 7c55ce8: Disable electron-builder auto publishing and fix packaged desktop artifacts.
+- 2ed33f1: Fix desktop release packaging and allow GitHub Releases when another publish channel succeeds.
+- 5744bbe: fix(release): dispatch CI after Version Packages PR update
+- a90de06: Stabilize desktop release artifact packaging across Windows and supported desktop targets.
+- 69c8c21: Fix Windows installs by invoking the pnpm command shim from the core postinstall script.
+- e2ec94b: Fix Windows release installs by running the local Prisma CLI directly from core postinstall.
+- b0cf654: Fix Windows desktop packaging by generating Prisma assets from a Windows-safe postinstall path and publishing available desktop artifacts from partial matrix builds.
+
 ## 0.1.1-beta.7
 
 ### Patch Changes

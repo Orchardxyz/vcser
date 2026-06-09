@@ -8,6 +8,7 @@
     "@vcser/site": "0.0.0"
   },
   "changesets": [
+    "calm-forks-smile",
     "clever-insects-camp",
     "cli-editor-list-help",
     "core-pack-tsbuildinfo",

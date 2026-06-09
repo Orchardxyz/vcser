@@ -111,6 +111,7 @@ function buildMetadata({ mode, releases, pendingChangesets, pendingChangesWithou
   const shouldPublishNpm = npmReleases.length > 0;
   const shouldPublishDesktop = desktopReleases.length > 0;
   const releaseKind = shouldPublishDesktop ? (shouldPublishNpm ? "combined" : "desktop-only") : shouldPublishNpm ? "npm-only" : "none";
+  const shouldBuildDesktop = releaseKind !== "none";
   const isPrerelease = releases.some((release) => typeof release.newVersion === "string" && release.newVersion.includes("-"));
   const releaseTag = buildReleaseTag(releases);
   const releaseName = releaseKind === "none" ? "No release" : `vcser ${releaseTag}`;
@@ -125,6 +126,7 @@ function buildMetadata({ mode, releases, pendingChangesets, pendingChangesWithou
     packageNames,
     shouldPublishNpm,
     shouldPublishDesktop,
+    shouldBuildDesktop,
     isPrerelease: Boolean(prerelease) || isPrerelease,
     pendingChangesets,
     pendingChangesWithoutChangesets,
@@ -251,6 +253,7 @@ function writeGithubOutputs(outputPath, releaseMetadata) {
     package_names: releaseMetadata.packageNames.join(","),
     should_publish_npm: String(releaseMetadata.shouldPublishNpm),
     should_publish_desktop: String(releaseMetadata.shouldPublishDesktop),
+    should_build_desktop: String(releaseMetadata.shouldBuildDesktop),
     is_prerelease: String(releaseMetadata.isPrerelease),
     pending_changesets: String(releaseMetadata.pendingChangesets),
     pending_changes_without_changesets: String(releaseMetadata.pendingChangesWithoutChangesets)

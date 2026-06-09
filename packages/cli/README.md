@@ -8,7 +8,7 @@
   <a href="README.md">English</a> · <a href="README.zh-CN.md">简体中文</a>
 </p>
 
-CLI for syncing extensions across VS Code-based editors on the same machine.
+CLI for syncing extensions across Visual Studio Code-based editors on the same machine.
 
 `@vcser/cli` is the recommended way to use `vcser` today.
 
@@ -29,7 +29,7 @@ vcser
 
 ## What It Does
 
-- Detect supported VS Code-based editors
+- Detect supported Visual Studio Code-based editors
 - Compare local extension state
 - Sync extensions from one editor to another
 - Manage custom editors from the CLI

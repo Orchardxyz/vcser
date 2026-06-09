@@ -2,7 +2,7 @@
   "name": "@vcser/desktop",
   "version": "1.0.0",
   "private": true,
-  "description": "Desktop app to sync extensions and settings across VS Code-based editors",
+  "description": "Desktop app to sync extensions and settings across Visual Studio Code-based editors",
   "license": "Apache-2.0",
   "type": "module",
   "homepage": "https://vcser.oryz.work/",

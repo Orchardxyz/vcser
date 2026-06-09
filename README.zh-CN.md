@@ -8,7 +8,7 @@
   <a href="README.md">English</a> · <a href="README.zh-CN.md">简体中文</a>
 </p>
 
-`vcser` 用来在同一台机器上同步不同 VS Code 系编辑器里的扩展。
+`vcser` 用来在同一台机器上同步不同 Visual Studio Code 系编辑器里的扩展。
 
 当前推荐的使用方式是 CLI：更直接、更轻量，也更适合快速把一个编辑器的扩展状态同步到另一个编辑器。
 
@@ -16,7 +16,7 @@
 
 ## 为什么使用 vcser
 
-- 在本地同步不同 VS Code 系编辑器之间的扩展
+- 在本地同步不同 Visual Studio Code 系编辑器之间的扩展
 - 用交互式 CLI 保持流程简单直接
 - 基于共享 core 构建，后续可以支持不止一种使用方式
 

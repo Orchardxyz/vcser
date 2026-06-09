@@ -8,7 +8,7 @@
   <a href="README.md">English</a> · <a href="README.zh-CN.md">简体中文</a>
 </p>
 
-`vcser` helps you sync extensions across VS Code-based editors on the same machine.
+`vcser` helps you sync extensions across Visual Studio Code-based editors on the same machine.
 
 The main experience is the CLI: fast, local, and focused on getting one editor aligned with another without extra setup.
 
@@ -16,7 +16,7 @@ The main experience is the CLI: fast, local, and focused on getting one editor a
 
 ## Why vcser
 
-- Sync extensions between VS Code-based editors locally
+- Sync extensions between Visual Studio Code-based editors locally
 - Keep the workflow simple with an interactive CLI
 - Build on a shared core that can power more than one interface
 

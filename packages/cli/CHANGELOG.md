@@ -1,5 +1,11 @@
 # @vcser/cli
 
+## 1.0.2
+
+### Patch Changes
+
+- b3189ed: Fix the documented `npx` install command to use `@vcser/cli`, so npm users can launch the published CLI with the correct package name.
+
 ## 1.0.1
 
 ### Patch Changes

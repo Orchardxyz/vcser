@@ -621,7 +621,7 @@ main {
 
   .site-header__inner {
     min-height: 64px;
-    align-items: flex-start;
+    align-items: center;
     gap: 14px;
   }
 
@@ -632,7 +632,7 @@ main {
 
   .header-actions {
     gap: 12px;
-    align-self: flex-start;
+    align-self: center;
   }
 
   .hero-stack {

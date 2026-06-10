@@ -5,14 +5,15 @@ import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 
 const packageRoot = fileURLToPath(new URL("..", import.meta.url));
-const requireFromPackage = createRequire(new URL("../package.json", import.meta.url));
-const prismaCliPath = requireFromPackage.resolve("prisma/build/index.js");
 const workspacePrismaConfig = join(packageRoot, "..", "..", "prisma.config.ts");
 const schemaPath = join(packageRoot, "prisma", "schema.prisma");
 
 if (!existsSync(workspacePrismaConfig) || !existsSync(schemaPath)) {
   process.exit(0);
 }
+
+const requireFromPackage = createRequire(new URL("../package.json", import.meta.url));
+const prismaCliPath = requireFromPackage.resolve("prisma/build/index.js");
 
 const generateCommand = spawnSync(
   process.execPath,

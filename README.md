@@ -27,7 +27,7 @@ Requirements:
 - Node.js `>=22.13`
 
 ```bash
-npx vcser
+npx @vcser/cli
 ```
 
 Or install it globally:

@@ -17,7 +17,7 @@
 ## 安装
 
 ```bash
-npx vcser
+npx @vcser/cli
 ```
 
 或者全局安装：

@@ -1,5 +1,11 @@
 # @vcser/core
 
+## 1.0.2
+
+### Patch Changes
+
+- f986e67: Fix CLI package installs by skipping workspace-only Prisma generation during published core package installation.
+
 ## 1.0.1
 
 ### Patch Changes

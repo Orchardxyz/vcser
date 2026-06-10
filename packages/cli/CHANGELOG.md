@@ -1,5 +1,11 @@
 # @vcser/cli
 
+## 1.0.3
+
+### Patch Changes
+
+- 75e5402: Update the documented `npx` install command to `npx -y @vcser/cli` so npm users can run the CLI without the interactive install confirmation prompt.
+
 ## 1.0.2
 
 ### Patch Changes

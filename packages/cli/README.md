@@ -17,7 +17,7 @@ CLI for syncing extensions across Visual Studio Code-based editors on the same m
 ## Install
 
 ```bash
-npx vcser
+npx @vcser/cli
 ```
 
 Or install it globally:

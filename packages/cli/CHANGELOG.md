@@ -1,5 +1,11 @@
 # @vcser/cli
 
+## 1.1.0
+
+### Minor Changes
+
+- 979bbe9: Add a lightweight CLI i18n layer with localized help text, prompts, summaries, and migration messages.
+
 ## 1.0.4
 
 ### Patch Changes

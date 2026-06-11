@@ -1,4 +1,5 @@
 import pc from "picocolors";
+import type { CliI18n } from "./locales/i18n";
 
 const BRAND_RGB = "76;29;149";
 const ASCII_BANNER_LINES = [
@@ -62,6 +63,7 @@ export interface CliLogger {
 interface CliLoggerOptions {
   colorEnabled: boolean;
   debugEnabled: boolean;
+  i18n: CliI18n;
   theme?: TerminalTheme;
 }
 
@@ -153,11 +155,13 @@ export class CliLoggerImpl implements CliLogger {
 
   private readonly colorEnabled: boolean;
   private readonly debugEnabled: boolean;
+  private readonly i18n: CliI18n;
   private readonly theme: TerminalTheme;
 
   public constructor(options: CliLoggerOptions) {
     this.colorEnabled = options.colorEnabled;
     this.debugEnabled = options.debugEnabled;
+    this.i18n = options.i18n;
     this.theme = resolveTerminalTheme(options.theme);
     this.palette = createPalette(options.colorEnabled);
   }
@@ -171,7 +175,7 @@ export class CliLoggerImpl implements CliLogger {
       this.line(this.colorizeBannerLine(line, index));
     }
 
-    this.line(this.palette.dim("local extension sync"));
+    this.line(this.palette.dim(this.i18n.t("common.bannerTagline")));
     this.line();
   }
 
@@ -195,10 +199,30 @@ export class CliLoggerImpl implements CliLogger {
    * Keep the inventory header compact because it appears between interactive steps.
    */
   public inventorySummary(params: Parameters<CliLogger["inventorySummary"]>[0]): void {
-    this.line(`${this.palette.cyan("Source")}: ${params.sourceLabel} (${params.sourceCount})`);
-    this.line(`${this.palette.cyan("Target")}: ${params.targetLabel} (${params.targetCount})`);
     this.line(
-      `${this.palette.cyan("Candidates")}: ${params.candidateCount} (${params.missingCount} missing, ${params.mismatchCount} version mismatch)`
+      this.palette.cyan(
+        this.i18n.t("logger.inventory.source", {
+          label: params.sourceLabel,
+          count: params.sourceCount
+        })
+      )
+    );
+    this.line(
+      this.palette.cyan(
+        this.i18n.t("logger.inventory.target", {
+          label: params.targetLabel,
+          count: params.targetCount
+        })
+      )
+    );
+    this.line(
+      this.palette.cyan(
+        this.i18n.t("logger.inventory.candidates", {
+          count: params.candidateCount,
+          missingCount: params.missingCount,
+          mismatchCount: params.mismatchCount
+        })
+      )
     );
     this.line();
   }
@@ -207,9 +231,9 @@ export class CliLoggerImpl implements CliLogger {
    * Print a terse batch summary first, then expand only the failed extension lines.
    */
   public syncSummary(params: Parameters<CliLogger["syncSummary"]>[0]): void {
-    this.line(`${this.palette.cyan("Selected")}: ${params.selectedCount}`);
-    this.line(`${this.palette.green("Succeeded")}: ${params.succeededCount}`);
-    this.line(`${params.failedCount > 0 ? this.palette.red("Failed") : this.palette.cyan("Failed")}: ${params.failedCount}`);
+    this.line(this.palette.cyan(this.i18n.t("logger.sync.selected", { count: params.selectedCount })));
+    this.line(this.palette.green(this.i18n.t("logger.sync.succeeded", { count: params.succeededCount })));
+    this.line((params.failedCount > 0 ? this.palette.red : this.palette.cyan)(this.i18n.t("logger.sync.failed", { count: params.failedCount })));
 
     if (params.failures.length === 0) {
       return;
@@ -258,10 +282,10 @@ export class CliLoggerImpl implements CliLogger {
   }
 
   public settingsSyncApplied(params: Parameters<CliLogger["settingsSyncApplied"]>[0]): void {
-    this.line(`Settings applied: ${params.appliedCount}`);
+    this.line(this.i18n.t("logger.settings.applied", { count: params.appliedCount }));
 
     if (params.backupPath) {
-      this.line(`Backup: ${params.backupPath}`);
+      this.line(this.i18n.t("logger.settings.backup", { path: params.backupPath }));
     }
   }
 

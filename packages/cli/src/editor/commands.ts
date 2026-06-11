@@ -12,6 +12,7 @@ import {
 } from "@vcser/core/customEditors";
 import type { CustomEditorInput, UpdateCustomEditorInput } from "@vcser/core/types";
 import type { CliLogger } from "../logger";
+import type { CliI18n } from "../locales/i18n";
 import { createPromptRunner, type PromptRunner } from "../prompt";
 import { pathExists, resolveCliEditors, type CliEditor } from "./resolution";
 
@@ -37,13 +38,13 @@ function normalizeFlagValue(value?: string): string | undefined {
   return normalized ? normalized : undefined;
 }
 
-function validateRequiredName(value: string): true | string {
+function validateRequiredName(value: string, i18n: CliI18n): true | string {
   const normalized = value.trim();
-  return normalized.length >= 2 ? true : "Name must be at least 2 characters.";
+  return normalized.length >= 2 ? true : i18n.t("editor.validate.nameMinLength");
 }
 
-function validateRequiredPath(value: string): true | string {
-  return value.trim().length > 0 ? true : "This path is required.";
+function validateRequiredPath(value: string, i18n: CliI18n): true | string {
+  return value.trim().length > 0 ? true : i18n.t("editor.validate.pathRequired");
 }
 
 function toConflictCandidates(editors: CliEditor[]): CustomEditorConflictCandidate[] {
@@ -57,32 +58,42 @@ function toConflictCandidates(editors: CliEditor[]): CustomEditorConflictCandida
   }));
 }
 
-export function printCustomEditorError(logger: CliLogger, error: unknown): void {
+export function printCustomEditorError(logger: CliLogger, error: unknown, i18n: CliI18n): void {
   if (!isCustomEditorStoreError(error)) {
-    const message = error instanceof Error ? error.message : "Unknown CLI error.";
+    const message = error instanceof Error ? error.message : i18n.t("common.unknownCliError");
     logger.error(logger.palette.red(message));
     return;
   }
 
   if (hasCustomEditorStoreErrorCode(error, CUSTOM_EDITOR_STORE_ERROR_CODE.NOT_FOUND)) {
-    logger.error(logger.palette.red("The custom editor could not be found."));
+    logger.error(logger.palette.red(i18n.t("editor.error.notFound")));
     return;
   }
 
   if (hasCustomEditorStoreErrorCode(error, CUSTOM_EDITOR_STORE_ERROR_CODE.ALREADY_EXISTS)) {
-    logger.error(logger.palette.red(`A matching editor configuration already exists for ${error.conflict?.editorName ?? "another editor"}.`));
+    logger.error(
+      logger.palette.red(
+        i18n.t("editor.error.alreadyExists", {
+          editorName: error.conflict?.editorName ?? i18n.t("editor.error.anotherEditor")
+        })
+      )
+    );
     return;
   }
 
   logger.error(logger.palette.red(error.message));
 }
 
-async function ensureSupportedAppPath(appPath: string): Promise<void> {
+async function ensureSupportedAppPath(appPath: string, i18n: CliI18n): Promise<void> {
   const exists = await pathExists(appPath);
   const appName = basename(appPath);
 
   if (!exists) {
-    throw new Error(`App path does not exist: ${appPath}`);
+    throw new Error(
+      i18n.t("editor.error.appPathNotFound", {
+        path: appPath
+      })
+    );
   }
 
   if (
@@ -91,43 +102,51 @@ async function ensureSupportedAppPath(appPath: string): Promise<void> {
       suggestedName: appName
     })
   ) {
-    throw new Error(`${appName} is a helper or URL-handler app and cannot be added as an editor.`);
+    throw new Error(
+      i18n.t("editor.error.unsupportedApp", {
+        appName
+      })
+    );
   }
 }
 
-async function promptForCustomEditorFields(initialValues: Partial<CustomEditorInput>, prompt: PromptRunner): Promise<CustomEditorInput> {
+async function promptForCustomEditorFields(
+  initialValues: Partial<CustomEditorInput>,
+  prompt: PromptRunner,
+  i18n: CliI18n
+): Promise<CustomEditorInput> {
   const answers = await prompt<CustomEditorPromptAnswers>({
     type: "text",
     name: "name",
-    message: "Editor name",
+    message: i18n.t("editor.prompt.name"),
     initial: initialValues.name ?? "",
-    validate: validateRequiredName
+    validate: (value: string) => validateRequiredName(value, i18n)
   });
   const cliAnswer = await prompt<CustomEditorPromptAnswers>({
     type: "text",
     name: "cli",
-    message: "CLI command (optional)",
+    message: i18n.t("editor.prompt.cli"),
     initial: initialValues.cli ?? ""
   });
   const appPathAnswer = await prompt<CustomEditorPromptAnswers>({
     type: "text",
     name: "appPath",
-    message: "App path (optional)",
+    message: i18n.t("editor.prompt.appPath"),
     initial: initialValues.appPath ?? ""
   });
   const extensionsPathAnswer = await prompt<CustomEditorPromptAnswers>({
     type: "text",
     name: "extensionsPath",
-    message: "Extensions path",
+    message: i18n.t("editor.prompt.extensionsPath"),
     initial: initialValues.extensionsPath ?? "",
-    validate: validateRequiredPath
+    validate: (value: string) => validateRequiredPath(value, i18n)
   });
   const settingsPathAnswer = await prompt<CustomEditorPromptAnswers>({
     type: "text",
     name: "settingsPath",
-    message: "Settings path",
+    message: i18n.t("editor.prompt.settingsPath"),
     initial: initialValues.settingsPath ?? "",
-    validate: validateRequiredPath
+    validate: (value: string) => validateRequiredPath(value, i18n)
   });
 
   return {
@@ -162,22 +181,23 @@ function finalizeCustomEditorInput(input: Partial<CustomEditorInput>): CustomEdi
 async function collectCustomEditorInput(
   options: CliCommandOptions,
   prompt: PromptRunner,
+  i18n: CliI18n,
   fallback?: Partial<CustomEditorInput>
 ): Promise<CustomEditorInput> {
   const merged = mergeCustomEditorOptions(options, fallback);
   const isComplete = Boolean(merged.name && merged.extensionsPath && merged.settingsPath);
-  const finalInput = isComplete ? finalizeCustomEditorInput(merged) : await promptForCustomEditorFields(merged, prompt);
+  const finalInput = isComplete ? finalizeCustomEditorInput(merged) : await promptForCustomEditorFields(merged, prompt, i18n);
 
   if (normalizeFlagValue(finalInput.appPath)) {
-    await ensureSupportedAppPath(finalInput.appPath ?? "");
+    await ensureSupportedAppPath(finalInput.appPath ?? "", i18n);
   }
 
   return finalInput;
 }
 
-function printEditorsList(editors: CliEditor[], logger: CliLogger): void {
+function printEditorsList(editors: CliEditor[], logger: CliLogger, i18n: CliI18n): void {
   if (editors.length === 0) {
-    logger.line(logger.palette.yellow("No editors detected."));
+    logger.line(logger.palette.yellow(i18n.t("editor.list.empty")));
     return;
   }
 
@@ -226,11 +246,11 @@ function printEditorsList(editors: CliEditor[], logger: CliLogger): void {
   for (const [index, editor] of editors.entries()) {
     logger.line(logger.palette.brand(editor.displayName));
     logger.line(`  ${logger.palette.dim(editor.slug)}`);
-    printDetail("Src", editor.source);
-    printDetail("CLI", editor.cli || "-");
-    printDetail("App", editor.appPath ?? "-");
-    printDetail("Ext", editor.extensionsPath);
-    printDetail("Set", editor.settingsPath);
+    printDetail(i18n.t("editor.detail.source"), editor.source);
+    printDetail(i18n.t("editor.detail.cli"), editor.cli || "-");
+    printDetail(i18n.t("editor.detail.app"), editor.appPath ?? "-");
+    printDetail(i18n.t("editor.detail.extensions"), editor.extensionsPath);
+    printDetail(i18n.t("editor.detail.settings"), editor.settingsPath);
 
     if (index < editors.length - 1) {
       logger.line(logger.palette.dim("  " + "·".repeat(Math.min(detailWidth, 36))));
@@ -239,35 +259,42 @@ function printEditorsList(editors: CliEditor[], logger: CliLogger): void {
   }
 }
 
-export async function runEditorList(logger: CliLogger): Promise<number> {
+export async function runEditorList(logger: CliLogger, i18n: CliI18n): Promise<number> {
   const editors = await resolveCliEditors(logger);
-  printEditorsList(editors, logger);
+  printEditorsList(editors, logger, i18n);
   return 0;
 }
 
-export async function runEditorAdd(options: CliCommandOptions, logger: CliLogger): Promise<number> {
+export async function runEditorAdd(options: CliCommandOptions, logger: CliLogger, i18n: CliI18n): Promise<number> {
   const prompt = createPromptRunner();
-  const input = await collectCustomEditorInput(options, prompt);
+  const input = await collectCustomEditorInput(options, prompt, i18n);
   const editors = await resolveCliEditors(logger);
   const created = await appendCustomEditor(input, {
     reservedEditors: toConflictCandidates(editors),
     reservedSlugs: editors.map((editor) => editor.slug)
   });
 
-  logger.line(logger.palette.green(`Saved custom editor: ${created.displayName} (${created.slug})`));
+  logger.line(
+    logger.palette.green(
+      i18n.t("editor.saved", {
+        displayName: created.displayName,
+        slug: created.slug
+      })
+    )
+  );
   return 0;
 }
 
-export async function runEditorUpdate(identifier: string, options: CliCommandOptions, logger: CliLogger): Promise<number> {
+export async function runEditorUpdate(identifier: string, options: CliCommandOptions, logger: CliLogger, i18n: CliI18n): Promise<number> {
   const current = await findCustomEditorByIdOrSlug(identifier);
 
   if (!current) {
-    logger.error(logger.palette.red("The custom editor could not be found."));
+    logger.error(logger.palette.red(i18n.t("editor.error.notFound")));
     return 1;
   }
 
   const prompt = createPromptRunner();
-  const input = await collectCustomEditorInput(options, prompt, {
+  const input = await collectCustomEditorInput(options, prompt, i18n, {
     name: current.displayName,
     cli: current.cli ?? "",
     appPath: current.appPath ?? "",
@@ -283,15 +310,22 @@ export async function runEditorUpdate(identifier: string, options: CliCommandOpt
     reservedEditors: toConflictCandidates(editors)
   });
 
-  logger.line(logger.palette.green(`Updated custom editor: ${updated.displayName} (${updated.slug})`));
+  logger.line(
+    logger.palette.green(
+      i18n.t("editor.updated", {
+        displayName: updated.displayName,
+        slug: updated.slug
+      })
+    )
+  );
   return 0;
 }
 
-export async function runEditorRemove(identifier: string, options: CliCommandOptions, logger: CliLogger): Promise<number> {
+export async function runEditorRemove(identifier: string, options: CliCommandOptions, logger: CliLogger, i18n: CliI18n): Promise<number> {
   const current = await findCustomEditorByIdOrSlug(identifier);
 
   if (!current) {
-    logger.error(logger.palette.red("The custom editor could not be found."));
+    logger.error(logger.palette.red(i18n.t("editor.error.notFound")));
     return 1;
   }
 
@@ -301,16 +335,24 @@ export async function runEditorRemove(identifier: string, options: CliCommandOpt
       type: "confirm",
       name: "confirmed",
       initial: false,
-      message: `Remove ${current.displayName}?`
+      message: i18n.t("editor.confirmRemove", {
+        displayName: current.displayName
+      })
     });
 
     if (!answer.confirmed) {
-      logger.line(logger.palette.yellow("Cancelled."));
+      logger.line(logger.palette.yellow(i18n.t("common.cancelled")));
       return 0;
     }
   }
 
   await removeCustomEditor(current.id);
-  logger.line(logger.palette.green(`Removed custom editor: ${current.displayName}`));
+  logger.line(
+    logger.palette.green(
+      i18n.t("editor.removed", {
+        displayName: current.displayName
+      })
+    )
+  );
   return 0;
 }

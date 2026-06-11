@@ -1,6 +1,7 @@
 import { cac } from "cac";
 import { isCustomEditorStoreError } from "@vcser/core/customEditors";
 import type { CliCommandOptions } from "./editor/commands";
+import { createCliI18n, resolveCliLocale } from "./locales/i18n";
 import { CLI_EDITOR_ACTION, CLI_MIGRATION_TARGET, CLI_SCOPE } from "./commandConstants";
 import { createLogger } from "./logger";
 import { PromptCancelledError } from "./prompt";
@@ -11,6 +12,7 @@ interface CliOptions {
   color?: boolean;
   debug?: boolean;
   help?: boolean;
+  locale?: string;
   version?: boolean;
   yes?: boolean;
   [key: string]: unknown;
@@ -39,7 +41,8 @@ async function runWithCliErrorHandling(
   task: () => Promise<number>,
   onCancelled: () => void,
   onStoreError: (error: unknown) => void,
-  onUnknownError: (message: string) => void
+  onUnknownError: (message: string) => void,
+  unknownErrorMessage: string
 ): Promise<number> {
   try {
     return await task();
@@ -54,24 +57,24 @@ async function runWithCliErrorHandling(
       return 1;
     }
 
-    const message = error instanceof Error ? error.message : "Unknown CLI error.";
+    const message = error instanceof Error ? error.message : unknownErrorMessage;
     onUnknownError(message);
     return 1;
   }
 }
 
-function registerCommands(cli: ReturnType<typeof cac>): void {
-  cli.command(CLI_SCOPE.SYNC, "Start the interactive extension sync wizard");
-  cli.command(CLI_SCOPE.RESET, "Reset local vcser state");
-  cli.command(`${CLI_SCOPE.MIGRATE} <target>`, "Run one-off vcser data migrations");
+function registerCommands(cli: ReturnType<typeof cac>, i18n: ReturnType<typeof createCliI18n>): void {
+  cli.command(CLI_SCOPE.SYNC, i18n.t("cli.command.syncDescription"));
+  cli.command(CLI_SCOPE.RESET, i18n.t("cli.command.resetDescription"));
+  cli.command(`${CLI_SCOPE.MIGRATE} <target>`, i18n.t("cli.command.migrateDescription"));
 
   cli
-    .command(`${CLI_SCOPE.EDITOR} <action> [identifier]`, "Manage detected and custom editors")
-    .option("--name <name>", "Editor display name")
-    .option("--cli <command>", "Editor CLI command")
-    .option("--app-path <path>", "Editor application path")
-    .option("--extensions-path <path>", "Editor extensions directory")
-    .option("--settings-path <path>", "Editor settings file");
+    .command(`${CLI_SCOPE.EDITOR} <action> [identifier]`, i18n.t("cli.command.editorDescription"))
+    .option("--name <name>", i18n.t("cli.option.editorName"))
+    .option("--cli <command>", i18n.t("cli.option.editorCli"))
+    .option("--app-path <path>", i18n.t("cli.option.editorAppPath"))
+    .option("--extensions-path <path>", i18n.t("cli.option.editorExtensionsPath"))
+    .option("--settings-path <path>", i18n.t("cli.option.editorSettingsPath"));
 
   cli.example((name) => `  ${name} ${CLI_SCOPE.EDITOR} ${CLI_EDITOR_ACTION.LIST}`);
   cli.example((name) => `  ${name} ${CLI_SCOPE.EDITOR} ${CLI_EDITOR_ACTION.ADD}`);
@@ -86,21 +89,24 @@ function resolveCommandArgs(cli: ReturnType<typeof cac>, args: readonly string[]
 
 export async function runCli(argv = process.argv): Promise<number> {
   const normalizedArgv = normalizeArgv(argv);
+  const i18n = createCliI18n(resolveCliLocale({ argv: normalizedArgv }));
   const cli = cac("vcser");
   const version = readPackageVersion();
 
-  cli.option("--no-color", "Disable color output");
-  cli.option("--debug", "Print debug output");
-  cli.option("-y, --yes", "Skip confirmation prompts");
-  cli.option("-v, --version", "Display version number");
-  registerCommands(cli);
+  cli.option("--no-color", i18n.t("cli.option.disableColor"));
+  cli.option("--debug", i18n.t("cli.option.debug"));
+  cli.option("-y, --yes", i18n.t("cli.option.yes"));
+  cli.option("-v, --version", i18n.t("cli.option.version"));
+  cli.option("--locale <locale>", i18n.t("cli.option.locale"));
+  registerCommands(cli, i18n);
   cli.help();
 
   const parsed = cli.parse(normalizedArgv, { run: false });
   const options = normalizeCliOptions(parsed.options as CliOptions);
   const logger = createLogger({
     colorEnabled: options.color,
-    debugEnabled: options.debug
+    debugEnabled: options.debug,
+    i18n
   });
 
   if ((parsed.options as CliOptions).version) {
@@ -113,32 +119,41 @@ export async function runCli(argv = process.argv): Promise<number> {
   }
 
   const [scope, action, identifier] = resolveCommandArgs(cli, parsed.args);
-  const handleCancelled = () => logger.line(logger.palette.yellow("Cancelled."));
+  const handleCancelled = () => logger.line(logger.palette.yellow(i18n.t("common.cancelled")));
   const handleUnknownError = (message: string) => logger.error(logger.palette.red(message));
+  const unknownErrorMessage = i18n.t("common.unknownCliError");
 
   if (!scope || scope === CLI_SCOPE.SYNC) {
     const { runWizard } = await import("./sync/wizard");
     return runWithCliErrorHandling(
-      () => runWizard(logger),
+      () => runWizard(logger, i18n),
       handleCancelled,
       (error) => handleUnknownError(String(error)),
-      handleUnknownError
+      handleUnknownError,
+      unknownErrorMessage
     );
   }
 
   if (scope === CLI_SCOPE.RESET) {
     const { runResetCommand } = await import("./maintenance/reset");
     return runWithCliErrorHandling(
-      () => runResetCommand({ yes: Boolean((parsed.options as CliOptions).yes) }, logger),
+      () => runResetCommand({ yes: Boolean((parsed.options as CliOptions).yes) }, logger, i18n),
       handleCancelled,
       (error) => handleUnknownError(String(error)),
-      handleUnknownError
+      handleUnknownError,
+      unknownErrorMessage
     );
   }
 
   if (scope === CLI_SCOPE.MIGRATE) {
     if (action !== CLI_MIGRATION_TARGET.CUSTOM_EDITORS) {
-      logger.error(logger.palette.red(`Unknown command: ${parsed.args.join(" ")}`));
+      logger.error(
+        logger.palette.red(
+          i18n.t("cli.unknownCommand", {
+            command: parsed.args.join(" ")
+          })
+        )
+      );
       logger.line();
       cli.outputHelp();
       return 1;
@@ -146,51 +161,78 @@ export async function runCli(argv = process.argv): Promise<number> {
 
     const { runMigrateCustomEditorsCommand } = await import("./maintenance/migrateCustomEditors");
     return runWithCliErrorHandling(
-      () => runMigrateCustomEditorsCommand(logger),
+      () => runMigrateCustomEditorsCommand(logger, i18n),
       handleCancelled,
       (error) => handleUnknownError(error instanceof Error ? error.message : String(error)),
-      handleUnknownError
+      handleUnknownError,
+      unknownErrorMessage
     );
   }
 
   const editorCommands = await import("./editor/commands");
   const commandOptions = parsed.options as CliCommandOptions;
-  const handleStoreError = (error: unknown) => editorCommands.printCustomEditorError(logger, error);
+  const handleStoreError = (error: unknown) => editorCommands.printCustomEditorError(logger, error, i18n);
 
   if (scope !== CLI_SCOPE.EDITOR) {
-    logger.error(logger.palette.red(`Unknown command: ${parsed.args.join(" ")}`));
+    logger.error(
+      logger.palette.red(
+        i18n.t("cli.unknownCommand", {
+          command: parsed.args.join(" ")
+        })
+      )
+    );
     logger.line();
     cli.outputHelp();
     return 1;
   }
 
   if (action === CLI_EDITOR_ACTION.LIST) {
-    return runWithCliErrorHandling(() => editorCommands.runEditorList(logger), handleCancelled, handleStoreError, handleUnknownError);
+    return runWithCliErrorHandling(
+      () => editorCommands.runEditorList(logger, i18n),
+      handleCancelled,
+      handleStoreError,
+      handleUnknownError,
+      unknownErrorMessage
+    );
   }
 
   if (action === CLI_EDITOR_ACTION.ADD) {
-    return runWithCliErrorHandling(() => editorCommands.runEditorAdd(commandOptions, logger), handleCancelled, handleStoreError, handleUnknownError);
+    return runWithCliErrorHandling(
+      () => editorCommands.runEditorAdd(commandOptions, logger, i18n),
+      handleCancelled,
+      handleStoreError,
+      handleUnknownError,
+      unknownErrorMessage
+    );
   }
 
   if (action === CLI_EDITOR_ACTION.UPDATE && identifier) {
     return runWithCliErrorHandling(
-      () => editorCommands.runEditorUpdate(identifier, commandOptions, logger),
+      () => editorCommands.runEditorUpdate(identifier, commandOptions, logger, i18n),
       handleCancelled,
       handleStoreError,
-      handleUnknownError
+      handleUnknownError,
+      unknownErrorMessage
     );
   }
 
   if (action === CLI_EDITOR_ACTION.REMOVE && identifier) {
     return runWithCliErrorHandling(
-      () => editorCommands.runEditorRemove(identifier, commandOptions, logger),
+      () => editorCommands.runEditorRemove(identifier, commandOptions, logger, i18n),
       handleCancelled,
       handleStoreError,
-      handleUnknownError
+      handleUnknownError,
+      unknownErrorMessage
     );
   }
 
-  logger.error(logger.palette.red(`Unknown command: ${parsed.args.join(" ")}`));
+  logger.error(
+    logger.palette.red(
+      i18n.t("cli.unknownCommand", {
+        command: parsed.args.join(" ")
+      })
+    )
+  );
   logger.line();
   cli.outputHelp();
   return 1;

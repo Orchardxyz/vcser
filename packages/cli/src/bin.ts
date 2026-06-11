@@ -1,4 +1,5 @@
 import { CliLoggerImpl } from "./logger";
+import { createCliI18n, resolveCliLocale } from "./locales/i18n";
 
 declare const __CLI_VERSION__: string;
 
@@ -8,11 +9,13 @@ function shouldPrintVersion(argv: string[]): boolean {
 
 async function main(): Promise<void> {
   const argv = process.argv.slice(2);
+  const i18n = createCliI18n(resolveCliLocale({ argv: process.argv }));
 
   if (shouldPrintVersion(argv)) {
     const logger = new CliLoggerImpl({
       colorEnabled: true,
-      debugEnabled: false
+      debugEnabled: false,
+      i18n
     });
     logger.line(__CLI_VERSION__);
     return;
@@ -23,7 +26,8 @@ async function main(): Promise<void> {
 }
 
 main().catch((error: unknown) => {
-  const message = error instanceof Error ? error.message : "Unknown CLI error.";
+  const i18n = createCliI18n(resolveCliLocale({ argv: process.argv }));
+  const message = error instanceof Error ? error.message : i18n.t("common.unknownCliError");
   CliLoggerImpl.writeErrorLine(message);
   process.exitCode = 1;
 });

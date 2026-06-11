@@ -8,19 +8,22 @@ import {
   syncSettingsValues
 } from "@vcser/core/editors/settings";
 import type { EditorExtensionItem, SettingsKeyDiff } from "@vcser/core/types";
+import type { CliI18n } from "../locales/i18n";
 import type { CliLogger, CliTableColumn } from "../logger";
 import type { CliEditor } from "../editor/resolution";
 import type { PromptRunner } from "../prompt";
 
-const SETTINGS_TABLE_COLUMNS = [
-  { key: "sourceExtension", label: "Source extension", maxWidth: 28 },
-  { key: "targetExtension", label: "Target extension", maxWidth: 28 },
-  { key: "namespace", label: "Namespace", maxWidth: 16 },
-  { key: "key", label: "Key", maxWidth: 36 },
-  { key: "change", label: "Change", maxWidth: 8 },
-  { key: "sourceValue", label: "Source value", maxWidth: 24 },
-  { key: "targetValue", label: "Target value", maxWidth: 24 }
-] as const satisfies readonly CliTableColumn[];
+function createSettingsTableColumns(i18n: CliI18n): readonly CliTableColumn[] {
+  return [
+    { key: "sourceExtension", label: i18n.t("settings.column.sourceExtension"), maxWidth: 28 },
+    { key: "targetExtension", label: i18n.t("settings.column.targetExtension"), maxWidth: 28 },
+    { key: "namespace", label: i18n.t("settings.column.namespace"), maxWidth: 16 },
+    { key: "key", label: i18n.t("settings.column.key"), maxWidth: 36 },
+    { key: "change", label: i18n.t("settings.column.change"), maxWidth: 8 },
+    { key: "sourceValue", label: i18n.t("settings.column.sourceValue"), maxWidth: 24 },
+    { key: "targetValue", label: i18n.t("settings.column.targetValue"), maxWidth: 24 }
+  ] as const satisfies readonly CliTableColumn[];
+}
 
 function formatVersion(version: string | null): string {
   return version ?? "unknown";
@@ -47,9 +50,9 @@ function formatSourceExtensionLabel(extensionId: string, item?: EditorExtensionI
   return `${extensionId}@${formatVersion(item?.version ?? null)}`;
 }
 
-function formatTargetExtensionLabel(extensionId: string, item?: EditorExtensionItem): string {
+function formatTargetExtensionLabel(extensionId: string, item: EditorExtensionItem | undefined, i18n: CliI18n): string {
   if (!item) {
-    return "not installed";
+    return i18n.t("settings.targetNotInstalled");
   }
 
   return `${extensionId}@${formatVersion(item.version)}`;
@@ -59,6 +62,7 @@ function createSettingsDiffRows(params: {
   diffs: readonly SettingsKeyDiff[];
   sourceItems: readonly EditorExtensionItem[];
   targetItems: readonly EditorExtensionItem[];
+  i18n: CliI18n;
   namespaceToExtension: ReadonlyMap<string, string>;
 }): Record<string, string>[] {
   const sourceById = new Map(params.sourceItems.map((item) => [item.extensionId, item]));
@@ -69,7 +73,7 @@ function createSettingsDiffRows(params: {
 
     return {
       sourceExtension: formatSourceExtensionLabel(extensionId, sourceById.get(extensionId)),
-      targetExtension: formatTargetExtensionLabel(extensionId, targetById.get(extensionId)),
+      targetExtension: formatTargetExtensionLabel(extensionId, targetById.get(extensionId), params.i18n),
       namespace: namespaceOf(diff.key),
       key: diff.key,
       change: diff.changeType,
@@ -79,8 +83,14 @@ function createSettingsDiffRows(params: {
   });
 }
 
-function logSettingsSkip(logger: CliLogger, message: string, details?: string): void {
-  logger.line(logger.palette.yellow(`Skipping settings sync: ${message}`));
+function logSettingsSkip(logger: CliLogger, i18n: CliI18n, message: string, details?: string): void {
+  logger.line(
+    logger.palette.yellow(
+      i18n.t("settings.skipPrefix", {
+        message
+      })
+    )
+  );
 
   if (details) {
     logger.debug(details);
@@ -88,6 +98,7 @@ function logSettingsSkip(logger: CliLogger, message: string, details?: string): 
 }
 
 export async function maybeSyncSettings(params: {
+  i18n: CliI18n;
   logger: CliLogger;
   prompt: PromptRunner;
   sourceEditor: CliEditor;
@@ -95,26 +106,40 @@ export async function maybeSyncSettings(params: {
   sourceItems: readonly EditorExtensionItem[];
   successfulExtensionIds: readonly string[];
 }): Promise<{ exitCode?: number }> {
-  const { logger, prompt, sourceEditor, targetEditor, sourceItems, successfulExtensionIds } = params;
+  const { i18n, logger, prompt, sourceEditor, targetEditor, sourceItems, successfulExtensionIds } = params;
 
   if (successfulExtensionIds.length === 0) {
     return {};
   }
 
   if (!sourceEditor.settingsPath || !targetEditor.settingsPath) {
-    logSettingsSkip(logger, "one of the selected editors does not expose a settings.json path.");
+    logSettingsSkip(logger, i18n, i18n.t("settings.skip.missingPath"));
     return {};
   }
 
   const sourceSettings = readSettingsJsonFile(sourceEditor.settingsPath);
   if (!sourceSettings.success) {
-    logSettingsSkip(logger, `source settings are unavailable for ${sourceEditor.displayName}.`, sourceSettings.error);
+    logSettingsSkip(
+      logger,
+      i18n,
+      i18n.t("settings.skip.sourceUnavailable", {
+        source: sourceEditor.displayName
+      }),
+      sourceSettings.error
+    );
     return {};
   }
 
   const targetSettings = readSettingsJsonFile(targetEditor.settingsPath, { missingAsEmpty: true });
   if (!targetSettings.success) {
-    logSettingsSkip(logger, `target settings could not be parsed for ${targetEditor.displayName}.`, targetSettings.error);
+    logSettingsSkip(
+      logger,
+      i18n,
+      i18n.t("settings.skip.targetParseFailed", {
+        target: targetEditor.displayName
+      }),
+      targetSettings.error
+    );
     return {};
   }
 
@@ -126,7 +151,14 @@ export async function maybeSyncSettings(params: {
       includeIcons: false
     });
   } catch (error) {
-    logSettingsSkip(logger, `target extension inventory could not be refreshed for ${targetEditor.displayName}.`, String(error));
+    logSettingsSkip(
+      logger,
+      i18n,
+      i18n.t("settings.skip.targetRefreshFailed", {
+        target: targetEditor.displayName
+      }),
+      String(error)
+    );
     return {};
   }
 
@@ -136,7 +168,7 @@ export async function maybeSyncSettings(params: {
   });
 
   if (namespaceToExtension.size === 0) {
-    logger.line(logger.palette.dim("No extension settings namespaces found for the synced extensions."));
+    logger.line(logger.palette.dim(i18n.t("settings.noNamespaces")));
     return {};
   }
 
@@ -149,16 +181,17 @@ export async function maybeSyncSettings(params: {
   );
 
   if (scopedDiffs.length === 0) {
-    logger.line(logger.palette.dim("No extension settings differences found for the synced extensions."));
+    logger.line(logger.palette.dim(i18n.t("settings.noDifferences")));
     return {};
   }
 
   logger.line();
-  logger.line(logger.palette.cyan("Settings values available to sync"));
+  logger.line(logger.palette.cyan(i18n.t("settings.availableToSync")));
   logger.table({
-    columns: SETTINGS_TABLE_COLUMNS,
+    columns: createSettingsTableColumns(i18n),
     rows: createSettingsDiffRows({
       diffs: scopedDiffs,
+      i18n,
       sourceItems,
       targetItems,
       namespaceToExtension
@@ -169,11 +202,14 @@ export async function maybeSyncSettings(params: {
     type: "confirm",
     name: "confirmed",
     initial: true,
-    message: `Sync these settings values from ${sourceEditor.displayName} to ${targetEditor.displayName}?`
+    message: i18n.t("settings.confirmSync", {
+      source: sourceEditor.displayName,
+      target: targetEditor.displayName
+    })
   });
 
   if (!confirmSettings.confirmed) {
-    logger.line("Settings sync skipped.");
+    logger.line(i18n.t("settings.syncSkipped"));
     return {};
   }
 
@@ -183,7 +219,7 @@ export async function maybeSyncSettings(params: {
   });
 
   if (!syncResult.success) {
-    logger.error(logger.palette.red(syncResult.error ?? "Failed to sync settings."));
+    logger.error(logger.palette.red(syncResult.error ?? i18n.t("settings.syncFailed")));
     return { exitCode: 1 };
   }
 

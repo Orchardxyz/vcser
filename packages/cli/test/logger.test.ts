@@ -1,15 +1,19 @@
 import { describe, expect, it, vi } from "vitest";
+import { APP_LOCALE } from "@vcser/core/i18n";
+import { createCliI18n } from "../src/locales/i18n";
 import { createLogger } from "../src/logger";
+
+const i18n = createCliI18n(APP_LOCALE.EN);
 
 describe("createLogger", () => {
   it("returns a CliLogger with palette", () => {
-    const logger = createLogger({ colorEnabled: true, debugEnabled: false });
+    const logger = createLogger({ colorEnabled: true, debugEnabled: false, i18n });
     expect(logger.palette).toBeDefined();
     expect(typeof logger.palette.brand).toBe("function");
   });
 
   it("returns identity formatters when color is disabled", () => {
-    const logger = createLogger({ colorEnabled: false, debugEnabled: false });
+    const logger = createLogger({ colorEnabled: false, debugEnabled: false, i18n });
     expect(logger.palette.brand("test")).toBe("test");
     expect(logger.palette.green("test")).toBe("test");
     expect(logger.palette.red("test")).toBe("test");
@@ -20,7 +24,7 @@ describe("createLogger", () => {
 
   it("line() outputs to stdout", () => {
     const spy = vi.spyOn(console, "log").mockImplementation(() => {});
-    const logger = createLogger({ colorEnabled: false, debugEnabled: false });
+    const logger = createLogger({ colorEnabled: false, debugEnabled: false, i18n });
     logger.line("hello");
     expect(spy).toHaveBeenCalledWith("hello");
     spy.mockRestore();
@@ -28,7 +32,7 @@ describe("createLogger", () => {
 
   it("line() with no argument outputs empty string", () => {
     const spy = vi.spyOn(console, "log").mockImplementation(() => {});
-    const logger = createLogger({ colorEnabled: false, debugEnabled: false });
+    const logger = createLogger({ colorEnabled: false, debugEnabled: false, i18n });
     logger.line();
     expect(spy).toHaveBeenCalledWith("");
     spy.mockRestore();
@@ -38,7 +42,7 @@ describe("createLogger", () => {
 describe("debug behavior", () => {
   it("does not output when debug is disabled", () => {
     const spy = vi.spyOn(console, "error").mockImplementation(() => {});
-    const logger = createLogger({ colorEnabled: false, debugEnabled: false });
+    const logger = createLogger({ colorEnabled: false, debugEnabled: false, i18n });
     logger.debug("should not appear");
     expect(spy).not.toHaveBeenCalled();
     spy.mockRestore();
@@ -46,7 +50,7 @@ describe("debug behavior", () => {
 
   it("outputs to stderr when debug is enabled", () => {
     const spy = vi.spyOn(console, "error").mockImplementation(() => {});
-    const logger = createLogger({ colorEnabled: false, debugEnabled: true });
+    const logger = createLogger({ colorEnabled: false, debugEnabled: true, i18n });
     logger.debug("diagnostic message");
     expect(spy).toHaveBeenCalledTimes(1);
     expect(spy.mock.calls[0]?.[0]).toContain("diagnostic message");
@@ -57,7 +61,7 @@ describe("debug behavior", () => {
 describe("inventorySummary", () => {
   it("does not throw", () => {
     const spy = vi.spyOn(console, "log").mockImplementation(() => {});
-    const logger = createLogger({ colorEnabled: false, debugEnabled: false });
+    const logger = createLogger({ colorEnabled: false, debugEnabled: false, i18n });
     expect(() =>
       logger.inventorySummary({
         sourceLabel: "Visual Studio Code",
@@ -76,7 +80,7 @@ describe("inventorySummary", () => {
 describe("syncSummary", () => {
   it("includes failed extension details", () => {
     const spy = vi.spyOn(console, "log").mockImplementation(() => {});
-    const logger = createLogger({ colorEnabled: false, debugEnabled: false });
+    const logger = createLogger({ colorEnabled: false, debugEnabled: false, i18n });
     logger.syncSummary({
       selectedCount: 5,
       succeededCount: 4,
@@ -91,7 +95,7 @@ describe("syncSummary", () => {
 
   it("renders a generic table with the provided columns and rows", () => {
     const spy = vi.spyOn(console, "log").mockImplementation(() => {});
-    const logger = createLogger({ colorEnabled: false, debugEnabled: false });
+    const logger = createLogger({ colorEnabled: false, debugEnabled: false, i18n });
 
     logger.table({
       columns: [

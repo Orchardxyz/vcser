@@ -18,6 +18,7 @@ import { hasErrorCode, NODE_ERROR_CODE } from "@vcser/core/errors";
 import type { CustomEditorRecord } from "@vcser/core/types";
 import { resolveDatabasePathFromUrl, resolveDatabaseUrl } from "@vcser/core/dataPaths";
 import type { CliLogger } from "../logger";
+import type { CliI18n } from "../locales/i18n";
 
 const execFilePromise = promisify(execFile);
 
@@ -101,7 +102,7 @@ async function runSqlite(databasePath: string, sql: string): Promise<string> {
   return stdout;
 }
 
-async function ensureSqlite3Available(): Promise<void> {
+async function ensureSqlite3Available(i18n: CliI18n): Promise<void> {
   try {
     await execFilePromise("sqlite3", ["-version"], {
       windowsHide: true,
@@ -109,7 +110,7 @@ async function ensureSqlite3Available(): Promise<void> {
     });
   } catch (error) {
     if (hasErrorCode(error, NODE_ERROR_CODE.ENOENT)) {
-      throw new Error("The sqlite3 command is required to migrate legacy custom editors.", { cause: error });
+      throw new Error(i18n.t("migrate.sqliteRequired"), { cause: error });
     }
 
     throw error;
@@ -174,18 +175,28 @@ async function cleanupLegacyCustomEditorTable(databasePath: string): Promise<voi
   await runSqlite(databasePath, 'DELETE FROM "CustomEditor";');
 }
 
-export async function runMigrateCustomEditorsCommand(logger: CliLogger): Promise<number> {
-  await ensureSqlite3Available();
+export async function runMigrateCustomEditorsCommand(logger: CliLogger, i18n: CliI18n): Promise<number> {
+  await ensureSqlite3Available(i18n);
 
   const databaseUrl = resolveDatabaseUrl();
   const databasePath = resolveDatabasePathFromUrl(databaseUrl);
 
   if (!databasePath) {
-    throw new Error(`Legacy custom editor migration only supports file-based SQLite databases. Current DATABASE_URL: ${databaseUrl}`);
+    throw new Error(
+      i18n.t("migrate.databaseUrlNotFileBased", {
+        databaseUrl
+      })
+    );
   }
 
   if (!(await hasLegacyCustomEditorTable(databasePath))) {
-    logger.line(logger.palette.yellow(`No legacy CustomEditor table found in ${databasePath}.`));
+    logger.line(
+      logger.palette.yellow(
+        i18n.t("migrate.noLegacyTable", {
+          path: databasePath
+        })
+      )
+    );
     return 0;
   }
 
@@ -227,22 +238,40 @@ export async function runMigrateCustomEditorsCommand(logger: CliLogger): Promise
   }
 
   if (importedCount === 0 && invalidCount > 0) {
-    throw new Error("Legacy custom editor migration found only invalid rows. The legacy table was left unchanged.");
+    throw new Error(i18n.t("migrate.onlyInvalidRows"));
   }
 
   await writeMergedCustomEditors(mergedEditors);
   await cleanupLegacyCustomEditorTable(databasePath);
 
-  logger.line(logger.palette.green(`Imported ${importedCount} legacy custom editor${importedCount === 1 ? "" : "s"}.`));
+  logger.line(logger.palette.green(i18n.t("migrate.imported", { count: importedCount })));
 
   if (duplicateCount > 0) {
-    logger.line(logger.palette.yellow(`Skipped ${duplicateCount} duplicate legacy record${duplicateCount === 1 ? "" : "s"}.`));
+    logger.line(
+      logger.palette.yellow(
+        i18n.t("migrate.skippedDuplicates", {
+          count: duplicateCount
+        })
+      )
+    );
   }
 
   if (invalidCount > 0) {
-    logger.line(logger.palette.yellow(`Skipped ${invalidCount} invalid legacy row${invalidCount === 1 ? "" : "s"}.`));
+    logger.line(
+      logger.palette.yellow(
+        i18n.t("migrate.skippedInvalid", {
+          count: invalidCount
+        })
+      )
+    );
   }
 
-  logger.line(logger.palette.green(`Cleaned legacy CustomEditor rows from ${databasePath}.`));
+  logger.line(
+    logger.palette.green(
+      i18n.t("migrate.cleaned", {
+        path: databasePath
+      })
+    )
+  );
   return 0;
 }

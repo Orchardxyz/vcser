@@ -2,9 +2,13 @@ import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, wr
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { CliLogger } from "../src/logger";
 import { resolveCustomEditorStorePath } from "@vcser/core/customEditors";
+import { APP_LOCALE } from "@vcser/core/i18n";
+import { createCliI18n } from "../src/locales/i18n";
+import type { CliLogger } from "../src/logger";
 import { runMigrateCustomEditorsCommand } from "../src/maintenance/migrateCustomEditors";
+
+const i18n = createCliI18n(APP_LOCALE.EN);
 
 const { execFileMock, execFilePromiseMock } = vi.hoisted(() => ({
   execFileMock: vi.fn(),
@@ -181,7 +185,7 @@ describe("runMigrateCustomEditorsCommand", () => {
     ]);
 
     const { logger, lines } = createTestLogger();
-    await expect(runMigrateCustomEditorsCommand(logger)).resolves.toBe(0);
+    await expect(runMigrateCustomEditorsCommand(logger, i18n)).resolves.toBe(0);
 
     const parsed = JSON.parse(readFileSync(storeFilePath, "utf8")) as { editors: Array<{ slug: string }> };
     expect(parsed.editors).toHaveLength(2);
@@ -194,7 +198,7 @@ describe("runMigrateCustomEditorsCommand", () => {
     queueExecResults([{ stdout: "3.45.0\n" }, { stdout: "" }]);
 
     const { logger, lines } = createTestLogger();
-    await expect(runMigrateCustomEditorsCommand(logger)).resolves.toBe(0);
+    await expect(runMigrateCustomEditorsCommand(logger, i18n)).resolves.toBe(0);
     expect(lines.some((line) => line.includes("No legacy CustomEditor table found"))).toBe(true);
     expect(execFilePromiseMock).toHaveBeenCalledTimes(2);
   });
@@ -205,7 +209,7 @@ describe("runMigrateCustomEditorsCommand", () => {
     queueExecResults([{ error }]);
 
     const { logger } = createTestLogger();
-    await expect(runMigrateCustomEditorsCommand(logger)).rejects.toThrow("sqlite3 command is required");
+    await expect(runMigrateCustomEditorsCommand(logger, i18n)).rejects.toThrow("sqlite3 command is required");
   });
 
   it("refuses to clean the legacy table when all legacy rows are invalid", async () => {
@@ -226,7 +230,7 @@ describe("runMigrateCustomEditorsCommand", () => {
     ]);
 
     const { logger } = createTestLogger();
-    await expect(runMigrateCustomEditorsCommand(logger)).rejects.toThrow("only invalid rows");
+    await expect(runMigrateCustomEditorsCommand(logger, i18n)).rejects.toThrow("only invalid rows");
     expect(execFilePromiseMock).toHaveBeenCalledTimes(3);
   });
 
@@ -254,7 +258,7 @@ describe("runMigrateCustomEditorsCommand", () => {
     ]);
 
     const { logger } = createTestLogger();
-    await expect(runMigrateCustomEditorsCommand(logger)).rejects.toThrow();
+    await expect(runMigrateCustomEditorsCommand(logger, i18n)).rejects.toThrow();
     expect(execFilePromiseMock).toHaveBeenCalledTimes(3);
     expect(readFileSync(storeFilePath, "utf8")).toBe(`${JSON.stringify({ version: 1, editors: [] }, null, 2)}\n`);
   });

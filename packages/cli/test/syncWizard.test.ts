@@ -1,8 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { APP_LOCALE } from "@vcser/core/i18n";
 import { APP_ICON_STATUS, CHANGE_TYPE, EDITOR_SOURCE, type SettingsKeyDiff } from "@vcser/core/types";
+import { createCliI18n } from "../src/locales/i18n";
 import type { CliLogger } from "../src/logger";
 import type { CliEditor } from "../src/editor/resolution";
 import { runWizard } from "../src/sync/wizard";
+
+const i18n = createCliI18n(APP_LOCALE.EN);
 
 const {
   canRunCommandMock,
@@ -184,7 +188,7 @@ describe("runWizard settings follow-up", () => {
     });
 
     const { logger, tables } = createTestLogger();
-    await expect(runWizard(logger)).resolves.toBe(1);
+    await expect(runWizard(logger, i18n)).resolves.toBe(1);
     expect(resolveNamespacesToExtensionsMock).not.toHaveBeenCalled();
     expect(syncSettingsValuesMock).not.toHaveBeenCalled();
     expect(tables).toEqual([]);
@@ -228,7 +232,7 @@ describe("runWizard settings follow-up", () => {
     filterSettingsDiffsByExtensionNamespacesMock.mockReturnValue([]);
 
     const { logger, lines } = createTestLogger();
-    await expect(runWizard(logger)).resolves.toBe(0);
+    await expect(runWizard(logger, i18n)).resolves.toBe(0);
     expect(lines).toContain("No extension settings differences found for the synced extensions.");
     expect(syncSettingsValuesMock).not.toHaveBeenCalled();
     expect(readSettingsJsonFileMock).toHaveBeenNthCalledWith(2, "/tmp/cursor/settings.json", { missingAsEmpty: true });
@@ -309,7 +313,7 @@ describe("runWizard settings follow-up", () => {
     );
 
     const { logger, tables } = createTestLogger();
-    await expect(runWizard(logger)).resolves.toBe(1);
+    await expect(runWizard(logger, i18n)).resolves.toBe(1);
     expect(resolveNamespacesToExtensionsMock).toHaveBeenCalledWith({
       extensionIds: ["ms-python.python"],
       extensionsPaths: ["/tmp/vscode/extensions", "/tmp/cursor/extensions"]
@@ -402,7 +406,7 @@ describe("runWizard settings follow-up", () => {
     });
 
     const { logger } = createTestLogger();
-    await expect(runWizard(logger)).resolves.toBe(0);
+    await expect(runWizard(logger, i18n)).resolves.toBe(0);
     expect(readSettingsJsonFileMock).toHaveBeenNthCalledWith(2, "/tmp/cursor/settings.json", { missingAsEmpty: true });
     expect(syncSettingsValuesMock).toHaveBeenCalledWith({
       targetSettingsPath: "/tmp/cursor/settings.json",

@@ -3,6 +3,7 @@ import { listEditorExtensions, syncExtensionLocal } from "@vcser/core/editors/ex
 import { RUNTIME_MESSAGE_KEY } from "@vcser/core/i18n";
 import type { EditorExtensionItem, SyncResult } from "@vcser/core/types";
 import ora from "ora";
+import type { CliI18n } from "../locales/i18n";
 import type { CliLogger } from "../logger";
 import { canRunCommand, resolveCliEditors, type CliEditor } from "../editor/resolution";
 import { createPromptRunner } from "../prompt";
@@ -23,11 +24,11 @@ function formatVersion(version: string | null): string {
   return version ?? "unknown";
 }
 
-function formatEditorDescription(editor: CliEditor): string {
+function formatEditorDescription(editor: CliEditor, i18n: CliI18n): string {
   const parts = [basename(editor.extensionsPath)];
 
   if (!editor.cliAvailable) {
-    parts.push("CLI unavailable, filesystem fallback only");
+    parts.push(i18n.t("wizard.editorDescription.cliUnavailable"));
   }
 
   return parts.join(" | ");
@@ -67,17 +68,23 @@ function buildSyncCandidates(sourceItems: EditorExtensionItem[], targetItems: Ed
   return candidates;
 }
 
-function formatCandidateDescription(candidate: SyncCandidate): string {
-  const parts = [candidate.status === "missing" ? "missing on target" : "version mismatch"];
-  parts.push(`source ${formatVersion(candidate.sourceVersion)}`);
-  parts.push(candidate.targetVersion ? `target ${candidate.targetVersion}` : "target not installed");
+function formatCandidateDescription(candidate: SyncCandidate, i18n: CliI18n): string {
+  const parts = [
+    candidate.status === "missing" ? i18n.t("wizard.candidateStatus.missingOnTarget") : i18n.t("wizard.candidateStatus.versionMismatch")
+  ];
+  parts.push(i18n.t("wizard.candidateStatus.sourceVersion", { version: formatVersion(candidate.sourceVersion) }));
+  parts.push(
+    candidate.targetVersion
+      ? i18n.t("wizard.candidateStatus.targetVersion", { version: candidate.targetVersion })
+      : i18n.t("wizard.candidateStatus.targetNotInstalled")
+  );
 
   if (candidate.sourceDisabled) {
-    parts.push("source disabled");
+    parts.push(i18n.t("wizard.candidateStatus.sourceDisabled"));
   }
 
   if (candidate.targetDisabled) {
-    parts.push("target disabled");
+    parts.push(i18n.t("wizard.candidateStatus.targetDisabled"));
   }
 
   return parts.join(" | ");
@@ -91,41 +98,41 @@ function filterCandidatesByMode(candidates: SyncCandidate[], mode: CandidateView
   return candidates.filter((candidate) => candidate.status === mode);
 }
 
-function formatCandidateModeLabel(mode: CandidateViewMode): string {
+function formatCandidateModeLabel(mode: CandidateViewMode, i18n: CliI18n): string {
   switch (mode) {
     case "missing":
-      return "missing";
+      return i18n.t("wizard.mode.missing");
     case "version-mismatch":
-      return "version mismatch";
+      return i18n.t("wizard.mode.versionMismatch");
     default:
-      return "all";
+      return i18n.t("wizard.mode.all");
   }
 }
 
-function formatSyncFailure(result: SyncResult): string {
+function formatSyncFailure(result: SyncResult, i18n: CliI18n): string {
   switch (result.errorKey) {
     case RUNTIME_MESSAGE_KEY.EXTENSION_NOT_FOUND_IN_SOURCE:
-      return "Extension was not found in the source editor.";
+      return i18n.t("wizard.syncFailure.extensionNotFoundInSource");
     case RUNTIME_MESSAGE_KEY.SOURCE_OR_TARGET_EDITOR_UNAVAILABLE:
-      return "Source or target editor is no longer available.";
+      return i18n.t("wizard.syncFailure.sourceOrTargetEditorUnavailable");
     case RUNTIME_MESSAGE_KEY.MISSING_EXTENSION_ID_OR_SOURCE_EDITOR:
-      return "Missing extension or source editor information.";
+      return i18n.t("wizard.syncFailure.missingExtensionIdOrSourceEditor");
     case RUNTIME_MESSAGE_KEY.UNSUPPORTED_SYNC_ACTION:
-      return "Unsupported sync action.";
+      return i18n.t("wizard.syncFailure.unsupportedSyncAction");
     case RUNTIME_MESSAGE_KEY.MISSING_SYNC_RESULT:
-      return "Sync did not return a result.";
+      return i18n.t("wizard.syncFailure.missingSyncResult");
     default:
-      return result.error ?? "Unknown sync error.";
+      return result.error ?? i18n.t("wizard.syncFailure.unknown");
   }
 }
 
-export async function runWizard(logger: CliLogger): Promise<number> {
+export async function runWizard(logger: CliLogger, i18n: CliI18n): Promise<number> {
   const prompt = createPromptRunner();
 
   logger.banner();
 
   const detectionSpinner = ora({
-    text: "Detecting editors",
+    text: i18n.t("wizard.detectingEditors"),
     color: "magenta",
     isEnabled: process.stderr.isTTY
   }).start();
@@ -136,63 +143,72 @@ export async function runWizard(logger: CliLogger): Promise<number> {
   detectionSpinner.stop();
 
   if (eligibleEditors.length < 2) {
-    logger.error(logger.palette.red("At least two detected editors with readable extensions directories are required."));
+    logger.error(logger.palette.red(i18n.t("wizard.requiresAtLeastTwoEditors")));
     return 1;
   }
 
   const sqliteAvailable = await canRunCommand("sqlite3");
   if (!sqliteAvailable) {
-    logger.line(logger.palette.dim("Disabled extension state may be incomplete because sqlite3 is not available."));
+    logger.line(logger.palette.dim(i18n.t("wizard.sqliteUnavailable")));
     logger.line();
   }
 
   const sourceAnswer = await prompt<{ sourceSlug?: string }>({
     type: "select",
     name: "sourceSlug",
-    message: "Select source editor",
+    message: i18n.t("wizard.selectSourceEditor"),
     choices: eligibleEditors.map((editor) => ({
       title: editor.displayName,
       value: editor.slug,
-      description: formatEditorDescription(editor)
+      description: formatEditorDescription(editor, i18n)
     }))
   });
 
   const sourceEditor = eligibleEditors.find((editor) => editor.slug === sourceAnswer.sourceSlug);
   if (!sourceEditor) {
-    logger.error(logger.palette.red("A source editor must be selected."));
+    logger.error(logger.palette.red(i18n.t("wizard.sourceEditorRequired")));
     return 1;
   }
 
   const targetOptions = eligibleEditors.filter((editor) => editor.slug !== sourceEditor.slug);
   if (targetOptions.length === 0) {
-    logger.error(logger.palette.red("A second editor is required as the sync target."));
+    logger.error(logger.palette.red(i18n.t("wizard.secondEditorRequired")));
     return 1;
   }
 
   const targetAnswer = await prompt<{ targetSlug?: string }>({
     type: "select",
     name: "targetSlug",
-    message: "Select target editor",
+    message: i18n.t("wizard.selectTargetEditor"),
     choices: targetOptions.map((editor) => ({
       title: editor.displayName,
       value: editor.slug,
-      description: formatEditorDescription(editor)
+      description: formatEditorDescription(editor, i18n)
     }))
   });
 
   const targetEditor = targetOptions.find((editor) => editor.slug === targetAnswer.targetSlug);
   if (!targetEditor) {
-    logger.error(logger.palette.red("A target editor must be selected."));
+    logger.error(logger.palette.red(i18n.t("wizard.targetEditorRequired")));
     return 1;
   }
 
   if (!targetEditor.cliAvailable) {
-    logger.line(logger.palette.dim(`Target CLI is unavailable for ${targetEditor.displayName}; sync will use filesystem fallback when needed.`));
+    logger.line(
+      logger.palette.dim(
+        i18n.t("wizard.targetCliUnavailable", {
+          target: targetEditor.displayName
+        })
+      )
+    );
     logger.line();
   }
 
   const inventorySpinner = ora({
-    text: `Reading extensions from ${sourceEditor.displayName} and ${targetEditor.displayName}`,
+    text: i18n.t("wizard.readingExtensions", {
+      source: sourceEditor.displayName,
+      target: targetEditor.displayName
+    }),
     color: "magenta",
     isEnabled: process.stderr.isTTY
   }).start();
@@ -213,7 +229,13 @@ export async function runWizard(logger: CliLogger): Promise<number> {
   inventorySpinner.stop();
 
   if (sourceItems.length === 0) {
-    logger.line(logger.palette.yellow(`${sourceEditor.displayName} has no local extensions to sync.`));
+    logger.line(
+      logger.palette.yellow(
+        i18n.t("wizard.sourceHasNoExtensions", {
+          source: sourceEditor.displayName
+        })
+      )
+    );
     return 0;
   }
 
@@ -231,7 +253,7 @@ export async function runWizard(logger: CliLogger): Promise<number> {
   });
 
   if (candidates.length === 0) {
-    logger.line(logger.palette.green("Source and target are already aligned for local extensions."));
+    logger.line(logger.palette.green(i18n.t("wizard.sourceAndTargetAlreadyAligned")));
     return 0;
   }
 
@@ -243,23 +265,27 @@ export async function runWizard(logger: CliLogger): Promise<number> {
     const modeAnswer = await prompt<{ viewMode?: CandidateViewMode }>({
       type: "select",
       name: "viewMode",
-      message: "Choose extensions to review",
+      message: i18n.t("wizard.chooseExtensionsToReview"),
       initial: 0,
       choices: [
         {
-          title: `Missing (${missingCount})`,
+          title: i18n.t("wizard.modeChoice.missingTitle", { count: missingCount }),
           value: "missing",
-          description: "Installed in source but not in target"
+          description: i18n.t("wizard.modeChoice.missingDescription")
         },
         {
-          title: `Version mismatch (${mismatchCount})`,
+          title: i18n.t("wizard.modeChoice.versionMismatchTitle", {
+            count: mismatchCount
+          }),
           value: "version-mismatch",
-          description: "Installed in both editors with different versions"
+          description: i18n.t("wizard.modeChoice.versionMismatchDescription")
         },
         {
-          title: `All (${candidates.length})`,
+          title: i18n.t("wizard.modeChoice.allTitle", {
+            count: candidates.length
+          }),
           value: "all",
-          description: "Show both missing and version-mismatch extensions"
+          description: i18n.t("wizard.modeChoice.allDescription")
         }
       ]
     });
@@ -268,7 +294,13 @@ export async function runWizard(logger: CliLogger): Promise<number> {
     visibleCandidates = filterCandidatesByMode(candidates, selectedMode);
 
     if (visibleCandidates.length === 0) {
-      logger.line(logger.palette.yellow(`No ${formatCandidateModeLabel(selectedMode)} candidates are available.`));
+      logger.line(
+        logger.palette.yellow(
+          i18n.t("wizard.noModeCandidates", {
+            mode: formatCandidateModeLabel(selectedMode, i18n)
+          })
+        )
+      );
       logger.line();
     }
   }
@@ -276,19 +308,21 @@ export async function runWizard(logger: CliLogger): Promise<number> {
   const candidateAnswer = await prompt<{ extensionIds?: string[] }>({
     type: "multiselect",
     name: "extensionIds",
-    message: `Select ${formatCandidateModeLabel(selectedMode)} extensions to sync`,
+    message: i18n.t("wizard.selectExtensionsToSync", {
+      mode: formatCandidateModeLabel(selectedMode, i18n)
+    }),
     instructions: false,
     choices: visibleCandidates.map((candidate) => ({
       title: candidate.extensionId,
       value: candidate.extensionId,
       selected: false,
-      description: formatCandidateDescription(candidate)
+      description: formatCandidateDescription(candidate, i18n)
     }))
   });
 
   const selectedIds = candidateAnswer.extensionIds ?? [];
   if (selectedIds.length === 0) {
-    logger.line(logger.palette.yellow("No extensions selected."));
+    logger.line(logger.palette.yellow(i18n.t("wizard.noExtensionsSelected")));
     return 0;
   }
 
@@ -296,17 +330,24 @@ export async function runWizard(logger: CliLogger): Promise<number> {
     type: "confirm",
     name: "confirmed",
     initial: true,
-    message: `Sync ${selectedIds.length} extension${selectedIds.length === 1 ? "" : "s"} from ${sourceEditor.displayName} to ${targetEditor.displayName}?`
+    message: i18n.t("wizard.confirmSync", {
+      count: selectedIds.length,
+      source: sourceEditor.displayName,
+      target: targetEditor.displayName
+    })
   });
 
   if (!confirmAnswer.confirmed) {
-    logger.line(logger.palette.yellow("Cancelled."));
+    logger.line(logger.palette.yellow(i18n.t("common.cancelled")));
     return 0;
   }
 
   const selectedCandidates = visibleCandidates.filter((candidate) => selectedIds.includes(candidate.extensionId));
   const syncSpinner = ora({
-    text: `Syncing 1/${selectedCandidates.length}`,
+    text: i18n.t("wizard.syncingProgress", {
+      current: 1,
+      total: selectedCandidates.length
+    }),
     color: "magenta",
     isEnabled: process.stderr.isTTY
   }).start();
@@ -314,7 +355,11 @@ export async function runWizard(logger: CliLogger): Promise<number> {
   const results: SyncResult[] = [];
 
   for (const [index, candidate] of selectedCandidates.entries()) {
-    syncSpinner.text = `Syncing ${index + 1}/${selectedCandidates.length}: ${candidate.extensionId}`;
+    syncSpinner.text = i18n.t("wizard.syncingExtensionProgress", {
+      current: index + 1,
+      total: selectedCandidates.length,
+      extensionId: candidate.extensionId
+    });
 
     const result = await syncExtensionLocal({
       extensionId: candidate.extensionId,
@@ -346,13 +391,14 @@ export async function runWizard(logger: CliLogger): Promise<number> {
       .filter((result) => !result.success)
       .map((result) => ({
         extensionId: result.extensionId ?? "unknown",
-        message: formatSyncFailure(result)
+        message: formatSyncFailure(result, i18n)
       }))
   });
 
   const successfulExtensionIds = selectedCandidates.filter((_candidate, index) => results[index]?.success).map((candidate) => candidate.extensionId);
 
   const settingsResult = await maybeSyncSettings({
+    i18n,
     logger,
     prompt,
     sourceEditor,

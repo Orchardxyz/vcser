@@ -1,5 +1,11 @@
 # @vcser/core
 
+## 1.0.3
+
+### Patch Changes
+
+- cec1b27: Add package keywords metadata for better package discovery.
+
 ## 1.0.2
 
 ### Patch Changes

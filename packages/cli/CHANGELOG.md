@@ -1,5 +1,13 @@
 # @vcser/cli
 
+## 1.1.1
+
+### Patch Changes
+
+- cec1b27: Add package keywords metadata for better package discovery.
+- Updated dependencies [cec1b27]
+  - @vcser/core@1.0.3
+
 ## 1.1.0
 
 ### Minor Changes

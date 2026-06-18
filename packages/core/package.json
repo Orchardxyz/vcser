@@ -1,6 +1,6 @@
 {
   "name": "@vcser/core",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Reusable runtime core for vcser editor detection, sync, and persistence",
   "keywords": [
     "vcser",

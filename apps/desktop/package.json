@@ -3,6 +3,14 @@
   "version": "1.0.1",
   "private": true,
   "description": "Desktop app to sync extensions and settings across Visual Studio Code-based editors",
+  "keywords": [
+    "vcser",
+    "desktop",
+    "electron",
+    "vscode",
+    "extensions",
+    "settings-sync"
+  ],
   "license": "Apache-2.0",
   "type": "module",
   "homepage": "https://vcser.oryz.work/",
